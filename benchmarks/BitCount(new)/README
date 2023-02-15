@@ -1,0 +1,44 @@
+DFG info
+
+
+Black nodes are instructions.
+Labels in those nodes start with the ID of the node and are followed by the corresponding 
+LLVM instruction when available.
+
+
+Green nodes are constants.
+
+Red nodes are live-in variables.
+
+Blue nodes are live-out variables;
+
+Those nodes are not included in the DFG file that contains all the edges.
+
+
+
+PE info
+
+
+4x4 CGRA with cross topology
+
+Numbering convention:
+ -----------------------
+|  0  |  1  |  2  |  3  |
+|-----------------------|
+|  4  |  5  |  6  |  7  |
+|-----------------------|
+|  8  |  9  | 10  | 11  |
+|-----------------------|
+|  12 | 13  | 14  | 15  |
+ -----------------------
+
+For example: PE 8 can take data from the neighbour PE 12, 9, 4, 11
+
+
+
+PHI nodes
+
+Phi nodes are translated as move operation.
+In the assembly you will find MV 0, RCR -> Rout that reads as " Move the value in the output register of the right PE into the output register of this PE"
+This instruction is not available in the IS provided, but can be implemented as an ADD operation.
+ADD RCR, 0 -> Rout.

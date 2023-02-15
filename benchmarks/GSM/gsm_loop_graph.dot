@@ -1,0 +1,87 @@
+digraph gsm { 
+{
+ compound=true;
+0 [color=black, label="0    %indvars.iv = phi i64 [ 0, %entry ], [ %indvars.iv.next, %for.body ]"];
+
+1 [color=black, label="1    %dmax.019 = phi i32 [ 0, %entry ], [ %dmax.1, %for.body ]"];
+
+2 [color=black, label="2  add"];
+
+3 [color=black, label="3    %0 = load i32, i32* %arrayidx, align 4, !tbaa !6"];
+
+4 [color=black, label="4    %cmp1 = icmp slt i32 %0, 0"];
+
+5 [color=black, label="5    %cmp2 = icmp eq i32 %0, -32768"];
+
+6 [color=black, label="6    %sub = sub nsw i32 0, %0"];
+
+7 [color=black, label="7    %cond = select i1 %cmp2, i32 32767, i32 %sub"];
+
+8 [color=black, label="8    %cond6 = select i1 %cmp1, i32 %cond, i32 %0"];
+
+9 [color=black, label="9    %cmp7 = icmp sgt i32 %cond6, %dmax.019"];
+
+10 [color=black, label="10    %dmax.1 = select i1 %cmp7, i32 %cond6, i32 %dmax.019"];
+
+11 [color=black, label="11    %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1"];
+
+12 [color=black, label="12    %exitcond.not = icmp eq i64 %indvars.iv.next, 40"];
+
+54 [color=black, label="54  offset"];
+0 -> 11
+0 -> 54
+1 -> 10
+1 -> 9
+2 -> 3
+3 -> 8
+3 -> 6
+3 -> 5
+3 -> 4
+4 -> 8
+5 -> 7
+6 -> 7
+7 -> 8
+8 -> 10
+8 -> 9
+9 -> 10
+10 -> 1 [color=red]
+11 -> 12
+11 -> 0 [color=red]
+54 -> 2
+
+24 [color=goldenrod1, label="24 C_0"];
+
+25 [color=goldenrod1, label="25 C_0"];
+
+26 [color=goldenrod1, label="26 C_0"];
+
+27 [color=goldenrod1, label="27 C_-32768"];
+
+28 [color=goldenrod1, label="28 C_0"];
+
+29 [color=goldenrod1, label="29 C_32767"];
+
+30 [color=goldenrod1, label="30 C_1"];
+
+31 [color=goldenrod1, label="31 C_40"];
+
+55 [color=goldenrod1, label="55 C_4"];
+
+42 [color=purple1, label="42 LiveInArg"];
+
+53 [color=dodgerblue1, label="53 LiveOut"];
+42 -> 2 [color=purple1]
+10 -> 53 [color=dodgerblue1]
+24 -> 0 [color=goldenrod1]
+25 -> 1 [color=goldenrod1]
+26 -> 4 [color=goldenrod1]
+27 -> 5 [color=goldenrod1]
+28 -> 6 [color=goldenrod1]
+29 -> 7 [color=goldenrod1]
+30 -> 11 [color=goldenrod1]
+31 -> 12 [color=goldenrod1]
+55 -> 54 [color=goldenrod1]
+
+}
+
+}

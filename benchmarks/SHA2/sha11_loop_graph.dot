@@ -1,0 +1,152 @@
+digraph sha11 { 
+{
+ compound=true;
+0 [color=black, label="0    %indvars.iv = phi i64 [ 0, %entry ], [ %indvars.iv.next, %for.body ]"];
+
+1 [color=black, label="1    %E.041 = phi i32 [ 0, %entry ], [ %D.040, %for.body ]"];
+
+2 [color=black, label="2    %D.040 = phi i32 [ 0, %entry ], [ %C.039, %for.body ]"];
+
+3 [color=black, label="3    %C.039 = phi i32 [ 0, %entry ], [ %or9, %for.body ]"];
+
+4 [color=black, label="4    %B.038 = phi i32 [ 0, %entry ], [ %A.037, %for.body ]"];
+
+5 [color=black, label="5    %A.037 = phi i32 [ 0, %entry ], [ %add5, %for.body ]"];
+
+6 [color=black, label="6    %shl = shl i32 %A.037, 5"];
+
+7 [color=black, label="7    %shr = ashr i32 %A.037, 27"];
+
+8 [color=black, label="8    %or = or i32 %shl, %shr"];
+
+9 [color=black, label="9    %and = and i32 %C.039, %B.038"];
+
+10 [color=black, label="10    %neg = xor i32 %B.038, -1"];
+
+11 [color=black, label="11    %and1 = and i32 %D.040, %neg"];
+
+12 [color=black, label="12  add"];
+
+13 [color=black, label="13    %0 = load i32, i32* %arrayidx, align 4, !tbaa !6"];
+
+14 [color=black, label="14    %or2 = add i32 %or, 1518500249"];
+
+15 [color=black, label="15    %add = add i32 %or2, %and"];
+
+16 [color=black, label="16    %add3 = add i32 %add, %and1"];
+
+17 [color=black, label="17    %add4 = add i32 %add3, %E.041"];
+
+18 [color=black, label="18    %add5 = add i32 %add4, %0"];
+
+19 [color=black, label="19    %shl7 = shl i32 %B.038, 30"];
+
+20 [color=black, label="20    %shr8 = ashr i32 %B.038, 2"];
+
+21 [color=black, label="21    %or9 = or i32 %shl7, %shr8"];
+
+22 [color=black, label="22    %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1"];
+
+23 [color=black, label="23    %exitcond.not = icmp eq i64 %indvars.iv.next, 20"];
+
+75 [color=black, label="75  offset"];
+0 -> 22
+0 -> 75
+1 -> 17
+2 -> 11
+2 -> 1 [color=red]
+3 -> 9
+3 -> 2 [color=red]
+4 -> 20
+4 -> 19
+4 -> 10
+4 -> 9
+5 -> 7
+5 -> 6
+5 -> 4 [color=red]
+6 -> 8
+7 -> 8
+8 -> 14
+9 -> 15
+10 -> 11
+11 -> 16
+12 -> 13
+13 -> 18
+14 -> 15
+15 -> 16
+16 -> 17
+17 -> 18
+18 -> 5 [color=red]
+19 -> 21
+20 -> 21
+21 -> 3 [color=red]
+22 -> 23
+22 -> 0 [color=red]
+75 -> 12
+
+35 [color=goldenrod1, label="35 C_0"];
+
+36 [color=goldenrod1, label="36 C_0"];
+
+37 [color=goldenrod1, label="37 C_0"];
+
+38 [color=goldenrod1, label="38 C_0"];
+
+39 [color=goldenrod1, label="39 C_0"];
+
+40 [color=goldenrod1, label="40 C_0"];
+
+41 [color=goldenrod1, label="41 C_5"];
+
+42 [color=goldenrod1, label="42 C_27"];
+
+43 [color=goldenrod1, label="43 C_-1"];
+
+44 [color=goldenrod1, label="44 C_1518500249"];
+
+45 [color=goldenrod1, label="45 C_30"];
+
+46 [color=goldenrod1, label="46 C_2"];
+
+47 [color=goldenrod1, label="47 C_1"];
+
+76 [color=goldenrod1, label="76 C_4"];
+
+48 [color=purple1, label="48 LiveInConstBr"];
+
+59 [color=purple1, label="59 LiveInArg"];
+
+70 [color=dodgerblue1, label="70 LiveOut"];
+
+71 [color=dodgerblue1, label="71 LiveOut"];
+
+72 [color=dodgerblue1, label="72 LiveOut"];
+
+73 [color=dodgerblue1, label="73 LiveOut"];
+
+74 [color=dodgerblue1, label="74 LiveOut"];
+48 -> 23 [color=purple1]
+59 -> 12 [color=purple1]
+2 -> 70 [color=dodgerblue1]
+3 -> 71 [color=dodgerblue1]
+5 -> 72 [color=dodgerblue1]
+18 -> 73 [color=dodgerblue1]
+21 -> 74 [color=dodgerblue1]
+35 -> 0 [color=goldenrod1]
+36 -> 1 [color=goldenrod1]
+37 -> 2 [color=goldenrod1]
+38 -> 3 [color=goldenrod1]
+39 -> 4 [color=goldenrod1]
+40 -> 5 [color=goldenrod1]
+41 -> 6 [color=goldenrod1]
+42 -> 7 [color=goldenrod1]
+43 -> 10 [color=goldenrod1]
+44 -> 14 [color=goldenrod1]
+45 -> 19 [color=goldenrod1]
+46 -> 20 [color=goldenrod1]
+47 -> 22 [color=goldenrod1]
+76 -> 75 [color=goldenrod1]
+
+}
+
+}

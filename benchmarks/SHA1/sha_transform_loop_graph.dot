@@ -1,0 +1,128 @@
+digraph sha_transform { 
+{
+ compound=true;
+0 [color=black, label="0    %indvars.iv = phi i64 [ 16, %entry ], [ %indvars.iv.next, %for.body ]"];
+
+1 [color=black, label="1    %0 = add nsw i64 %indvars.iv, -3"];
+
+2 [color=black, label="2  add"];
+
+3 [color=black, label="3    %1 = load i32, i32* %arrayidx, align 4, !tbaa !6"];
+
+4 [color=black, label="4    %2 = add nsw i64 %indvars.iv, -8"];
+
+5 [color=black, label="5  add"];
+
+6 [color=black, label="6    %3 = load i32, i32* %arrayidx3, align 4, !tbaa !6"];
+
+7 [color=black, label="7    %xor = xor i32 %3, %1"];
+
+8 [color=black, label="8    %4 = add nsw i64 %indvars.iv, -14"];
+
+9 [color=black, label="9  add"];
+
+10 [color=black, label="10    %5 = load i32, i32* %arrayidx6, align 4, !tbaa !6"];
+
+11 [color=black, label="11    %xor7 = xor i32 %xor, %5"];
+
+12 [color=black, label="12    %6 = add nsw i64 %indvars.iv, -16"];
+
+13 [color=black, label="13  add"];
+
+14 [color=black, label="14    %7 = load i32, i32* %arrayidx10, align 4, !tbaa !6"];
+
+15 [color=black, label="15    %xor11 = xor i32 %xor7, %7"];
+
+16 [color=black, label="16  add"];
+
+17 [color=black, label="17    store i32 %xor11, i32* %arrayidx13, align 4, !tbaa !6"];
+
+18 [color=black, label="18    %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1"];
+
+19 [color=black, label="19    %exitcond.not = icmp eq i64 %indvars.iv.next, 80"];
+
+59 [color=black, label="59  offset"];
+
+61 [color=black, label="61  offset"];
+
+63 [color=black, label="63  offset"];
+
+65 [color=black, label="65  offset"];
+
+67 [color=black, label="67  offset"];
+0 -> 18
+0 -> 67
+0 -> 12
+0 -> 8
+0 -> 4
+0 -> 1
+1 -> 59
+2 -> 3
+3 -> 7
+4 -> 61
+5 -> 6
+6 -> 7
+7 -> 11
+8 -> 63
+9 -> 10
+10 -> 11
+11 -> 15
+12 -> 65
+13 -> 14
+14 -> 15
+15 -> 17
+16 -> 17
+18 -> 19
+18 -> 0 [color=red]
+59 -> 2
+61 -> 5
+63 -> 9
+65 -> 13
+67 -> 16
+
+31 [color=goldenrod1, label="31 C_16"];
+
+32 [color=goldenrod1, label="32 C_-3"];
+
+33 [color=goldenrod1, label="33 C_-8"];
+
+34 [color=goldenrod1, label="34 C_-14"];
+
+35 [color=goldenrod1, label="35 C_-16"];
+
+36 [color=goldenrod1, label="36 C_1"];
+
+37 [color=goldenrod1, label="37 C_80"];
+
+60 [color=goldenrod1, label="60 C_4"];
+
+62 [color=goldenrod1, label="62 C_4"];
+
+64 [color=goldenrod1, label="64 C_4"];
+
+66 [color=goldenrod1, label="66 C_4"];
+
+68 [color=goldenrod1, label="68 C_4"];
+
+48 [color=purple1, label="48 LiveInArg"];
+48 -> 16 [color=purple1]
+48 -> 13 [color=purple1]
+48 -> 9 [color=purple1]
+48 -> 5 [color=purple1]
+48 -> 2 [color=purple1]
+31 -> 0 [color=goldenrod1]
+32 -> 1 [color=goldenrod1]
+33 -> 4 [color=goldenrod1]
+34 -> 8 [color=goldenrod1]
+35 -> 12 [color=goldenrod1]
+36 -> 18 [color=goldenrod1]
+37 -> 19 [color=goldenrod1]
+60 -> 59 [color=goldenrod1]
+62 -> 61 [color=goldenrod1]
+64 -> 63 [color=goldenrod1]
+66 -> 65 [color=goldenrod1]
+68 -> 67 [color=goldenrod1]
+
+}
+
+}

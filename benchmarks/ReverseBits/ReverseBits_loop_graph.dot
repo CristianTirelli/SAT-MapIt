@@ -1,0 +1,61 @@
+digraph ReverseBits { 
+{
+ compound=true;
+0 [color=black, label="0    %rev.09 = phi i32 [ %or, %for.body ], [ 0, %entry ]"];
+
+1 [color=black, label="1    %i.08 = phi i32 [ %inc, %for.body ], [ 0, %entry ]"];
+
+2 [color=black, label="2    %index.addr.07 = phi i32 [ %shr, %for.body ], [ %index, %entry ]"];
+
+3 [color=black, label="3    %shl = shl i32 %rev.09, 1"];
+
+4 [color=black, label="4    %and = and i32 %index.addr.07, 1"];
+
+5 [color=black, label="5    %or = or i32 %shl, %and"];
+
+6 [color=black, label="6    %shr = lshr i32 %index.addr.07, 1"];
+
+7 [color=black, label="7    %inc = add nuw i32 %i.08, 1"];
+
+8 [color=black, label="8    %exitcond.not = icmp eq i32 %inc, %NumBits"];
+0 -> 3
+1 -> 7
+2 -> 6
+2 -> 4
+3 -> 5
+4 -> 5
+5 -> 0 [color=red]
+6 -> 2 [color=red]
+7 -> 8
+7 -> 1 [color=red]
+
+20 [color=goldenrod1, label="20 C_0"];
+
+21 [color=goldenrod1, label="21 C_0"];
+
+22 [color=goldenrod1, label="22 C_1"];
+
+23 [color=goldenrod1, label="23 C_1"];
+
+24 [color=goldenrod1, label="24 C_1"];
+
+25 [color=goldenrod1, label="25 C_1"];
+
+36 [color=purple1, label="36 LiveInArg"];
+
+37 [color=purple1, label="37 LiveInArg"];
+
+48 [color=dodgerblue1, label="48 LiveOut"];
+36 -> 2 [color=purple1]
+37 -> 8 [color=purple1]
+5 -> 48 [color=dodgerblue1]
+20 -> 0 [color=goldenrod1]
+21 -> 1 [color=goldenrod1]
+22 -> 3 [color=goldenrod1]
+23 -> 4 [color=goldenrod1]
+24 -> 6 [color=goldenrod1]
+25 -> 7 [color=goldenrod1]
+
+}
+
+}
