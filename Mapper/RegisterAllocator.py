@@ -340,7 +340,7 @@ class RegisterAllocator:
         return available_registers
 
     #Generates all the interference graphs needed (one for each PE)
-    def generateInterferenceGraphs(self, kernel, grid_size, DFG, instructions):
+    def generateInterferenceGraphs(self, kernel, grid_size, DFG, instructions, n_colors):
 
         graphs = {}
         for i in range(0, grid_size):
@@ -348,6 +348,7 @@ class RegisterAllocator:
                 if i not in graphs:
                     graphs[i] = None
                 g = interference(i)
+                g.rf_size = n_colors
                 addNodes(instructions[i], g, kernel, DFG, i)
                 g.removeOverlappingIntervals()
                 self.generateOverlaps(g)
