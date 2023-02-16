@@ -450,6 +450,8 @@ class Mapper:
         #    f.write(self.s.to_smt2())
         #with open(self.benchmark + "_" + str(II) + ".cnf", "w") as f:
         #    f.write(self.s.dimacs())
+        end = time.time()
+        print("Time: " + str(end - start))
         return all_dep_encoded
 
     #Find mapping of the DFG starting from the MII
