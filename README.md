@@ -67,9 +67,8 @@ SAT-MapIt usage.
 	To change the CGRA dimensions update:
 	`n_cols = 4`
 	`n_rows = 4`
-	The number of internal registers of PEs can be changed, but failure of the register allocation phase are not implemented yet.
-	`n_regs = 20`
-	To change the topology of the CGRA the method `isNeighbor` in `mapper.py` needs to be changed.
+	The number of internal registers of PEs can be changed by updating the variable `n_regs = 20`, but failure of the register allocation phase are not implemented yet.
+	To change the topology of the CGRA the method `isNeighbor` in `mapper.py` needs to be updated.
 
 3) Execute the script and wait for the output: `python3 main.py`
 

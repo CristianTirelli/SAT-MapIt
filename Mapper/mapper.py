@@ -1110,6 +1110,7 @@ class Mapper:
         print("Interference graphs PE" + str(i) + ": " + str(len(graphs)))
         self.ra.allocateRegisters()
         for p in graphs:
+            #Uncomment following line to print the interference graphs for each PE
             #graphs[p].printDot(str(p))
             print("#Nodes: " + str(len(graphs[p].intervals)))
         self.ra.assignRegisters(self.CGRA_Y, self.CGRA_x)

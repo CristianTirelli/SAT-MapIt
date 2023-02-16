@@ -1,6 +1,7 @@
 from DFG import *
 
 #parser for all the input file that generates the DFG
+
 class Parser:
     nodes = []
     edges = []

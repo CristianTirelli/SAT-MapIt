@@ -82,7 +82,7 @@ def main():
     m.generateMapping(instructions)
     m.printAssembly()
 
-    #Debug
+    #Debug 
     for p in instructions:
         for inst in instructions[p]:
             tmps = "Id: " + str(inst.id) + " name: " + str(inst.name)+ " time: " + str(inst.time) + " pe: " + str(inst.pe)

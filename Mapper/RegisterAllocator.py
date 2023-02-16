@@ -13,6 +13,7 @@ class RegisterAllocator:
         self.kernel = kernel
         self.instructions = instructions
         #init the rf to 0 => all the register of that pe are free to use
+        #TODO: this behaviour needs to be handled in a better way
         for i in range(0, x*y):
             if i not in self.rf:
                 self.rf[i] = {}

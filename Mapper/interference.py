@@ -1,4 +1,4 @@
-#this is a class similar to node, but with more information
+#this is a class similar to node, but with more information 
 class instruction:
 
     def __init__(self,id):
@@ -223,6 +223,7 @@ class instruction:
         return "UNDEF"
 
 #nodes of the interference graph
+#a node refers to the liveness of a value
 class interval:
 
     def __init__(self,id, start, end, source, destination, length):
@@ -259,6 +260,7 @@ class interval:
         return color
       
 #edges of the interference graph
+#two nodes are connected if the liveness overlaps
 class overlap:
 
     def __init__(self, id, source, destination):

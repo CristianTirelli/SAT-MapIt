@@ -33,8 +33,8 @@ class constant:
         self.value = value
         self.opPos = opPos
 
-
 #data flow graph of the loop, with information on livein, liveout and constants
+#constants, livein, liveout could be handled better
 class DFG:
     
     nodes = []
