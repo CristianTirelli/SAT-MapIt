@@ -218,6 +218,8 @@ class instruction:
             return "BGT"
         if self.opcode == 43:
             return "BZFA"
+        if self.opcode == 44:
+            return "SRA"
         #print(self.opcode)
 
         return "UNDEF"
