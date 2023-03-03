@@ -1,0 +1,43 @@
+digraph bit_count1 { 
+{
+ compound=true;
+0 [color=black, label="0    %x.addr.0 = phi i64 [ %and, %do.body ], [ %x, %entry ]"];
+
+1 [color=black, label="1    %n.0 = phi i32 [ %inc, %do.body ], [ 0, %entry ]"];
+
+2 [color=black, label="2    %inc = add nuw nsw i32 %n.0, 1"];
+
+3 [color=black, label="3    %sub = add nsw i64 %x.addr.0, -1"];
+
+4 [color=black, label="4    %and = and i64 %sub, %x.addr.0"];
+
+5 [color=black, label="5    %cmp1.not = icmp eq i64 %and, 0"];
+0 -> 4
+0 -> 3
+1 -> 2
+2 -> 1 [color=red]
+3 -> 4
+4 -> 5
+4 -> 0 [color=red]
+
+17 [color=goldenrod1, label="17 C_0"];
+
+18 [color=goldenrod1, label="18 C_1"];
+
+19 [color=goldenrod1, label="19 C_-1"];
+
+20 [color=purple1, label="20 LiveInConstBr"];
+
+31 [color=purple1, label="31 LiveInArg"];
+
+42 [color=dodgerblue1, label="42 LiveOut"];
+20 -> 5 [color=purple1]
+31 -> 0 [color=purple1]
+2 -> 42 [color=dodgerblue1]
+17 -> 1 [color=goldenrod1]
+18 -> 2 [color=goldenrod1]
+19 -> 3 [color=goldenrod1]
+
+}
+
+}

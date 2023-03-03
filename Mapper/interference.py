@@ -25,7 +25,7 @@ class instruction:
     def printAssembly(self):
         output = ""
         BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
-        NB = ["RCT", "RCL", "RCR", "RCB"]
+        NB = ["RCT", "RCL", "RCR", "RCB", "ROUT"]
     
         if self.getOpcodeName() == "MV":
             output += "ADD "
@@ -34,11 +34,21 @@ class instruction:
             else:
                 output += "R" + str(self.outreg)
             
-            output += ", ZERO"
-            if self.opB == "CONST":
-                output += ", " + str(self.immediate)
+            if self.opA in NB:
+                output += ", " + self.opA
+            elif self.opA == -1:
+                output += ", ROUT"
+            elif self.opA > -1 or self.opA < 4:#TODO: should be < n_register
+                output += ", R" + str(self.opA)
             else:
-                output += ", " + self.opB
+                print("Handle this case (MV operands)", self.opA)
+                exit(0)
+
+            output += ", ZERO"
+            #if self.opB == "CONST":
+            #    output += ", " + str(self.immediate)
+            #else:
+            #    output += ", " + str(self.opB)
 
         elif self.getOpcodeName() == "LWI":
             output += "LWI "
@@ -57,8 +67,7 @@ class instruction:
                     if self.opA in NB:
                         output += ", " + str(self.opA)
                     #TODO: 4 is number of register in a pe. should put a var there not a constant
-                    elif self.opA > -1 or self.opA < 4:
-                        output += ", R" + str(self.opA)
+                    
                     else:
                         print(self.opA)
                         print("Handle this case")

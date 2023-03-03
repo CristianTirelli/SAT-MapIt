@@ -557,7 +557,7 @@ namespace {
             n->setOpcode(SRT);
             break;
           case Instruction::AShr:
-            n->setOpcode(SRT);
+            n->setOpcode(SRA);
             break;
           case Instruction::And:
             n->setOpcode(LAND);

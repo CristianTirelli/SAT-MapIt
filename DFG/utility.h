@@ -39,3 +39,4 @@
 #define MV 40
 #define BLE 41
 #define BGT 42
+#define SRA 44
