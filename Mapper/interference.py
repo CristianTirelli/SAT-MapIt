@@ -33,9 +33,14 @@ class instruction:
                 output += "ROUT"
             else:
                 output += "R" + str(self.outreg)
-            
             if self.opA in NB:
                 output += ", " + self.opA
+            elif self.opA == "ZERO":
+                if self.opB in NB:
+                    output += ", " + self.opB
+                else:
+                    output += ", R" + str(self.opB)
+                    
             elif self.opA == -1:
                 output += ", ROUT"
             elif self.opA > -1 or self.opA < 4:#TODO: should be < n_register
@@ -63,11 +68,10 @@ class instruction:
                 if self.opA == -1:
                     output += ", ROUT"
                 else:
-                    print(self.opA)
                     if self.opA in NB:
                         output += ", " + str(self.opA)
                     #TODO: 4 is number of register in a pe. should put a var there not a constant
-                    
+        
                     else:
                         print(self.opA)
                         print("Handle this case")

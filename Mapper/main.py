@@ -31,9 +31,10 @@ def generateInstructions(kernel, DFG):
 #TODO: (Medium priority) fix register assignment when lwd in init needs to store va(isqrt problem)
 #(The above TODOs are solved manually for now)
 #TODO: fix register assignment for init vars like up
+#TODO: if init of livein var then LWD in ROUT
 
-n_cols = 2
-n_rows = 2
+n_cols = 3
+n_rows = 3
 n_regs = 10
 
 def main():
