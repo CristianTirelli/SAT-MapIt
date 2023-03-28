@@ -1,4 +1,4 @@
-digraph gsm { 
+digraph gsm1 { 
 {
  compound=true;
 0 [color=black, label="0    %indvars.iv = phi i64 [ 0, %entry ], [ %indvars.iv.next, %for.body ]"];
@@ -55,31 +55,31 @@ digraph gsm {
 
 26 [color=goldenrod1, label="26 C_0"];
 
-27 [color=goldenrod1, label="27 C_-32768"];
-
 28 [color=goldenrod1, label="28 C_0"];
-
-29 [color=goldenrod1, label="29 C_32767"];
 
 30 [color=goldenrod1, label="30 C_1"];
 
-31 [color=goldenrod1, label="31 C_40"];
-
 55 [color=goldenrod1, label="55 C_4"];
+
+27 [color=purple1, label="27 LiveInConst"];
+
+29 [color=purple1, label="29 LiveInConst"];
+
+31 [color=purple1, label="31 LiveInConstBr"];
 
 42 [color=purple1, label="42 LiveInArg"];
 
 53 [color=dodgerblue1, label="53 LiveOut"];
+27 -> 5 [color=purple1]
+29 -> 7 [color=purple1]
+31 -> 12 [color=purple1]
 42 -> 2 [color=purple1]
 10 -> 53 [color=dodgerblue1]
 24 -> 0 [color=goldenrod1]
 25 -> 1 [color=goldenrod1]
 26 -> 4 [color=goldenrod1]
-27 -> 5 [color=goldenrod1]
 28 -> 6 [color=goldenrod1]
-29 -> 7 [color=goldenrod1]
 30 -> 11 [color=goldenrod1]
-31 -> 12 [color=goldenrod1]
 55 -> 54 [color=goldenrod1]
 
 }

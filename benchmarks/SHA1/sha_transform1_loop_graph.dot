@@ -1,4 +1,4 @@
-digraph sha_transform { 
+digraph sha_transform1 { 
 {
  compound=true;
 0 [color=black, label="0    %indvars.iv = phi i64 [ 16, %entry ], [ %indvars.iv.next, %for.body ]"];
@@ -92,8 +92,6 @@ digraph sha_transform {
 
 36 [color=goldenrod1, label="36 C_1"];
 
-37 [color=goldenrod1, label="37 C_80"];
-
 60 [color=goldenrod1, label="60 C_4"];
 
 62 [color=goldenrod1, label="62 C_4"];
@@ -104,7 +102,10 @@ digraph sha_transform {
 
 68 [color=goldenrod1, label="68 C_4"];
 
+37 [color=purple1, label="37 LiveInConstBr"];
+
 48 [color=purple1, label="48 LiveInArg"];
+37 -> 19 [color=purple1]
 48 -> 16 [color=purple1]
 48 -> 13 [color=purple1]
 48 -> 9 [color=purple1]
@@ -116,7 +117,6 @@ digraph sha_transform {
 34 -> 8 [color=goldenrod1]
 35 -> 12 [color=goldenrod1]
 36 -> 18 [color=goldenrod1]
-37 -> 19 [color=goldenrod1]
 60 -> 59 [color=goldenrod1]
 62 -> 61 [color=goldenrod1]
 64 -> 63 [color=goldenrod1]

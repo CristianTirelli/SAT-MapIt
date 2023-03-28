@@ -372,7 +372,7 @@ namespace {
     void addConstants(graph* g){
       std::vector<node *> nodes = g->getNodes();
       constant* c;
-      nodeId = nodeId + 10; //+10 just for debugging purpose can ca the usual nodeId++
+      nodeId = nodeId + 10; //+10 just for debugging purpose can be the usual nodeId++
       for(auto n: nodes){
         Instruction* inst = dyn_cast<Instruction>(n->getInstruction());
         //if constant is used in icmp to set the flag for a br then add a livein instead
@@ -400,7 +400,7 @@ namespace {
         if(inst != nullptr && inst->getOpcode() != Instruction::GetElementPtr && !isa<BranchInst>(inst) ){
           for(int i = 0; i < (int) inst->getNumOperands(); i++){
             if (ConstantInt *CI = dyn_cast<ConstantInt>(inst->getOperand(i))){
-              if ((int) CI->getSExtValue() > 4096 || (int) CI->getSExtValue() < - 4097){
+              if ((int) CI->getSExtValue() > 4096 || (int) CI->getSExtValue() < -4097){
                 //if the constant is too big it cannot be put as in
                 //the immediate fields of the CGRA_WORD, so we put it
                 //in a register (like a livein var)
@@ -413,15 +413,22 @@ namespace {
                 g->addLiveInNode(source);
                 g->addLiveInEdge(e);
               }else if (inst->getOpcode() == Instruction::ICmp && g->getSuccessors(n).size() == 1){
-                //TODO: check taht succ is a br instruction
-                node *source;
-                node *destination;
-                edge *e;
-                source = new node(nodeId++, "LiveInConstBr", dyn_cast<Value>(inst));
-                destination = g->getNode(inst);
-                e = new edge(edgeId++, source, destination, 0);
-                g->addLiveInNode(source);
-                g->addLiveInEdge(e);
+                
+                Instruction* succ_n;
+                succ_n = dyn_cast<Instruction>(g->getSuccessors(n)[0]->getInstruction());
+                if (!isa<BranchInst>(succ_n)){
+                  c = new constant(nodeId++, n, (int) CI->getSExtValue());
+                  g->addConstant(c);
+                }else{
+                  node *source;
+                  node *destination;
+                  edge *e;
+                  source = new node(nodeId++, "LiveInConstBr", dyn_cast<Value>(inst));
+                  destination = g->getNode(inst);
+                  e = new edge(edgeId++, source, destination, 0);
+                  g->addLiveInNode(source);
+                  g->addLiveInEdge(e);
+                }
                 
               }else{
                 //Comment everything ecxept the following two line

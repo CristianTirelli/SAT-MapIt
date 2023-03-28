@@ -26,7 +26,7 @@ class instruction:
         output = ""
         BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
         NB = ["RCT", "RCL", "RCR", "RCB", "ROUT"]
-    
+
         if self.getOpcodeName() == "MV":
             output += "ADD "
             if self.outreg == -1:
@@ -35,12 +35,13 @@ class instruction:
                 output += "R" + str(self.outreg)
             if self.opA in NB:
                 output += ", " + self.opA
-            elif self.opA == "ZERO":
+            elif self.opA == "ZERO" or self.opA == "CONST":
                 if self.opB in NB:
                     output += ", " + self.opB
                 else:
                     output += ", R" + str(self.opB)
-                    
+            elif self.opA in ["R0", "R1", "R2", "R3"]:#TODO: should be < n_register
+                output += ", " + str(self.opA)
             elif self.opA == -1:
                 output += ", ROUT"
             elif self.opA > -1 or self.opA < 4:#TODO: should be < n_register
@@ -71,9 +72,10 @@ class instruction:
                     if self.opA in NB:
                         output += ", " + str(self.opA)
                     #TODO: 4 is number of register in a pe. should put a var there not a constant
-        
+                    elif self.opA in ["R0", "R1", "R2", "R3"]:#TODO: should be < n_register
+                        output += ", " + str(self.opA)
                     else:
-                        print(self.opA)
+                        print("1", self.opA)
                         print("Handle this case")
                         exit(0)
                 #output += ", " + self.opA
@@ -140,7 +142,8 @@ class instruction:
                 output += "R" + str(self.outreg)
             
             if self.opA == "CONST":
-                output += ", " + str(self.immediate)
+                 output += ", ZERO, " + str(self.immediate)
+                 return output
             else:
                 output += ", " + str(self.opA)
             

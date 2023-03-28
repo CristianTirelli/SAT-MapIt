@@ -621,6 +621,8 @@ class Mapper:
             exit(0)
 
         self.II = II
+
+        
         self.generateProlog()
         self.generateEpilog()
         self.generatePKE()
@@ -927,7 +929,8 @@ class Mapper:
         for p in p_const:
             t = 0
             for i in range(0, len(p_const[p])):
-                #print("1",i,t,p)
+                #print("1",i,t,p, self.init)
+                
                 if p not in self.init[i]:
                     #print("2",i,t,p)
                     tmp = instruction(p_const[p][i].id)
@@ -957,19 +960,29 @@ class Mapper:
                                     tmp.outreg = inst.outreg
                     else:
                         print("should not happen (Create inst for constant)")
-                                
 
                     tmp.LOp = "ZERO"
                     tmp.ROp = CONST
                     tmp.opB = CONST
                     tmp.immediate = p_const[p][i].value
-                    tmp.opcode = 40
+                    tmp.opcode = 1    
+                    for p1 in instructions:
+                        for inst in instructions[p1]:
+                            init_const = self.DFG.getConstant(inst.id)
+                            if init_const != None:    
+                                if inst.LOp == p_const[p][i].id:
+                                    tmp.opA = CONST
+                                    tmp.LOp = CONST
+
+                    
                     self.init[i][p] = tmp
+                    #print("added", p_const[p][i].id)
                 else:
 
                     while p in self.init[i + t]:
                         t += 1
                     if p not in self.init[i + t]:
+                        #print("adding", p_const[p][i].id)
                         tmp = instruction(p_const[p][i].id)
                         tmp.pe = p
                         tmp.time = t
@@ -977,7 +990,7 @@ class Mapper:
                         tmp.ROp = CONST
                         tmp.opB = CONST
                         tmp.immediate = p_const[p][i].value
-                        tmp.opcode = 40
+                        tmp.opcode = 1
                         nrop = None
                         #find associate instruction and then Rop instruction to get the Rop outreg (where to save the loaded value)
                         for pe in instructions:
@@ -1131,6 +1144,15 @@ class Mapper:
         epilog_len = len(self.epilog)
         fini_len = len(self.fini)
         
+        print("init_len: ", init_len)
+        print("prolog_len: ", prolog_len)
+        print("kernel_len: ", kernel_len)
+        print("epilog_len: ", epilog_len)
+        print("fini_len: ", fini_len)
+
+
+
+
         if len(self.init) > 0:
             print("Init: 0 - " + str(len(self.init) - 1))
         if len(self.prolog) > 0:
@@ -1160,7 +1182,6 @@ class Mapper:
                     tmp.opcode = 34
                     self.mapping[tk + t][pk] = tmp
                 
-
         #update br node destination cycle and opcode
         BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
         for t in self.mapping:
@@ -1193,8 +1214,6 @@ class Mapper:
                     self.mapping[tk + t][pk] = None
                 #fini is already populated, just copy it into mapping
                 self.mapping[tk + t][pk] = self.fini[tk][pk]
-            t += 1
-
         #print("mapping")
         #for i in range(0, len(self.mapping)):
         #    print("Time " + str(i))
@@ -1211,7 +1230,7 @@ class Mapper:
 
         for t in range(0, len(self.mapping)):
             print("T = " + str(t))
-            for p in range(0, self.CGRA_x * self.CGRA_Y):
+            for p in range(0, self.CGRA_x * self.CGRA_Y):    
                 print(self.mapping[t][p].printAssembly())
                 #
                 #tmp_op_name = str(self.mapping[t][p].getOpcodeName())
