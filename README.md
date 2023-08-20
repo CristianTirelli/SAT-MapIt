@@ -78,4 +78,3 @@ The output of the script includes many debug informations. The tool is still not
 
 ## SAT-MapIt LITE
 A Lite version of the tool is available at: https://github.com/CristianTirelli/SAT-MapIt-Lite
-
