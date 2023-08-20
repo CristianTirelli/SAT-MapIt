@@ -76,3 +76,6 @@ SAT-MapIt usage.
 
 The output of the script includes many debug informations. The tool is still not reliable enough to be used as a black box, so a manual check is always needed for now. Note that there are many TODOs to implement, so the assembly generated is always checked to fix small mistakes, like branch destinations
 
+## SAT-MapIt LITE
+A Lite version of the tool is available at: https://github.com/CristianTirelli/SAT-MapIt-Lite
+
