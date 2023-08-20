@@ -1,4 +1,5 @@
 from interference import *
+from instruction import *
 from ISA import *
 
 #Allocate and assign registers for a mapping
@@ -40,17 +41,23 @@ class RegisterAllocator:
     #TODO: improve the code and handle colouring failures
     def allocateRegisters(self):
 
+        #For each interference graph find the chromatic number
+        #TODO: Since the graphs are small we can implement a different algorithm
+        #      maybe using a sat solver or an ILP solver
         for p in self.interference_graphs:
             peo = []
             g = self.interference_graphs[p]
             tmp_max = -1
+            #this is just a temporary and ugly fix to the infinite loop that can happen
+            max_i = 0
             max_v = None
             for interval in g.intervals:
                 interval.weigth = 0
 
             intervals_g = g.intervals.copy()
             
-            while (len(intervals_g) > 0):
+            while (len(intervals_g) > 0 and max_i < 1000):
+                max_i += 1
                 for interval in intervals_g:
                     if interval.weigth >= tmp_max:
                         tmp_max = interval.weigth
@@ -70,6 +77,7 @@ class RegisterAllocator:
             print("Colors needed: " + str(colors_needed))
             if colors_needed > g.rf_size:
                 print("Number of registers needed: " + str(colors_needed + 1) + "\nAvailable: " + str(g.rf_size))
+                exit(0)
 
             for v in peo:
                 #if not already colored
@@ -81,7 +89,7 @@ class RegisterAllocator:
                     if len(v.neighbors) == 0:
                         v.color = int(colors[0])
                     
-                    for neighbour in v.neighbors:
+                    for neigbour in v.neighbors:
                         if neigbour.color not in colortable:
                             colortable[neigbour.color] = 0
                         colortable[neigbour.color] = 1
@@ -105,7 +113,8 @@ class RegisterAllocator:
     def getInstruction(self, id):
         for p in self.instructions:
             for inst in self.instructions[p]:
-                if inst.id == id:
+                if inst.nodeid == id:
+                    #print("found ", id, inst.nodeid, inst.LOp, inst.ROp)
                     return inst
         
         return None
@@ -113,12 +122,14 @@ class RegisterAllocator:
     #TODO: Improve the code
     def assignRegisters(self, cols, rows):
         #assign registers to operands
-        #Only handle the RCL,RCR,RCT,RCB and Rout cases
+        #Only handle the RCL,RCR,RCT,RCB and ROUT cases
         #To use the internal registers the interference graph must be colored
         for e in self.DFG.edges:
+            #print(e.source.id, "--->" ,e.destination.id)
             source = self.getInstruction(e.source.id)
             destination = self.getInstruction(e.destination.id)
-
+            #print(e.source.id, "--->" ,e.destination.id)
+            #print("")
             if source == None:
                 print("Cannot find instructions associate to " + str(e.source.id))
                 exit(0)
@@ -126,21 +137,21 @@ class RegisterAllocator:
                 print("Cannot find instructions associate to " + str(e.destination.id))
                 exit(0)
 
-            ps = -1
-            pd = -1
+            ps = -1     #source pe
+            pd = -1     #destination pe
 
             for t in self.kernel:
                 for p in self.kernel[t]:
-                    if self.kernel[t][p] == source.id:
+                    if self.kernel[t][p] == source.nodeid:
                         ps = p
-                    elif self.kernel[t][p] == destination.id:
+                    elif self.kernel[t][p] == destination.nodeid:
                         pd = p
 
             if ps == -1 or pd == -1:
-                print("Cannot pe for nodes " + str(source.id) + " - " + str(destination.id))
+                print("Cannot find pe for nodes " + str(source.nodeid) + " - " + str(destination.nodeid))
                 exit(0)
 
-            #print(str(source.id) + " -> " + str(destination.id) + " pe_s: " + str(ps) + " pe_d: " + str(pd) + " " + str(destination.predicate))
+            #print(str(source.nodeid) + " -> " + str(destination.nodeid) + " pe_s: " + str(ps) + " pe_d: " + str(pd) + " " + str(destination.predicate))
             if ps != pd:
                 i1 = ps // cols
                 j1 = ps % cols
@@ -154,53 +165,53 @@ class RegisterAllocator:
                     #is on the rigth
                     if ps == pd + 1:
                         #print("rigth1")
-                        if destination.LOp == source.id:
+                        if destination.LOp == source.nodeid:
                             destination.opA = RCR
-                        elif destination.ROp == source.id:
+                        elif destination.ROp == source.nodeid:
                             destination.opB = RCR
-                        elif destination.predicate == source.id:
+                        elif destination.predicate == source.nodeid:
                             destination.muxflag = RCR
                         else:
-                            print("Dep " + str(source.id) + " -> " + str(destination.id))
-                            print("1) Error assignment for inst " + str(destination.id) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
+                            print("Dep " + str(source.nodeid) + " -> " + str(destination.nodeid))
+                            print("1) Error assignment for inst " + str(destination.nodeid) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
                     #is on left
                     if ps == pd - 1:
                         #print("left1")
-                        if destination.LOp == source.id:
+                        if destination.LOp == source.nodeid:
                             destination.opA = RCL
-                        elif destination.ROp == source.id:
+                        elif destination.ROp == source.nodeid:
                             destination.opB = RCL
-                        elif destination.predicate == source.id:
+                        elif destination.predicate == source.nodeid:
                             destination.muxflag = RCL
                         else:
-                            print("Dep " + str(source.id) + " -> " + str(destination.id))
-                            print("2) Error assignment for inst " + str(destination.id) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp) + " pred: " +str(destination.predicate))
+                            print("Dep " + str(source.nodeid) + " -> " + str(destination.nodeid))
+                            print("2) Error assignment for inst " + str(destination.nodeid) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp) + " pred: " +str(destination.predicate))
                     
                     #is on the rigth (wrap around)
                     if (pd - ps) == cols - 1:
                         #print("rigth2")
-                        if destination.LOp == source.id:
+                        if destination.LOp == source.nodeid:
                             destination.opA = RCR
-                        elif destination.ROp == source.id:
+                        elif destination.ROp == source.nodeid:
                             destination.opB = RCR
-                        elif destination.predicate == source.id:
+                        elif destination.predicate == source.nodeid:
                             destination.muxflag = RCR
                         else:
-                            print("Dep " + str(source.id) + " -> " + str(destination.id))
-                            print("3) Error assignment for inst " + str(destination.id) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
+                            print("Dep " + str(source.nodeid) + " -> " + str(destination.nodeid))
+                            print("3) Error assignment for inst " + str(destination.nodeid) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
 
                     #is on the left (wrap around)
                     if (ps - pd) == cols - 1:
                         #print("left2")
-                        if destination.LOp == source.id:
+                        if destination.LOp == source.nodeid:
                             destination.opA = RCL
-                        elif destination.ROp == source.id:
+                        elif destination.ROp == source.nodeid:
                             destination.opB = RCL
-                        elif destination.predicate == source.id:
+                        elif destination.predicate == source.nodeid:
                             destination.muxflag = RCL
                         else:
-                            print("Dep " + str(source.id) + " -> " + str(destination.id))
-                            print("4) Error assignment for inst " + str(destination.id) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
+                            print("Dep " + str(source.nodeid) + " -> " + str(destination.nodeid))
+                            print("4) Error assignment for inst " + str(destination.nodeid) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
                 
                 #same col
                 if (j1 == j2):
@@ -208,121 +219,137 @@ class RegisterAllocator:
                     #is down
                     if ps == pd + cols:
                         #print("down1")
-                        if destination.LOp == source.id:
+                        if destination.LOp == source.nodeid:
                             destination.opA = RCB
-                        elif destination.ROp == source.id:
+                        elif destination.ROp == source.nodeid:
                             destination.opB = RCB
-                        elif destination.predicate == source.id:
+                        elif destination.predicate == source.nodeid:
                             destination.muxflag = RCB
                         else:
-                            print("Dep " + str(source.id) + " -> " + str(destination.id))
-                            print("5) Error assignment for inst " + str(destination.id) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
+                            print("Dep " + str(source.nodeid) + " -> " + str(destination.nodeid))
+                            print("5) Error assignment for inst " + str(destination.nodeid) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
                     #is up
                     if ps == pd - cols:
                         #print("top1")
-                        if destination.LOp == source.id:
+                        if destination.LOp == source.nodeid:
                             destination.opA = RCT
-                        elif destination.ROp == source.id:
+                        elif destination.ROp == source.nodeid:
                             destination.opB = RCT
-                        elif destination.predicate == source.id:
+                        elif destination.predicate == source.nodeid:
                             destination.muxflag = RCT
                         else:
-                            print("Dep " + str(source.id) + " -> " + str(destination.id))
-                            print("6) Error assignment for inst " + str(destination.id) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
+                            print("Dep " + str(source.nodeid) + " -> " + str(destination.nodeid))
+                            print("6) Error assignment for inst " + str(destination.nodeid) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
 
                     #is top (wrap around)
                     if (i1 - i2) == rows - 1:
                         #print("top2")
-                        if destination.LOp == source.id:
+                        if destination.LOp == source.nodeid:
                             destination.opA = RCT
-                        elif destination.ROp == source.id:
+                        elif destination.ROp == source.nodeid:
                             destination.opB = RCT
-                        elif destination.predicate == source.id:
+                        elif destination.predicate == source.nodeid:
                             destination.muxflag = RCT
                         else:
-                            print("Dep " + str(source.id) + " -> " + str(destination.id))
-                            print("7) Error assignment for inst " + str(destination.id) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
+                            print("Dep " + str(source.nodeid) + " -> " + str(destination.nodeid))
+                            print("7) Error assignment for inst " + str(destination.nodeid) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
 
                     #is down (wrap around)
                     if (i2 - i1) == rows - 1:
                         #print("down2")
-                        if destination.LOp == source.id:
+                        if destination.LOp == source.nodeid:
                             destination.opA = RCB
-                        elif destination.ROp == source.id:
+                        elif destination.ROp == source.nodeid:
                             destination.opB = RCB
-                        elif destination.predicate == source.id:
+                        elif destination.predicate == source.nodeid:
                             destination.muxflag = RCB
                         else:
-                            print("Dep " + str(source.id) + " -> " + str(destination.id))
-                            print("8) Error assignment for inst " + str(destination.id) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))     
+                            print("Dep " + str(source.nodeid) + " -> " + str(destination.nodeid))
+                            print("8) Error assignment for inst " + str(destination.nodeid) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))     
             elif ps == pd:
                 #print("same pe")
                 #assign outputreg to operands
                 if source.outreg != -1 :
-                    if destination.LOp == source.id:
-                        destination.opA = "R" + str(source.outreg)
-                    elif destination.ROp == source.id:
-                        destination.opB = "R" + str(source.outreg)
-                    elif destination.predicate == source.id:
+                    if destination.LOp == source.nodeid:
+                        destination.opA = source.outreg
+                    elif destination.ROp == source.nodeid:
+                        destination.opB = source.outreg
+                    elif destination.predicate == source.nodeid:
                         #should not be possible
-                        destination.muxflag = "R" + str(source.outreg)
+                        destination.muxflag = source.outreg
                     else:
-                        print("Dep " + str(source.id) + " -> " + str(destination.id))
-                        print("9) Error assignment for inst " + str(destination.id) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
+                        print("Dep " + str(source.nodeid) + " -> " + str(destination.nodeid))
+                        print("9) Error assignment for inst " + str(destination.nodeid) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
                 else:
                     #print("outreg")
-                    if destination.LOp == source.id:
+                    if destination.LOp == source.nodeid:
                         destination.opA = ROUT
-                    elif destination.ROp == source.id:
+                    elif destination.ROp == source.nodeid:
                         destination.opB = ROUT
-                    elif destination.predicate == source.id:
+                    elif destination.predicate == source.nodeid:
                         destination.muxflag = ROUT
                     else:
-                        print("Dep " + str(source.id) + " -> " + str(destination.id))
-                        print("9) Error assignment for inst " + str(destination.id) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
-                        
-        #assign immediates
-        for c in self.DFG.constants:
-            inst = self.getInstruction(c.destination)
-            if inst == None:
-                print("Should not happed... All the constants must refer to a node in the DFG")
-                print("destination: " + str(c.destination))
-                continue
-            if c.id == inst.LOp and c.opPos == 1:  
-                if c.value == 0:              
-                    inst.opA = ZERO
-                    inst.immediate = c.value
-                elif c.value == 1:
-                    inst.opA = "1"
-                else:
-                    inst.opA = CONST
-                    inst.immediate = c.value                  
-            elif c.id == inst.ROp and c.opPos == 1:
-                if c.value == 0:
-                    inst.opB = ZERO
-                    inst.immediate = c.value
-                elif c.value == 1:
-                    inst.opB = "1"
-                    inst.immediate = c.value
-                else:
-                    inst.opB = CONST
-                    inst.immediate = c.value
-        
-        for c in self.DFG.constants:
-            inst = self.getInstruction(c.destination)
-            if inst == None:
-                print("Should not happed... All the constants must refer to a node in the DFG")
-                print("destination: " + str(c.destination))
-                continue
+                        print("Dep " + str(source.nodeid) + " -> " + str(destination.nodeid))
+                        print("9) Error assignment for inst " + str(destination.nodeid) + " lOp: " + str(destination.LOp) + " rOp: " + str(destination.ROp))
+            # Handle if left and right operands have the same node
+            # opA is set above so we only need to set opB
+            if destination.ROp == destination.LOp:
+                destination.opB = destination.opA
 
-            if c.opPos == 0:
-                if c.value == 0:              
-                    inst.opA = ZERO
-                    inst.immediate = c.value
-                elif c.value == 1:
-                    inst.opA = "1"
-                else:
-                    inst.opA = "Need reg"
+        # Assign immediate values
+        for c in self.DFG.constants:
+            inst = self.getInstruction(c.destination)
+            if inst == None:
+                print("Error Input File Format: All the constants must refer to a node in the DFG")
+                print("destination: " + str(c.destination))
+                exit(0)
+            if c.id == inst.LOp:
+                inst.opA = CONST
+                inst.immediate = c.value
+            if c.id == inst.ROp:
+                inst.opB = CONST
+                inst.immediate = c.value
+            
+            if inst.ROp == CONST and inst.LOp == CONST:
+                print("Error: Const in both operands")
+                print(inst.nodeid, inst.LOp, inst.ROp)
+                exit(0)
+
+            #if c.id == inst.LOp and c.opPos == 1:  
+            #    if c.value == 0:              
+            #        inst.opA = ZERO
+            #        inst.immediate = c.value
+            #    elif c.value == 1:
+            #        inst.opA = "1"
+            #    else:
+            #        inst.opA = CONST
+            #        inst.immediate = c.value                  
+            #elif c.id == inst.ROp and c.opPos == 1:
+            #    if c.value == 0:
+            #        inst.opB = ZERO
+            #        inst.immediate = c.value
+            #    elif c.value == 1:
+            #        inst.opB = "1"
+            #        inst.immediate = c.value
+            #    else:
+            #        inst.opB = CONST
+            #        inst.immediate = c.value
+        
+        #for c in self.DFG.constants:
+        #    inst = self.getInstruction(c.destination)
+        #    if inst == None:
+        #        print("Should not happed... All the constants must refer to a node in the DFG")
+        #        print("destination: " + str(c.destination))
+        #        continue
+        #
+        #    if c.opPos == 0:
+        #        if c.value == 0:              
+        #            inst.opA = ZERO
+        #            inst.immediate = c.value
+        #        elif c.value == 1:
+        #            inst.opA = "1"
+        #        else:
+        #            inst.opA = "Need reg"
             #else:
             #    if c.value == 0:              
             #        inst.opB = ZERO
@@ -351,7 +378,7 @@ class RegisterAllocator:
                 g = interference(i)
                 g.rf_size = n_colors
                 addNodes(instructions[i], g, kernel, DFG, i)
-                g.removeOverlappingIntervals()
+                #g.removeOverlappingIntervals()
                 self.generateOverlaps(g)
                 graphs[i] = g
                 
@@ -383,7 +410,8 @@ class RegisterAllocator:
                         g.addOverlap(tmp_ovlp)
                         overlapId += 1
                     else:
-                        print("no1")
+                        # no overlap
+                        pass
                 else:
                     #no wrap around first interval
                     #wrap around second interval
@@ -401,7 +429,8 @@ class RegisterAllocator:
                             g.addOverlap(tmp_ovlp)
                             overlapId += 1
                         else:
-                            print("no2")
+                            # no overlap
+                            pass
                     else:
                         #no wrap around from both
                         if intervals[i].start < intervals[j].end and intervals[j].start < intervals[i].end:
@@ -411,42 +440,44 @@ class RegisterAllocator:
                             g.addOverlap(tmp_ovlp)
                             overlapId += 1
                         else:
-                            print("no3")
+                            # no overlap
+                            pass
 
 #Generate nodes for the interference graphs
 #Each node is an interval that rapresents the liveness of a node
-def addNodes(nodes, g, kernel, DFG, p):
+def addNodes(instructions, g, kernel, DFG, p):
 
     kernel_length = len(kernel) - 1
     #print(kernel)
     #print("Kernel length: " + str(kernel_length))
     interval_id = 0
     for e in DFG.edges:
-        for s in nodes:
-            if s.id == e.source.id:
-                for d in nodes:
-                    if d.id == e.destination.id:
+        for s in instructions:
+            if s.nodeid == e.source.id:
+                for d in instructions:
+                    if d.nodeid == e.destination.id:
                         if needRegister(kernel_length, p ,s.time, d.time, kernel):
                             length = 0
                             length = (d.time - s.time + kernel_length + 1) % (kernel_length + 1)
                             #prnt = str(s.id) + " -> " + str(d.id) + " t1: " + str(s.time) + " t2: " + str(d.time) + " len: " + str(length)
                             #print(prnt)
                             tmp_int = interval(interval_id, s.time, d.time, s, d, length)
-
+                            #print("Interval for dep ", s.nodeid, d.nodeid)
                             g.addInterval(tmp_int)
 
                             interval_id += 1
                         else:
+                            #print("no interval for dep ", s.nodeid, d.nodeid)
                             #assign register
-                            if d.ROp == s.id:
+                            if d.ROp == s.nodeid:
                                 #
                                 d.opB = ROUT
-                            elif d.LOp == s.id:
+                            elif d.LOp == s.nodeid:
                                 #
                                 d.opA = ROUT
-                            elif d.predicate == s.id:
+                            elif d.predicate == s.nodeid:
                                 #
                                 d.muxflag = ROUT
                             else:
-                                print("Cannot set rout for node " + str(d.id))
+                                print("Cannot set rout for node " + str(d.nodeid))
                                 #exit(0)

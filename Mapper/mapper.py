@@ -1,6 +1,7 @@
 import math
 import itertools
 import time
+from tracemalloc import take_snapshot
 from z3 import *
 from RegisterAllocator import *
 
@@ -266,6 +267,7 @@ class Mapper:
     def addConstraint3(self, II, c_n_it_p_literal, cycle_pe_literals):
         print("Adding C3...")
         BRs = ["beq","bne","blt","bge","ble","bgt"]
+        SEL = ["bzfa", "bsfa"]
         start = time.time()
         all_dep_encoded = True
         found_br = False
@@ -290,6 +292,72 @@ class Mapper:
                     continue
                 else:
                     found_br = True
+                #select flag should be in rout
+                #avoid solutions that use internal registers
+                if self.DFG.getNode(nd).name in SEL and self.DFG.getNode(nd).predicate == ns:
+                    for (it1, it2) in itertools.product(c_n_it_p_literal[cs][ns], c_n_it_p_literal[cd][nd]):
+                        if it1 == it2 and cd > cs:
+                            for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
+                                if(self.isNeighbor(p1, p2)):
+                                    distance = self.getCycleDistance(cs, cd, II)
+                                    if distance == 1:
+                                        tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
+                                    elif distance > 1:
+                                        tmp2 = []
+                                        for ci in range(cs + 1, cd):
+                                            tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                                        if len(tmp2) > 1:#before was only tmp append tmp2
+                                            tmp.append(And(tmp2))
+                                        elif len(tmp2) == 1:
+                                            tmp.append(tmp2[0])
+                                        #tmp.append(And(tmp2))
+                                        #if p1 == p2:
+                                        #    tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
+                        elif abs(it1 - it2) == 1 and it1 < it2 and cd <= cs:
+                            for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
+                                if(self.isNeighbor(p1, p2)):
+                                    distance = self.getCycleDistance(cs, cd, II)
+                                    if distance == 1:
+                                        tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
+                                    elif distance > 1:
+                                        tmp2 = []
+                                        for ci in range(cs + 1, II):
+                                            tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                                        for ci in range(0, cd):
+                                            tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+
+                                        if len(tmp2) > 1:#before was only len(tmp2) != 0:
+                                            tmp.append(And(tmp2))
+                                        elif len(tmp2) == 1:
+                                            tmp.append(tmp2[0])
+
+                                        #if p1 == p2:
+                                        #    tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
+                                    elif distance == 0:
+                                        tmp2 = []
+                                        if p1 == p2:
+                                            continue
+                                        for ci in range(0, II):
+                                            if ci == cs:
+                                                continue
+                                            tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                                        if len(tmp2) > 1:#before was only len(tmp2) != 0:
+                                            tmp.append(And(tmp2))
+                                        elif len(tmp2) == 1:
+                                            tmp.append(tmp2[0])
+                                    else:
+                                        print("Should not be here 2")
+                        
+                    if len(tmp) == 0:
+                        print("No constraint for this dep. Need to check")
+                        all_dep_encoded = False
+                        print(nodes[0], nodes[1])
+                        break
+                    self.s.add(Or(tmp))
+                    continue
+
+
+
                 for (it1, it2) in itertools.product(c_n_it_p_literal[cs][ns], c_n_it_p_literal[cd][nd]):
                     if it1 == it2 and cd > cs:
                         for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
@@ -457,8 +525,9 @@ class Mapper:
     #Find mapping of the DFG starting from the MII
     #TODO: (Low priority) add upperbound for II
     def findMapping(self):
-
+        
         II = self.getStartingII()
+        
         self.generateMS()
 
         solution = False
@@ -573,6 +642,25 @@ class Mapper:
             start = time.time()
 
             if self.s.check() == sat:
+                #model_number = 0
+                #while self.s.check() == sat:
+                #    
+                #    print("MODEL " + str(model_number))
+                #    model_number+=1
+                #    m = self.s.model()
+                #    block = []  
+                #    for z3_decl in m: # FuncDeclRef
+                #        arg_domains = []
+                #        for i in range(z3_decl.arity()):
+                #            domain, arg_domain = z3_decl.domain(i), []
+                #            for j in range(domain.num_constructors()):
+                #                arg_domain.append( domain.constructor(j) () )
+                #            arg_domains.append(arg_domain)
+                #        for args in itertools.product(*arg_domains):
+                #            block.append(z3_decl(*args) != m.eval(z3_decl(*args)))
+                #    self.s.add(Or(block))
+                #    if model_number == 120:
+                #        break
                 solution = True
                 print("SAT")
                 m = self.s.model()
@@ -584,7 +672,7 @@ class Mapper:
                         n = int(tmp[0])
                         t = int(tmp[2])
                         it = int(tmp[3])
-                        
+                        print("Node " + str(n) + " on PE " + str(p) + " at time " + str(t) + " of it " + str(it))
                         if t not in self.kernel:
                             self.kernel[t] = {}
                         if p not in self.kernel[t]:
@@ -604,8 +692,6 @@ class Mapper:
                     print(tmps + "]")
 
                 print("Schedule")
-                if len(self.schedule) != self.scheduleLen + 1:
-                    print("Problem in schedule generation after mapping was found")
                 for i in range(0, len(self.schedule)):
                     print(self.schedule[i])
                 
@@ -821,12 +907,12 @@ class Mapper:
         #get all the constants and livein vars to use in the init phase
         for p in instructions:
             for inst in instructions[p]:
-                live_in_node = self.DFG.getAssociateLiveIn(inst.id)
-                init_const = self.DFG.getConstant(inst.id)
+                live_in_node = self.DFG.getAssociateLiveIn(inst.nodeid)
+                init_const = self.DFG.getConstant(inst.nodeid)
                 #print(inst.id)
                 #print(init_const.id)
-                if live_in_node != None:    
-                    #print(live_in_node.id)
+                if live_in_node != None:
+                    #print("node with livein", live_in_node.id)
                     #exit(0)
                     dest_p = p
                     #check if it should be in the righr or left operand
@@ -836,18 +922,19 @@ class Mapper:
                             #print("livein in phi node left operand")
                             for p1 in instructions:
                                 for inst1 in instructions[p1]:
-                                    if inst1.id == inst.ROp:
+                                    if inst1.nodeid == inst.ROp:
                                         dest_p = inst1.pe
                         elif inst.ROp == live_in_node.id:
                             for p1 in instructions:
                                 for inst1 in instructions[p1]:
-                                    if inst1.id == inst.LOp:
+                                    if inst1.nodeid == inst.LOp:
                                         dest_p = inst1.pe
                             
 
                     if dest_p not in p_live:
                         p_live[dest_p] = []
-                    p_live[dest_p].append(live_in_node)
+                    if live_in_node not in p_live[dest_p]:
+                        p_live[dest_p].append(live_in_node)
 
                 if init_const != None:
                     p1 = 0
@@ -883,24 +970,27 @@ class Mapper:
                 init_len = max(init_len, len(p_live[i]))
             if i in p_const:
                 init_len = max(init_len, len(p_const[i]))
-
+                
         #set to None each element of init
         for i in range(0, init_len):
             if i not in self.init:
                 self.init[i] = {}
-            #for j in range(0, self.CGRA_x * self.CGRA_Y):
-            #    if j not in self.init[i]:
-            #        self.init[i][j] = None
         
-            
+        tmp_id = 1000
         #create load instructions for live-in vars
+        occupied_spot = {}
         for p in p_live:
             for i in range(0,len(p_live[p])):
-                tmp = instruction(p_live[p][i].id)
+                if i not in occupied_spot:
+                    occupied_spot[i] = {}
+                if p not in occupied_spot[i]:
+                    occupied_spot[i][p] = True
+
+                tmp = instruction(tmp_id, p_live[p][i].id)
+                tmp_id +=1
                 tmp.pe = p
-                tmp.time = i
-                tmp.opcode = 28
-                #TODO: assign var to register
+                tmp.time = i    
+                tmp.opcode = LWD
                 #get where the instruction must save the loaded value
                 space_full = True
                 for j in range(0, len(self.ra.rf[p])):
@@ -911,102 +1001,82 @@ class Mapper:
                         break
 
                 if space_full:
-                    print("No register available on PE " + str(p) + " to store livein " + str(tmp.id))
+                    print("No register available on PE " + str(p) + " to store livein " + str(tmp.nodeid))
+                    exit(0)
 
                 #search the instruction and update it's left or right operand with the register that stores the livein
                 for e in self.DFG.livein_edges:
                     if e.source.id == p_live[p][i].id:
                         for inst in instructions[p]:
-                            if inst.id == e.destination.id:
+                            if inst.nodeid == e.destination.id:
                                 #check if it should be in the righr or left operand
                                 if inst.LOp == e.source.id:
-                                    inst.opA = "R" + str(tmp.outreg)
+                                    inst.opA = tmp.outreg
                                 elif inst.ROp == e.source.id:
-                                    inst.opB = "R" + str(tmp.outreg)
+                                    inst.opB = tmp.outreg
 
                 self.init[i][p] = tmp
         #create add instructions for constants (usually for phi nodes, so they are going to be used only once)
-        for p in p_const:
-            t = 0
-            for i in range(0, len(p_const[p])):
-                #print("1",i,t,p, self.init)
+        
+        for pe in p_const:
+
+            #get first time slot available to store instruction
+            free_time_slot = 0
+            for t in range(len(occupied_spot)):
+                if pe not in occupied_spot[t]:
+                    free_time_slot = t
+                    break
+            for i in range(len(p_const[pe])):
+                if t + i not in occupied_spot:
+                    occupied_spot[t + i] = {}
+                if pe not in occupied_spot[t + i]:
+                    occupied_spot[t + i][pe] = True
                 
-                if p not in self.init[i]:
-                    #print("2",i,t,p)
-                    tmp = instruction(p_const[p][i].id)
-                    tmp.pe = p
-                    tmp.time = t
+                tmp = instruction(tmp_id, p_const[pe][i].id)
+                tmp_id += 1
+                tmp.pe = pe
+                tmp.time = t + i
+                tmp.LOp = -1
+                tmp.ROp = -1
+                tmp.opA = CONST
+                tmp.opB = ZERO
+                tmp.immediate = p_const[pe][i].value
+                tmp.opcode = SADD
+                
+                nrop = None
+                nlop = None
+                #find associate instruction and then Rop instruction to get the Rop outreg (where to save the loaded value)
+                for p1 in instructions:
+                    for inst in instructions[p1]:
+                        if inst.LOp == p_const[pe][i].id:
+                            #print("found const")
+                            nrop = self.DFG.getNode(inst.ROp)
+                        elif inst.ROp == p_const[pe][i].id:
+                            nlop = self.DFG.getNode(inst.LOp)
 
-                    nrop = None
-                    nlop = None
-                    #find associate instruction and then Rop instruction to get the Rop outreg (where to save the loaded value)
-                    for pe in instructions:
-                        for inst in instructions[pe]:
-                            if inst.LOp == p_const[p][i].id:
-                                #print("found const")
-                                nrop = self.DFG.getNode(inst.ROp)
-                            elif inst.ROp == p_const[p][i].id:
-                                nlop = self.DFG.getNode(inst.LOp)
-
-                    if nrop != None:
-                        for pe in instructions:
-                            for inst in instructions[pe]:
-                                if inst.id == nrop.id:
-                                    tmp.outreg = inst.outreg
-                    elif nlop != None:
-                        for pe in instructions:
-                            for inst in instructions[pe]:
-                                if inst.id == nlop.id:
-                                    tmp.outreg = inst.outreg
-                    else:
-                        print("should not happen (Create inst for constant)")
-
-                    tmp.LOp = "ZERO"
-                    tmp.ROp = CONST
-                    tmp.opB = CONST
-                    tmp.immediate = p_const[p][i].value
-                    tmp.opcode = 1    
-                    for p1 in instructions:
-                        for inst in instructions[p1]:
-                            init_const = self.DFG.getConstant(inst.id)
-                            if init_const != None:    
-                                if inst.LOp == p_const[p][i].id:
-                                    tmp.opA = CONST
-                                    tmp.LOp = CONST
-
-                    
-                    self.init[i][p] = tmp
-                    #print("added", p_const[p][i].id)
+                if nrop != None:
+                    for pe1 in instructions:
+                        for inst in instructions[pe1]:
+                            if inst.nodeid == nrop.id:
+                                tmp.outreg = inst.outreg
+                elif nlop != None:
+                    for pe1 in instructions:
+                        for inst in instructions[pe1]:
+                            if inst.nodeid == nlop.id:
+                                tmp.outreg = inst.outreg
                 else:
+                    print("should not happen (Create inst for constant)")
 
-                    while p in self.init[i + t]:
-                        t += 1
-                    if p not in self.init[i + t]:
-                        #print("adding", p_const[p][i].id)
-                        tmp = instruction(p_const[p][i].id)
-                        tmp.pe = p
-                        tmp.time = t
-                        tmp.LOp = "ZERO"
-                        tmp.ROp = CONST
-                        tmp.opB = CONST
-                        tmp.immediate = p_const[p][i].value
-                        tmp.opcode = 1
-                        nrop = None
-                        #find associate instruction and then Rop instruction to get the Rop outreg (where to save the loaded value)
-                        for pe in instructions:
-                            for inst in instructions[pe]:
-                                if inst.LOp == p_const[p][i].id:
-                                    #print("found const")
-                                    nrop = self.DFG.getNode(inst.ROp)
-                        if nrop != None:
-                            for pe in instructions:
-                                for inst in instructions[pe]:
-                                    if inst.id == nrop.id:
-                                        tmp.outreg = inst.outreg
-                        else:
-                            print("should not happen")
+                for p1 in instructions:
+                    for inst in instructions[p1]:
+                        init_const = self.DFG.getConstant(inst.nodeid)
+                        if init_const != None:    
+                            if inst.LOp == p_const[pe][i].id:
+                                tmp.opA = CONST
+                                tmp.opB = ZERO
 
-                        self.init[t][p] = tmp
+                self.init[i + t][pe] = tmp
+
 
         #set to NOP instruction all the other PEs
         for t in range(0, len(self.init)):
@@ -1017,8 +1087,8 @@ class Mapper:
                     self.init[t][p] = None
                 if self.init[t][p] == None:
                     
-                    tmp = instruction(-p-1)
-                    tmp.opcode = 34
+                    tmp = instruction(-p-1, -2)
+                    tmp.opcode = NOP
                     self.init[t][p] = tmp
         
         #for i in range(0, init_len):
@@ -1030,6 +1100,8 @@ class Mapper:
     #Add finalization phase after epilogue
     #Store LiveOut variables
     #TODO: This function can be writte in a much better way
+    #TODO: fix convention for operands storing value and address (now swd and swi are different:
+    #      swi storest value to save in opA and address in opB)
     def generateFini(self, instructions):
         p_live = {}
         #print("FINI")
@@ -1037,13 +1109,9 @@ class Mapper:
         #get all the liveout vars to use in the fini phase
         for p in instructions:
             for inst in instructions[p]:
-                live_out_node = self.DFG.getAssociateLiveOut(inst.id)
+                live_out_node = self.DFG.getAssociateLiveOut(inst.nodeid)
                 
                 if live_out_node != None:  
-                    #print(inst.id)  
-                    #print(live_out_node.id)
-                    #print()
-                    #exit(0)
                     if p not in p_live:
                         p_live[p] = []
                     p_live[p].append(live_out_node)  
@@ -1062,9 +1130,11 @@ class Mapper:
                     self.fini[i][p] = None
 
         #create store instructions for the liveout var
+        tmp_id = 0
         for p in p_live:
             for i in range(0,len(p_live[p])):
-                tmp = instruction(p_live[p][i].id)
+                tmp = instruction(tmp_id, p_live[p][i].id)
+                tmp_id += 1
                 tmp.pe = p
                 tmp.time = i
                 #TODO: check if value to save is in lop or rop
@@ -1072,10 +1142,10 @@ class Mapper:
                 for e in self.DFG.liveout_edges:
                     if e.destination.id == p_live[p][i].id:
                         for inst in instructions[p]:
-                            if inst.id == e.source.id:
-                                tmp.LOp = inst.outreg
+                            if inst.nodeid == e.source.id:
+                                tmp.outreg = inst.outreg
 
-                tmp.opcode = 31
+                tmp.opcode = SWD
                 self.fini[i][p] = tmp
 
         #fill the other PEs with NOP instructions
@@ -1086,8 +1156,8 @@ class Mapper:
                 if p not in self.fini[t]:
                     self.fini[t][p] = None
                 if self.fini[t][p] == None:
-                    tmp = instruction(-p-1)
-                    tmp.opcode = 34
+                    tmp = instruction(-p-1, -2)
+                    tmp.opcode = NOP
                     self.fini[t][p] = tmp
         
         #for i in range(0, fini_len):
@@ -1108,7 +1178,7 @@ class Mapper:
 
         self.mapping = {}
         self.generatePKE()
-
+        print("\n\n")
         print("PKE")
         for i in range(0, len(self.pke)):
             s = "t: " + str(i) + "     "
@@ -1121,19 +1191,18 @@ class Mapper:
         graphs = self.ra.generateInterferenceGraphs(self.kernel, self.CGRA_Y * self.CGRA_x, self.DFG, self.ra.instructions, self.CGRA_R)
 
         self.ra.addInterferenceGraphs(graphs)
-
-        print("Interference graphs PE" + str(i) + ": " + str(len(graphs)))
+        print("\n\n**************\n\n")
+        print("Interference graphs : " + str(len(graphs)))
         self.ra.allocateRegisters()
         for p in graphs:
             #Uncomment following line to print the interference graphs for each PE
             #graphs[p].printDot(str(p))
             print("#Nodes: " + str(len(graphs[p].intervals)))
         self.ra.assignRegisters(self.CGRA_Y, self.CGRA_x)
-
-
+        print("\n\n**************\n\n")
+        
         self.generateInit(instructions)
         self.generateFini(instructions)
-        
         t = 0
         #append init to mapping
         self.mapping = self.init
@@ -1143,16 +1212,17 @@ class Mapper:
         kernel_len = len(self.kernel)
         epilog_len = len(self.epilog)
         fini_len = len(self.fini)
-        
+        print("\n\n**************\n\n")
         print("init_len: ", init_len)
         print("prolog_len: ", prolog_len)
         print("kernel_len: ", kernel_len)
         print("epilog_len: ", epilog_len)
         print("fini_len: ", fini_len)
+        print("\n\n**************\n\n")
 
 
 
-
+        print("\n\n**************\n\n")
         if len(self.init) > 0:
             print("Init: 0 - " + str(len(self.init) - 1))
         if len(self.prolog) > 0:
@@ -1162,7 +1232,7 @@ class Mapper:
             print("Epilog: " + str(len(self.init) + len(self.pke) - len(self.epilog)) + " - " + str(len(self.init) + len(self.pke) - 1))
         if len(self.fini) > 0:
             print("Fini: " + str(len(self.init) + len(self.pke)) + " - " + str(len(self.init) + len(self.pke) + len(self.fini) - 1))
-
+        print("\n\n**************\n\n")
         #append pke to mapping
         for tk in range(0, len(self.pke)):
             if (tk + t) not in self.mapping:
@@ -1174,35 +1244,15 @@ class Mapper:
                 if pk in instructions:
                     for inst in instructions[pk]:
                         if pk in self.pke[tk]:
-                            if inst.id == self.pke[tk][pk]:
+                            if inst.nodeid == self.pke[tk][pk]:
                                 self.mapping[tk + t][pk] = inst
                 #if the pe is empty put a nop instruction on it
+                tmp_id = 0
                 if self.mapping[tk + t][pk] == None:
-                    tmp = instruction(-pk-1)
-                    tmp.opcode = 34
+                    tmp = instruction(-pk-1, -2)
+                    tmp.opcode = NOP
                     self.mapping[tk + t][pk] = tmp
-                
-        #update br node destination cycle and opcode
-        BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
-        for t in self.mapping:
-            for p in self.mapping[t]:
-                if self.mapping[t][p].getOpcodeName() in BRs:
-                    self.mapping[t][p].cycle_destinaton = init_len + prolog_len
-                    #TODO: CHECK IF IN KERNEL else do not update the br
-                    #invert jump condition
-                    #maybe better to do it in the LLVM pass
-                    if self.mapping[t][p].getOpcodeName() == "BEQ":
-                        self.mapping[t][p].opcode = 25
-                    elif self.mapping[t][p].getOpcodeName() == "BNE":
-                        self.mapping[t][p].opcode = 24
-                    elif self.mapping[t][p].getOpcodeName() == "BLT":
-                        self.mapping[t][p].opcode = 27
-                    elif self.mapping[t][p].getOpcodeName() == "BGE":
-                        self.mapping[t][p].opcode = 26
-                    elif self.mapping[t][p].getOpcodeName() == "BLE":
-                        self.mapping[t][p].opcode = 42
-                    elif self.mapping[t][p].getOpcodeName() == "BGT":
-                        self.mapping[t][p].opcode = 41
+        
 
         t = len(self.mapping)        
         #append fini to mapping
@@ -1214,6 +1264,125 @@ class Mapper:
                     self.mapping[tk + t][pk] = None
                 #fini is already populated, just copy it into mapping
                 self.mapping[tk + t][pk] = self.fini[tk][pk]
+
+        # Add last time slot with EXIT instruction
+        t = len(self.mapping)
+        if t not in self.mapping:
+            self.mapping[t] = {}
+        # Fill time slot with NOPs
+        for pk in range(0, self.CGRA_Y * self.CGRA_x):
+            if pk not in self.mapping[t]:
+                tmp = instruction(-pk-1, -2)
+                tmp.opcode = NOP
+                self.mapping[t][pk] = tmp
+        # Add exit instruction
+        tmp = instruction(-3, -2)
+        tmp.opcode = EXIT
+        self.mapping[t][0] = tmp
+
+        #update br node destination cycle and opcode
+        #TODO: fix br problem here
+        BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
+
+        br_count = 0
+        br_to_copy = None
+        br_location = []
+        # Count how many br instruction there are in the code
+        # Number of brs instructions is the same as number of iterations 
+        # since we support only DFGs that have exactly 1 br instruction
+        for t in self.mapping:
+            for p in self.mapping[t]:
+                if self.mapping[t][p].getOpcodeName() in BRs:
+                    br_count += 1
+                    br_location.append(t)
+                    br_to_copy = self.mapping[t][p]
+
+        print("Number of br instructions ", br_count)
+        #print(br_location)
+        print("Loop length should be = Loop lengh - ", br_count)
+        print("")
+        print("If loop length is not know at runtime")
+        print("running the code could produce wrong results")
+        print("if a br in the prologue gets hit")
+        # This can be solved by increasing the code length or decreasing the performances
+        # Currently we do not deploy any fix, since its outside the scope of our research
+        print("")
+
+        # Create a different instruction for each br and change the jmp location
+        # WARNING: Currently we only support DFGs with 1 br instruction
+        
+        if br_to_copy == None:
+            print("No br instruction in the kernel")
+            exit(0)
+        
+        print("\n\n******************************************************\n")
+        print("   BR location in the prologue must be set manually  ")
+        print("\n******************************************************\n")
+
+        # Update brs before kernel
+        for t in range(0, init_len + prolog_len):#, init_len + prolog_len + kernel_len):
+            for p in self.mapping[t]:
+                if self.mapping[t][p].getOpcodeName() in BRs:
+                    tmp = instruction(0, self.mapping[t][p].nodeid)
+                    tmp.pe = self.mapping[t][p].pe
+                    tmp.time = t
+                    tmp.name = self.mapping[t][p].name
+                    tmp.opA = self.mapping[t][p].opA
+                    tmp.opB = self.mapping[t][p].opB
+                    tmp.LOp = self.mapping[t][p].LOp
+                    tmp.ROp = self.mapping[t][p].ROp
+                    tmp.outreg = self.mapping[t][p].outreg
+                    tmp.predicate = self.mapping[t][p].predicate
+                    tmp.immediate = self.mapping[t][p].immediate
+                    tmp.muxflag = self.mapping[t][p].muxflag
+                    tmp.opcode = self.mapping[t][p].opcode
+                    #TODO: compute cycle_destination
+                    jmp_destination = -1
+                    tmp.cycle_destination = jmp_destination
+                    self.mapping[t][p] = tmp
+
+        # Update brs after kernel
+        for t in range(init_len + prolog_len + kernel_len, len(self.mapping) - 1):
+            for p in self.mapping[t]:
+                if self.mapping[t][p].getOpcodeName() in BRs:
+                    tmp = instruction(0, self.mapping[t][p].nodeid)
+                    tmp.pe = self.mapping[t][p].pe
+                    tmp.time = t
+                    tmp.name = self.mapping[t][p].name
+                    tmp.opA = self.mapping[t][p].opA
+                    tmp.opB = self.mapping[t][p].opB
+                    tmp.LOp = self.mapping[t][p].LOp
+                    tmp.ROp = self.mapping[t][p].ROp
+                    tmp.outreg = self.mapping[t][p].outreg
+                    tmp.predicate = self.mapping[t][p].predicate
+                    tmp.immediate = self.mapping[t][p].immediate
+                    tmp.muxflag = self.mapping[t][p].muxflag
+                    tmp.opcode = self.mapping[t][p].opcode
+
+                    jmp_destination = t + 1
+                    tmp.cycle_destination = jmp_destination
+                    self.mapping[t][p] = tmp
+        
+        # Invert jmp condition for  br in the kernel
+        for t in range(init_len + prolog_len, init_len + prolog_len + kernel_len):
+            for p in self.mapping[t]:
+                if self.mapping[t][p].getOpcodeName() in BRs:
+                    self.mapping[t][p].cycle_destination = init_len + prolog_len
+                    #invert jump condition
+                    if self.mapping[t][p].getOpcodeName() == "BEQ":
+                        self.mapping[t][p].opcode = BNE
+                    elif self.mapping[t][p].getOpcodeName() == "BNE":
+                        self.mapping[t][p].opcode = BEQ
+                    elif self.mapping[t][p].getOpcodeName() == "BLT":
+                        self.mapping[t][p].opcode = BGE
+                    elif self.mapping[t][p].getOpcodeName() == "BGE":
+                        self.mapping[t][p].opcode = BLT
+                    elif self.mapping[t][p].getOpcodeName() == "BLE":
+                        self.mapping[t][p].opcode = BGT
+                    elif self.mapping[t][p].getOpcodeName() == "BGT":
+                        self.mapping[t][p].opcode = BLE
+
+
         #print("mapping")
         #for i in range(0, len(self.mapping)):
         #    print("Time " + str(i))
@@ -1232,102 +1401,12 @@ class Mapper:
             print("T = " + str(t))
             for p in range(0, self.CGRA_x * self.CGRA_Y):    
                 print(self.mapping[t][p].printAssembly())
-                #
-                #tmp_op_name = str(self.mapping[t][p].getOpcodeName())
-                #
-                #if self.mapping[t][p].getOpcodeName() == "NOP":
-                #    print("NOP")
-                #    continue
-                ##print(self.mapping[t][p].id, self.mapping[t][p].opB)
-                #if self.mapping[t][p].opB == -1:
-                #    tmp_opB = "ROUT"
-                #elif self.mapping[t][p].opB == 0:
-                #    tmp_opB = "R0"
-                #elif self.mapping[t][p].opB == 1:
-                #    tmp_opB = "R1"
-                #elif self.mapping[t][p].opB == 2:
-                #    tmp_opB = "R2"
-                #elif self.mapping[t][p].opB == 3:
-                #    tmp_opB = "R3"
-                #elif self.mapping[t][p].opB == "CONST":
-                #    tmp_opB = str(self.mapping[t][p].immediate)
-                #elif self.mapping[t][p].opB == "ZERO":
-                #    tmp_opB = "ZERO"
-                #elif self.mapping[t][p].opB == "ONE":
-                #    tmp_opB = "1"
-                #else:
-                #    tmp_opB = self.mapping[t][p].opB
-                #
-                #if self.mapping[t][p].opA == -1:
-                #    tmp_opA = "ROUT"
-                #    if self.mapping[t][p].name == "phi":
-                #        tmp_opA = "ZERO"
-                #elif self.mapping[t][p].opA == 0:
-                #    tmp_opA = "R0"
-                #elif self.mapping[t][p].opA == 1:
-                #    tmp_opA = "R1"
-                #elif self.mapping[t][p].opA == 2:
-                #    tmp_opA = "R2"
-                #elif self.mapping[t][p].opA == 3:
-                #    tmp_opA = "R3"
-                #elif self.mapping[t][p].opA == "CONST":
-                #    tmp_opA = str(self.mapping[t][p].immediate)
-                #elif self.mapping[t][p].opA == "ZERO":
-                #    tmp_opA = "ZERO"
-                #elif self.mapping[t][p].opA == "ONE":
-                #    tmp_opA = "1"
-                #else:
-                #    tmp_opA = self.mapping[t][p].opA
-                #
-                #if self.mapping[t][p].outreg == -1:
-                #    tmp_outreg = "ROUT"
-                #elif self.mapping[t][p].outreg == 0:
-                #    tmp_outreg = "R0"
-                #elif self.mapping[t][p].outreg == 1:
-                #    tmp_outreg = "R1"
-                #elif self.mapping[t][p].outreg == 2:
-                #    tmp_outreg = "R2"
-                #elif self.mapping[t][p].outreg == 3:
-                #    tmp_outreg = "R3"
-                #
-                #
-                #if self.mapping[t][p].getOpcodeName() == "MV":
-                #    print("SADD " + tmp_outreg + ", " + "ZERO" + ", " + tmp_opB)
-                #    continue
-                #elif self.mapping[t][p].getOpcodeName() == "LWI":
-                #    print("LWI " + tmp_outreg + ", " + tmp_opA)
-                #    continue
-                #elif self.mapping[t][p].getOpcodeName() == "LWD":
-                #    print("LWD " + tmp_outreg)
-                #    continue
-                #elif self.mapping[t][p].getOpcodeName() == "SWI":
-                #    print("SWI " + tmp_outreg + ", " + tmp_opA)
-                #    continue
-                #elif self.mapping[t][p].getOpcodeName() == "SWD":
-                #    print("SWD " + tmp_outreg)
-                #    continue
-                #elif self.mapping[t][p].getOpcodeName() in BRs:
-                #    print(self.mapping[t][p].getOpcodeName() + " " + tmp_opA + ", " + tmp_opB + ", add_br_dest")
-                #    continue
-                #elif self.mapping[t][p].getOpcodeName() == "BSFA" or self.mapping[t][p].getOpcodeName() == "BZFA":
-                #    tmp_pred = ""
-                #    if self.mapping[t][p].muxflag == -1:
-                #        tmp_pred = "ROUT"
-                #    elif self.mapping[t][p].muxflag == 0:
-                #        tmp_pred = "R0"
-                #    elif self.mapping[t][p].muxflag == 1:
-                #        tmp_pred = "R1"
-                #    elif self.mapping[t][p].muxflag == 2:
-                #        tmp_pred = "R2"
-                #    elif self.mapping[t][p].muxflag == 3:
-                #        tmp_pred = "R3"
-                #    else:
-                #        tmp_pred = self.mapping[t][p].muxflag
-                #
-                #    print(tmp_op_name + " " + tmp_outreg + ", " + tmp_opA + ", " + tmp_opB + ", " + tmp_pred)    
-                #else:
-                #    print(tmp_op_name + " " + tmp_outreg + ", " + tmp_opA + ", " + tmp_opB)
 
+        #for t in self.mapping:
+        #    for p in self.mapping[t]:
+        #        inst = self.mapping[t][p]
+        #        print(t, p, "---",inst.nodeid, inst.pe)
+                
         for t in range(0, len(self.mapping)):
             print("T = " + str(t))
             tmp = " _" * self.CGRA_Y*5 + " _ \n"
@@ -1348,8 +1427,8 @@ class Mapper:
             print("T = " + str(t))
             tmp = " _" * self.CGRA_Y*5 + " _ \n"
             for p in range(0, self.CGRA_x * self.CGRA_Y):
-                if self.mapping[t][p].id > -1:
-                    tmp += "|  | " + str(self.mapping[t][p].id) + " |  |"
+                if self.mapping[t][p].nodeid > -1:
+                    tmp += "|  | " + str(self.mapping[t][p].nodeid) + " |  |"
                 else:
                     tmp += "|  | " + "-1" + " |  |"
                 if (p+1) % self.CGRA_Y == 0:

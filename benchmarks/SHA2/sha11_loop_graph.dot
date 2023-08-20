@@ -102,8 +102,6 @@ digraph sha11 {
 
 43 [color=goldenrod1, label="43 C_-1"];
 
-44 [color=goldenrod1, label="44 C_1518500249"];
-
 45 [color=goldenrod1, label="45 C_30"];
 
 46 [color=goldenrod1, label="46 C_2"];
@@ -111,6 +109,8 @@ digraph sha11 {
 47 [color=goldenrod1, label="47 C_1"];
 
 76 [color=goldenrod1, label="76 C_4"];
+
+44 [color=purple1, label="44 LiveInConst"];
 
 48 [color=purple1, label="48 LiveInConstBr"];
 
@@ -125,6 +125,7 @@ digraph sha11 {
 73 [color=dodgerblue1, label="73 LiveOut"];
 
 74 [color=dodgerblue1, label="74 LiveOut"];
+44 -> 14 [color=purple1]
 48 -> 23 [color=purple1]
 59 -> 12 [color=purple1]
 2 -> 70 [color=dodgerblue1]
@@ -141,7 +142,6 @@ digraph sha11 {
 41 -> 6 [color=goldenrod1]
 42 -> 7 [color=goldenrod1]
 43 -> 10 [color=goldenrod1]
-44 -> 14 [color=goldenrod1]
 45 -> 19 [color=goldenrod1]
 46 -> 20 [color=goldenrod1]
 47 -> 22 [color=goldenrod1]
