@@ -19,10 +19,10 @@ To use our tool two things needs to be done:
 2) Set up the python script responsible of the mapping 
 
 ### Step 1
-1) Compile LLVM by following the guide at: https://llvm.org/docs/GettingStarted.html. Additionally, add the following flag when compiling: `-DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;compiler-rt;polly"`
-2) Copy the `DFG` folder to `/path/to/llvm-project/llvm/lib/Transforms`
-3) Add the line: `add_subdirectory(DFG)` to the `CMakeLists.txt` file in the `Transforms` directory
-4) Compile again LLVM
+1) Compile LLVM v14 like in following the guide at: https://llvm.org/docs/GettingStarted.html. Generate the make file with Ninja with: `cmake -G "Ninja" -DLLVM_ENABLE_PROJECTS="clang;" ../llvm` and keep following the guide to compiler and install the library
+3) Copy the `DFG` folder to `/path/to/llvm-project/llvm/lib/Transforms`
+4) Add the line: `add_subdirectory(DFG)` to the `CMakeLists.txt` file in the `Transforms` directory
+5) Compile again LLVM
 
 Notice that those are the steps needed to compile and add a custom pass to LLVM.
 
