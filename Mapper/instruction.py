@@ -109,7 +109,7 @@ class instruction:
         output = ""
         BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
         if self.getOpcodeName() == "MV":
-            output += "SADD " + self.getOutputOperandAssignedRegister() + ", "
+            output += "MV " + self.getOutputOperandAssignedRegister() + ", "
             if self.opA == ZERO or self.opA == CONST:
                 output += self.getRigthOperandAssignedRegister() + ", "
             else:

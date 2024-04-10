@@ -746,24 +746,24 @@ class Mapper:
     #Return True if pe1 and pe2 are neighbour on a 2D-mesh shaped topology
     #If the topology is different this function must be changed
     def isNeighbor(self, pe1, pe2):
-        i1 = pe1 // self.CGRA_Y
-        j1 = pe1 % self.CGRA_Y
+        i1 = pe1 // self.CGRA_x
+        j1 = pe1 % self.CGRA_x
 
-        i2 = pe2 // self.CGRA_Y
-        j2 = pe2 % self.CGRA_Y
+        i2 = pe2 // self.CGRA_x
+        j2 = pe2 % self.CGRA_x
 
         #same row
         if i1 == i2:
             if (pe1 == pe2 + 1) or (pe1 == pe2 - 1):
                 return True
-            if abs(pe1 - pe2) == self.CGRA_Y - 1:
+            if abs(pe1 - pe2) == self.CGRA_x - 1:
                 return True
 
         #same col
         if j1 == j2:
-            if (pe1 == pe2 + self.CGRA_Y) or (pe1 == pe2 - self.CGRA_Y):
+            if (pe1 == pe2 + self.CGRA_x) or (pe1 == pe2 - self.CGRA_x):
                 return True
-            if abs(i1 - i2) == self.CGRA_x - 1:
+            if abs(i1 - i2) == self.CGRA_Y - 1:
                 return True
         #center
         if pe1 == pe2:
