@@ -521,6 +521,27 @@ class Mapper:
         end = time.time()
         print("Time: " + str(end - start))
         return all_dep_encoded
+    
+    def printconstraints(self, filepath, seed = 0):
+        import random
+        random.seed(seed)
+
+        # Retrieve constraints
+        constraints = self.s.assertions()
+        # Shuffle constraints
+        constraints_list = list(constraints)
+        random.shuffle(constraints_list)
+
+        # Remove all constraints from the solver
+        self.s.reset()
+        # Add shuffled constraints back to the solver
+        for constraint in constraints_list:
+            self.s.add(constraint)
+
+        # Open a file in write mode
+        with open(filepath, 'w') as file:
+            for constraint in self.s.assertions():
+                file.write(str(constraint) + '\n\n')
 
     #Find mapping of the DFG starting from the MII
     #TODO: (Low priority) add upperbound for II
@@ -641,6 +662,9 @@ class Mapper:
 
             start = time.time()
 
+            # try to print all constraints
+            self.printconstraints('./constraints.txt')
+
             if self.s.check() == sat:
                 #model_number = 0
                 #while self.s.check() == sat:
@@ -746,24 +770,24 @@ class Mapper:
     #Return True if pe1 and pe2 are neighbour on a 2D-mesh shaped topology
     #If the topology is different this function must be changed
     def isNeighbor(self, pe1, pe2):
-        i1 = pe1 // self.CGRA_x
-        j1 = pe1 % self.CGRA_x
+        i1 = pe1 // self.CGRA_Y
+        j1 = pe1 % self.CGRA_Y
 
-        i2 = pe2 // self.CGRA_x
-        j2 = pe2 % self.CGRA_x
+        i2 = pe2 // self.CGRA_Y
+        j2 = pe2 % self.CGRA_Y
 
         #same row
         if i1 == i2:
             if (pe1 == pe2 + 1) or (pe1 == pe2 - 1):
                 return True
-            if abs(pe1 - pe2) == self.CGRA_x - 1:
+            if abs(pe1 - pe2) == self.CGRA_Y - 1:
                 return True
 
         #same col
         if j1 == j2:
-            if (pe1 == pe2 + self.CGRA_x) or (pe1 == pe2 - self.CGRA_x):
+            if (pe1 == pe2 + self.CGRA_Y) or (pe1 == pe2 - self.CGRA_Y):
                 return True
-            if abs(i1 - i2) == self.CGRA_Y - 1:
+            if abs(i1 - i2) == self.CGRA_x - 1:
                 return True
         #center
         if pe1 == pe2:
