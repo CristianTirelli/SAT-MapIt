@@ -1,0 +1,26 @@
+#!/bin/sh -eu
+
+X=4
+Y=4
+R=10
+while getopts "f:x:y:r:" opt; do
+  case $opt in
+    f) F=$OPTARG ;;
+    x) X=$OPTARG ;;
+    y) Y=$OPTARG ;;
+    r) R=$OPTARG ;;
+    \?) echo "Invalid option -$OPTARG" >&2; exit 1 ;;
+  esac
+done
+
+./llvm-project/build/bin/clang -O3 -fno-unroll-loops -fno-vectorize -fno-slp-vectorize -S -emit-llvm -o extracted.ll "$F"
+./llvm-project/build/bin/opt -disable-output extracted.ll -passes=cgra-extract
+
+for folder in acc*; do
+    if [ -d "$folder" ]; then
+    python3 mapper/main.py -path "$folder"/ -x "$X" -y "$Y" -r "$R" -no_assembly 1 > cgra-code-"$folder"
+    fi
+done
+
+rm -r acc*
+rm extracted.ll

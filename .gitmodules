@@ -1,0 +1,4 @@
+[submodule "llvm-project"]
+	path = llvm-project
+	url = https://github.com/CristianTirelli/llvm-project.git
+	branch = dfg_extract
