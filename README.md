@@ -17,7 +17,7 @@ This project was developed and tested on Ubuntu 20.04.6. To generate the CMake f
 
 ## First start:
 1. Run the setup script: Execute setup.sh to compile LLVM and configure the Python environment.
-2) BeActivate the Python environment: Before using the compiler, activate the virtual environment with:
+2) Activate the Python environment: Before using the compiler, activate the virtual environment with:
 ``` bash
 source cgra-compiler/bin/activate
 ```
