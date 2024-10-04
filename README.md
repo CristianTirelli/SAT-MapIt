@@ -13,7 +13,8 @@ To formulate the SAT problem, we introduce an ad-hoc schedule called the Kernel 
 Our experimental results show that SAT-MapIt obtains better results compared to SoA alternatives in 47.72% of the benchmarks explored: sometimes finding a lower II, and others even finding a valid mapping when none could previously be found.
 
 ## Requirements 
-This project was developed and tested on `Ubuntu 20.04.6`. To generate the CMake files, we used `CMake` version `3.23.20220426-g07a54b2`.
+This project was developed and tested on `Ubuntu 20.04.6`. \
+To generate the CMake files, we used `CMake` version `3.23`.
 
 ## First start:
 1. Run `setup.sh` to compile LLVM and configure the Python environment.
