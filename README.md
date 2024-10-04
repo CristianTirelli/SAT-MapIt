@@ -16,8 +16,8 @@ Our experimental results show that SAT-MapIt obtains better results compared to 
 This project was developed and tested on Ubuntu 20.04.6. To generate the CMake files, we used CMake version 3.23.20220426-g07a54b2.
 
 ## First start:
-1. Run the setup script: Execute setup.sh to compile LLVM and configure the Python environment.
-2) Activate the Python environment: Before using the compiler, activate the virtual environment with:
+1. Run `setup.sh` to compile LLVM and configure the Python environment.
+2) Before using the compiler, activate the virtual environment with:
 ``` bash
 source cgra-compiler/bin/activate
 ```
