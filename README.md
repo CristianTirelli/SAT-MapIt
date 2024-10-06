@@ -14,7 +14,7 @@ Our experimental results show that SAT-MapIt obtains better results compared to 
 
 ## Requirements 
 This project was developed and tested on `Ubuntu 20.04.6`. \
-To generate the CMake files, we used `CMake` version `3.23`.
+To generate the CMake files, we used `CMake` version `3.23` and to compile  the project, we used `ninja` version `1.10.0`. \
 
 ## First start:
 1. Run `setup.sh` to compile LLVM and configure the Python environment.
