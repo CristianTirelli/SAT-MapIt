@@ -68,6 +68,7 @@ def main():
  
     #Get the parsed DFG
     DFG = p.getDFG()
+    print(DFG)
     print("#nodes: " + str(len(DFG.nodes)))
 
     #Initialize the mapper with the CGRA dimensions,
