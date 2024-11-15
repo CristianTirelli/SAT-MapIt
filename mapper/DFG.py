@@ -44,15 +44,21 @@ class instruction_node(node):
         self.predicate_id = predicate_id
 
         # Those will be populated by DFG.fix_references
-        self.lOp = None
-        self.rOp = None
-        self.predicate = None
+        self.lOp: node = None
+        self.rOp: node = None
+        self.predicate: node = None
 
         self.index = -1
         self.lowlink = 0
         self.onstack = False
         self.time = 1
         self.latency = 1
+
+    def set_lOp(self, lOp):
+        self.lOp = lOp
+
+    def set_rOp(self, rOp):
+        self.rOp = rOp
 
 #edge of the DFG
 class edge:
@@ -258,3 +264,12 @@ class DFG:
             if le.source.id == id:
                 return le.destination
         raise ValueError(f"There was no live out node associated to node with id '{id}'")
+
+    def fix_references(self):
+        for n in self.get_instruction_nodes():
+            if n.lOp_id != -1:
+                n.set_lOp(self.getNode(n.lOp_id))
+            if n.rOp_id != -1:
+                n.set_rOp(self.getNode(n.rOp_id))
+            if n.predicate_id != -1:
+                n.predicate = self.getNode(n.predicate_id)

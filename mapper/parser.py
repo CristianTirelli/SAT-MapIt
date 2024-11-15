@@ -42,4 +42,5 @@ class Parser:
                 self.dfg.addEdge(e)
                     
     def getDFG(self):
+        self.dfg.fix_references()
         return self.dfg
