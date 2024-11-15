@@ -1,130 +1,130 @@
 #node of the DFG
+from ISA import LWD, SWD
+
 class node:
-    def __init__(self, id, rOp, lOp, predicate, name, opcode):
+    def __init__(self, id: int):
         self.id = id
-        self.rOp = rOp
-        self.lOp = lOp
-        self.name = name
-        self.predicate = predicate
+
+class constant_node(node):
+    def __init__(self, id: int, immediate: int, immediate_position: int):
+        super().__init__(id)
+        self.immediate = immediate
+        self.immediate_position = immediate_position
+
+    def set_immediate(self, new_im: int):
+        self.immediate = new_im
+
+    def set_immediate_position(self, new_im_pos: int):
+        self.immediate_position = new_im_pos
+
+class live_node(node):
+    def __init__(self, id: int, opcode: int):
+        super().__init__(id)
         self.opcode = opcode
+        self.name = ""
+
+    def set_name(self, name):
+        self.name = name
+
+class livein_node(live_node):
+    def __init__(self, id: int):
+        super().__init__(id, LWD)
+
+class liveout_node(live_node):
+    def __init__(self, id: int):
+        super().__init__(id, SWD)
+
+class instruction_node(node):
+    def __init__(self, id: int, name: str, opcode: int = -1, lOp_id: int = -1, rOp_id: int = -1, predicate_id: int = -1):
+        super().__init__(id)
+        self.name = name
+        self.opcode = opcode
+        self.lOp_id = lOp_id
+        self.rOp_id = rOp_id
+        self.predicate_id = predicate_id
+
+        # Those will be populated by DFG.fix_references
+        self.lOp = None
+        self.rOp = None
+        self.predicate = None
+
         self.index = -1
         self.lowlink = 0
         self.onstack = False
         self.time = 1
         self.latency = 1
-    def __del__(self):
-        self.index = -1
-        self.lowlink = 0
-        self.onstack = False
-        self.time = 1
-        self.latency = 1
+
 #edge of the DFG
 class edge:
-    def __init__(self, source, destination, distance, latency):
+    def __init__(self, source: node, destination: node, distance: int, latency: int):
         self.source = source
         self.destination = destination
         self.distance = distance
         self.latency = latency
-#constant node associate to the DFG
-class constant:
-    def __init__(self, id, destination, value, opPos):
-        self.id = id
-        self.destination = destination
-        self.value = value
-        self.opPos = opPos
 
 #data flow graph of the loop, with information on livein, liveout and constants
 #constants, livein, liveout could be handled better
 class DFG:
-    
-    nodes = []
-    edges = []
-    index = 0
-    stack = []
-    livein_nodes = []
-    liveout_nodes = []
-    livein_edges = []
-    liveout_edges = []
-
-    constants = []
-
     def __init__(self):
-        pass
-
-    def __del__(self):
-        self.nodes.clear()
-        self.edges.clear()
-        self.constants.clear()
-        self.stack.clear()
-        self.livein_nodes.clear()
-        self.liveout_nodes.clear()
-        self.livein_edges.clear()
-        self.liveout_edges.clear()
+        self.nodes: list[node] = []
+        self.edges: list[edge] = []
         self.index = 0
+        self.stack = []
 
-    def addNode(self, n):
+    def addNode(self, n: node):
         self.nodes.append(n)
 
-    def addLiveInNode(self, n):
-        self.livein_nodes.append(n)
-    
-    def addLiveOutNode(self, n):
-        self.liveout_nodes.append(n)
-
-    def addConstant(self, n):
-        self.constants.append(n)
-
-    def addEdge(self, n):
+    def addEdge(self, n: edge):
         self.edges.append(n)
     
-    def addLiveInEdge(self, n):
-        self.livein_edges.append(n)
-    
-    def addLiveOutEdge(self, n):
-        self.liveout_edges.append(n)
-
-    def getEdge(self, source, destination):
+    def getEdge(self, source: node, destination: node):
         for e in self.edges:
             if e.source == source and e.destination == destination:
                 return e
         return None
 
+    def get_instruction_nodes(self) -> list[instruction_node]:
+        return [node for node in self.nodes if isinstance(node, instruction_node)]
+
+    def get_instruction_edges(self) -> list[edge]:
+        return [edge for edge in self.edges if isinstance(edge.source, instruction_node) and isinstance(edge.destination, instruction_node)]
+
     def resetTime(self):
-        for n in self.nodes:
+        for n in self.get_instruction_nodes():
             n.time = 0
 
     def resetLatency(self):
-        for n in self.nodes:
+        for n in self.get_instruction_nodes():
             n.latency = 1
 
-    def getSuccessors(self, n):
+    def getSuccessors(self, n: instruction_node) -> list[instruction_node]:
         succ = []
-        for e in self.edges:
+        for e in self.get_instruction_edges():
             if e.source.id == n.id:
                 succ.append(e.destination)
         return succ
 
-    def getPredecessors(self, n):
+    def getPredecessors(self, n: instruction_node) -> list[instruction_node]:
         preds = []
-        for e in self.edges:
+        for e in self.get_instruction_edges():
             if e.destination.id == n.id:
                 preds.append(e.source)
         return preds
 
     #return nodes that have no predecessor (phi nodes usually)
-    def getStartingNodes(self):
+    def getStartingNodes(self) -> set[instruction_node]:
         starting_nodes = set()
-        for n in self.nodes:
+        for n in self.get_instruction_nodes():
             if len(self.getPredecessors(n)) == 0 or n.name == "phi":
                 starting_nodes.add(n)
 
         return starting_nodes
 
     #return nodes that have no successor or node whose only successor is a phi node
-    def getEndingNodes(self):
+    def getEndingNodes(self) -> set[instruction_node]:
         ending_nodes = set()
         
-        for n in self.nodes:
+        for n in self.get_instruction_nodes():
             if len(self.getSuccessors(n)) == 0:
                 ending_nodes.add(n)
 
@@ -133,16 +133,16 @@ class DFG:
                 if suc.name != "phi":
                     allphi = False
             
-            if allphi == True:
+            if allphi:
                 ending_nodes.add(n)
 
         return ending_nodes
 
     #Get Strongly Connected Components in the DFG
-    def getSCCs(self):
+    def getSCCs(self) -> list[instruction_node]:
 
         sccs = []
-        for n in self.nodes:
+        for n in self.get_instruction_nodes():
             if n.index == -1:
                 self.strongConnect(n, sccs)
         
@@ -178,12 +178,7 @@ class DFG:
 
     #Utility function used by getSCCs
     def getPathDelay(self, scc):
-
-        #roots should be only phi nodes
-        roots = set()
-
         for n in scc:
-            #print(n.id)
             r = None    
             for e in self.edges:
                 if e.distance > 0 and n.id == e.destination.id:
@@ -203,15 +198,11 @@ class DFG:
             explored = 1
             while explored > 0:
                 explored = 0
-                #print("exploring")
                 for n in to_explore:
-                    #print(n.id)
                     for succ in self.getSuccessors(n):
                         if succ.name == "phi":
                             continue
                         if succ in scc:
-                            #print("scc")
-                            #print(succ.id)
                             if succ.latency <= n.latency:
                                 succ.latency = n.latency + 1
                             
@@ -231,39 +222,39 @@ class DFG:
         for n in self.nodes:
             if n.id == id:
                 return n
-        return None
+        raise ValueError(f"Node with id '{id}' is not in the DFG")
 
     def getLiveInNode(self, id):
-        for n in self.livein_nodes:
+        for n in self.nodes:
             if n.id == id:
                 return n
-        return None
+        raise ValueError(f"Live In Node with id '{id}' is not in the DFG")
     
     def getLiveOutNode(self, id):
-        for n in self.liveout_nodes:
+        for n in self.nodes:
             if n.id == id:
                 return n
-        return None
+        raise ValueError(f"Live Out Node with id '{id}' is not in the DFG")
 
     def resetNodeTime(self, t):
-        for n in self.nodes:
+        for n in self.get_instruction_nodes():
             n.time = t
 
     def getConstant(self, dest_id):
-        for c in self.constants:
-            if dest_id == c.destination:
-                return c
-        
-        return None
+        for e in self.edges:
+            if isinstance(e.source, constant_node) and e.destination.id == dest_id:
+                return e.source
+        raise ValueError(f"There was no constant associated to node with id '{dest_id}'")
 
     def getAssociateLiveIn(self, id):
-        for le in self.livein_edges:
-            if le.destination.id == id:
-                return le.source
-        return None
+        for e in self.edges:
+            if e.destination.id == id:
+                return e.source
+        raise ValueError(f"There was no live in node associated to node with id '{id}'")
+        
 
     def getAssociateLiveOut(self, id):
-        for le in self.liveout_edges:
+        for le in self.edges:
             if le.source.id == id:
                 return le.destination
-        return None
+        raise ValueError(f"There was no live out node associated to node with id '{id}'")

@@ -13,10 +13,10 @@ def generateInstructions(kernel, DFG):
             inst.pe = p
             inst.time = t
             n = DFG.getNode(node_id)
-            inst.ROp = n.rOp
-            inst.LOp = n.lOp
+            inst.ROp = n.rOp.id
+            inst.LOp = n.lOp.id
             inst.name = n.name
-            inst.predicate = n.predicate
+            inst.predicate = n.predicate.id
             inst.opcode = n.opcode
             inst_id += 1
             if DFG.getConstant(n.id) != None:
@@ -65,11 +65,6 @@ def main():
     p = Parser()
     p.parseNodeFile(nodefile)
     p.parseEdgeFile(edgefile)
-    #p.parseLiveInNodeFile()
-    #p.parseLiveOutNodeFile()
-    #p.parseLiveInEdgeFile()
-    #p.parseLiveOutEdgeFile()
-    #p.parseConstantsFile()
  
     #Get the parsed DFG
     DFG = p.getDFG()
