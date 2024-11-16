@@ -113,8 +113,17 @@ edges: [{'\n\t'.join(str(edge) for edge in self.edges)}],
     def get_instruction_nodes(self) -> list[instruction_node]:
         return [node for node in self.nodes if isinstance(node, instruction_node)]
 
+    def get_constant_nodes(self) -> list[constant_node]:
+        return [node for node in self.nodes if isinstance(node, constant_node)]
+
     def get_instruction_edges(self) -> list[edge]:
         return [edge for edge in self.edges if isinstance(edge.source, instruction_node) and isinstance(edge.destination, instruction_node)]
+
+    def get_livein_edges(self) -> list[edge]:
+        return [edge for edge in self.edges if isinstance(edge.source, livein_node)]
+
+    def get_liveout_edges(self) -> list[edge]:
+        return [edge for edge in self.edges if isinstance(edge.destination, liveout_node)]
 
     def resetTime(self):
         for n in self.get_instruction_nodes():
@@ -123,6 +132,9 @@ edges: [{'\n\t'.join(str(edge) for edge in self.edges)}],
     def resetLatency(self):
         for n in self.get_instruction_nodes():
             n.latency = 1
+
+    def get_constant_target(self, node: constant_node) -> list[instruction_node]:
+        return [edge.destination for edge in self.edges if edge.source == node]
 
     def getSuccessors(self, n: instruction_node) -> list[instruction_node]:
         succ = []
@@ -249,19 +261,19 @@ edges: [{'\n\t'.join(str(edge) for edge in self.edges)}],
         for n in self.nodes:
             if n.id == id:
                 return n
-        raise ValueError(f"Node with id '{id}' is not in the DFG")
+        # raise ValueError(f"Node with id '{id}' is not in the DFG")
 
     def getLiveInNode(self, id):
         for n in self.nodes:
             if n.id == id:
                 return n
-        raise ValueError(f"Live In Node with id '{id}' is not in the DFG")
+        # raise ValueError(f"Live In Node with id '{id}' is not in the DFG")
     
     def getLiveOutNode(self, id):
         for n in self.nodes:
             if n.id == id:
                 return n
-        raise ValueError(f"Live Out Node with id '{id}' is not in the DFG")
+        # raise ValueError(f"Live Out Node with id '{id}' is not in the DFG")
 
     def resetNodeTime(self, t):
         for n in self.get_instruction_nodes():
@@ -271,20 +283,20 @@ edges: [{'\n\t'.join(str(edge) for edge in self.edges)}],
         for e in self.edges:
             if isinstance(e.source, constant_node) and e.destination.id == dest_id:
                 return e.source
-        raise ValueError(f"There was no constant associated to node with id '{dest_id}'")
+        # raise ValueError(f"There was no constant associated to node with id '{dest_id}'")
 
     def getAssociateLiveIn(self, id):
         for e in self.edges:
-            if e.destination.id == id:
+            if isinstance(e.source, livein_node) and e.destination.id == id:
                 return e.source
-        raise ValueError(f"There was no live in node associated to node with id '{id}'")
+        # raise ValueError(f"There was no live in node associated to node with id '{id}'")
         
 
     def getAssociateLiveOut(self, id):
-        for le in self.edges:
-            if le.source.id == id:
-                return le.destination
-        raise ValueError(f"There was no live out node associated to node with id '{id}'")
+        for e in self.edges:
+            if isinstance(e.destination, liveout_node) and  e.source.id == id:
+                return e.destination
+        # raise ValueError(f"There was no live out node associated to node with id '{id}'")
 
     def fix_references(self):
         for n in self.get_instruction_nodes():

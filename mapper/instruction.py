@@ -25,6 +25,13 @@ class instruction:
         self.opcode = -1            # instruction opcode
         self.cycle_destination = -1 # jmp location
 
+    def __repr__(self) -> str:
+        return str(self)
+
+    def __str__(self) -> str:
+        return f"Instruction({self.instruction_id} {self.nodeid} {self.name} {self.outreg} {self.time} {self.pe} {self.LOp} {self.ROp} {self.predicate} {self.opA} {self.opB} {self.muxflag} {self.immediate} {self.opcode} {self.cycle_destination})"
+
+
     def hasPredicate(self):
         if self.predicate == -1:
             return False

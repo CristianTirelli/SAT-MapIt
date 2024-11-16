@@ -13,14 +13,14 @@ def generateInstructions(kernel, DFG):
             inst.pe = p
             inst.time = t
             n = DFG.getNode(node_id)
-            inst.ROp = n.rOp.id
-            inst.LOp = n.lOp.id
+            inst.ROp = n.rOp_id
+            inst.LOp = n.lOp_id
             inst.name = n.name
-            inst.predicate = n.predicate.id
+            inst.predicate = n.predicate_id
             inst.opcode = n.opcode
             inst_id += 1
             if DFG.getConstant(n.id) != None:
-                inst.immediate = DFG.getConstant(n.id).value
+                inst.immediate = DFG.getConstant(n.id).immediate
             if p not in instructions:
                 instructions[p] = []
             instructions[p].append(inst)

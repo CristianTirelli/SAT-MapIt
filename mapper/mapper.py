@@ -62,7 +62,7 @@ class Mapper:
     #Get Resource Iteration Interval
     def computeResII(self):
         #print(self.CGRA_x, self.CGRA_Y)
-        self.ResII = math.ceil(len(self.DFG.nodes)/(self.CGRA_x*self.CGRA_Y))
+        self.ResII = math.ceil(len(self.DFG.get_instruction_nodes())/(self.CGRA_x*self.CGRA_Y))
 
     #Get Recurrence Iteration Interval
     def computeRecII(self):
@@ -96,7 +96,7 @@ class Mapper:
             to_explore = tmp[:]
             tmp.clear()
         
-        for n in self.DFG.nodes:
+        for n in self.DFG.get_instruction_nodes():
             if n.time not in self.ASAP:
                 self.ASAP[n.time] = []
             self.ASAP[n.time].append(n.id)
@@ -129,7 +129,7 @@ class Mapper:
             to_explore = tmp[:]
             tmp.clear()
 
-        for n in self.DFG.nodes:
+        for n in self.DFG.get_instruction_nodes():
             if (self.scheduleLen - n.time) not in self.ALAP:
                 self.ALAP[self.scheduleLen - n.time] = []
             self.ALAP[self.scheduleLen - n.time].append(n.id)
@@ -164,7 +164,7 @@ class Mapper:
         self.generateASAP()
         self.generateALAP()
 
-        for n in self.DFG.nodes:
+        for n in self.DFG.get_instruction_nodes():
 
             t_asap = self.getASAPTime(n.id)
             t_alap = self.getALAPTime(n.id)
@@ -271,7 +271,7 @@ class Mapper:
         start = time.time()
         all_dep_encoded = True
         found_br = False
-        for e in self.DFG.edges:
+        for e in self.DFG.get_instruction_edges():
             if e.distance > 0:
                 #backdependencies handled in a different way
                 continue
@@ -426,7 +426,7 @@ class Mapper:
         all_dep_encoded = True
         #handle backdeps
         print("Adding back...")	
-        for e in self.DFG.edges:
+        for e in self.DFG.get_instruction_edges():
             if e.distance < 1:
                 #backdependencies handled in a different way
                 continue 
@@ -911,6 +911,7 @@ class Mapper:
         for p in instructions:
             for inst in instructions[p]:
                 live_in_node = self.DFG.getAssociateLiveIn(inst.nodeid)
+                print(live_in_node)
                 init_const = self.DFG.getConstant(inst.nodeid)
                 #print(inst.id)
                 #print(init_const.id)
@@ -1008,7 +1009,7 @@ class Mapper:
                     exit(0)
 
                 #search the instruction and update it's left or right operand with the register that stores the livein
-                for e in self.DFG.livein_edges:
+                for e in self.DFG.get_livein_edges():
                     if e.source.id == p_live[p][i].id:
                         for inst in instructions[p]:
                             if inst.nodeid == e.destination.id:
@@ -1043,7 +1044,7 @@ class Mapper:
                 tmp.ROp = -1
                 tmp.opA = CONST
                 tmp.opB = ZERO
-                tmp.immediate = p_const[pe][i].value
+                tmp.immediate = p_const[pe][i].immediate
                 tmp.opcode = SADD
                 
                 nrop = None
@@ -1094,11 +1095,12 @@ class Mapper:
                     tmp.opcode = NOP
                     self.init[t][p] = tmp
         
-        #for i in range(0, init_len):
+        # for i in range(0, init_len):
         #    print("Time: " + str(i))
         #    for p in self.init[i]:
-        #        print(self.init[i][p].id)
+        #         print("node id: ", self.init[i][p].nodeid, "instruction id: ", self.init[i][p].instruction_id)
         #    print()                
+        # exit(0)
 
     #Add finalization phase after epilogue
     #Store LiveOut variables
@@ -1142,7 +1144,7 @@ class Mapper:
                 tmp.time = i
                 #TODO: check if value to save is in lop or rop
                 #get the register that store the value to save in memory
-                for e in self.DFG.liveout_edges:
+                for e in self.DFG.get_liveout_edges():
                     if e.destination.id == p_live[p][i].id:
                         for inst in instructions[p]:
                             if inst.nodeid == e.source.id:
