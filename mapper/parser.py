@@ -1,4 +1,4 @@
-from DFG import *
+from .DFG import *
 
 #parser for all the input file that generates the DFG
 

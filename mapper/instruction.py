@@ -1,4 +1,4 @@
-from ISA import *
+from .ISA import *
 
 #this is a class similar to node, but with more information 
 class instruction:

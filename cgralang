@@ -19,7 +19,7 @@ echo "$Y"
 
 for folder in acc*; do
     if [ -d "$folder" ]; then
-    python3 mapper/main.py -path "$folder"/ -x "$X" -y "$Y" -r "$R" -no_assembly 1 > cgra-code-"$folder"
+    python3 -m mapper.main -path "$folder"/ -x "$X" -y "$Y" -r "$R" -no_assembly 1 > cgra-code-"$folder"
     fi
 done
 

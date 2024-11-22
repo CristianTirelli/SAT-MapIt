@@ -1,5 +1,5 @@
 #node of the DFG
-from ISA import LWD, SWD
+from .ISA import LWD, SWD
 
 class node:
     def __init__(self, id: int):

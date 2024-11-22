@@ -1,5 +1,5 @@
-from mapper import *
-from parser import *
+from .mapper import *
+from .parser import *
 
 import argparse
 

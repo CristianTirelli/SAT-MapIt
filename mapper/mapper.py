@@ -3,7 +3,7 @@ import itertools
 import time
 from tracemalloc import take_snapshot
 from z3 import *
-from RegisterAllocator import *
+from .RegisterAllocator import *
 
 class Mapper:
     

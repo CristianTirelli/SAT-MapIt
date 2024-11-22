@@ -1,6 +1,6 @@
-from interference import *
-from instruction import *
-from ISA import *
+from .interference import *
+from .instruction import *
+from .ISA import *
 
 #Allocate and assign registers for a mapping
 class RegisterAllocator:
