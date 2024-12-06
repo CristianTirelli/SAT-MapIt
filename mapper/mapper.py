@@ -12,7 +12,9 @@ class Mapper:
         self.CGRA_x = x
         self.CGRA_Y = y    
         self.CGRA_R = r
-        self.s = Solver()
+        self.ctx = Context()
+        self.s = Solver(ctx=self.ctx)
+        # self.s = Solver()
         self.benchmark = benchmark
         
         self.DFG = dfg
@@ -563,7 +565,7 @@ class Mapper:
                 for c in iterations[it]:
                     for NodeId in iterations[it][c]:
                         for pe in range(0, self.CGRA_x * self.CGRA_Y):
-                            literals.append((Bool("v_%s,%s,%s,%s" % (str(NodeId),str(pe),str(c),str(it))), NodeId, pe, c, it))
+                            literals.append((Bool("v_%s,%s,%s,%s" % (str(NodeId),str(pe),str(c),str(it)), ctx = self.ctx), NodeId, pe, c, it))
             
             #Group literals in Map(nodeid, Value = 'list of literals')
             node_literals = {}
