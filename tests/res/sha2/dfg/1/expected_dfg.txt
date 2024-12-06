@@ -1,0 +1,89 @@
+DFG(
+nodes: [Constant Node 25: 0 at position 0
+	Constant Node 26: 0 at position 0
+	Constant Node 27: 0 at position 0
+	Constant Node 28: 0 at position 0
+	Constant Node 29: 0 at position 0
+	Constant Node 30: 0 at position 0
+	Constant Node 31: 5 at position 0
+	Constant Node 32: 27 at position 0
+	Constant Node 33: -1 at position 0
+	Constant Node 35: 30 at position 0
+	Constant Node 36: 2 at position 0
+	Constant Node 37: 1 at position 0
+	Constant Node 46: 4 at position 0
+	Instruction Node 0: phi, opcode: 40, left operand id: 25, right operand id: 22, predicate id: -1
+	Instruction Node 10: xor, opcode: 13, left operand id: 4, right operand id: 33, predicate id: -1
+	Instruction Node 11: and, opcode: 11, left operand id: 2, right operand id: 10, predicate id: -1
+	Instruction Node 12: or, opcode: 12, left operand id: 11, right operand id: 9, predicate id: -1
+	Instruction Node 13: add, opcode: 1, left operand id: 39, right operand id: 45, predicate id: -1
+	Instruction Node 14: load, opcode: 29, left operand id: 13, right operand id: -1, predicate id: -1
+	Instruction Node 15: add, opcode: 1, left operand id: 8, right operand id: 34, predicate id: -1
+	Instruction Node 16: add, opcode: 1, left operand id: 15, right operand id: 1, predicate id: -1
+	Instruction Node 17: add, opcode: 1, left operand id: 16, right operand id: 12, predicate id: -1
+	Instruction Node 18: add, opcode: 1, left operand id: 17, right operand id: 14, predicate id: -1
+	Instruction Node 19: shl, opcode: 9, left operand id: 4, right operand id: 35, predicate id: -1
+	Instruction Node 1: phi, opcode: 40, left operand id: 26, right operand id: 2, predicate id: -1
+	Instruction Node 20: ashr, opcode: 44, left operand id: 4, right operand id: 36, predicate id: -1
+	Instruction Node 21: or, opcode: 12, left operand id: 19, right operand id: 20, predicate id: -1
+	Instruction Node 22: add, opcode: 1, left operand id: 0, right operand id: 37, predicate id: -1
+	Instruction Node 23: beq, opcode: 24, left operand id: 22, right operand id: 38, predicate id: -1
+	Instruction Node 2: phi, opcode: 40, left operand id: 27, right operand id: 3, predicate id: -1
+	Instruction Node 3: phi, opcode: 40, left operand id: 28, right operand id: 21, predicate id: -1
+	Instruction Node 45: mul, opcode: 3, left operand id: 0, right operand id: 46, predicate id: -1
+	Instruction Node 4: phi, opcode: 40, left operand id: 29, right operand id: 5, predicate id: -1
+	Instruction Node 5: phi, opcode: 40, left operand id: 30, right operand id: 18, predicate id: -1
+	Instruction Node 6: shl, opcode: 9, left operand id: 5, right operand id: 31, predicate id: -1
+	Instruction Node 7: ashr, opcode: 44, left operand id: 5, right operand id: 32, predicate id: -1
+	Instruction Node 8: or, opcode: 12, left operand id: 6, right operand id: 7, predicate id: -1
+	Instruction Node 9: and, opcode: 11, left operand id: 3, right operand id: 4, predicate id: -1
+	Live In Node 34
+	Live In Node 38
+	Live In Node 39
+	Live Out Node 40
+	Live Out Node 41
+	Live Out Node 42
+	Live Out Node 43
+	Live Out Node 44],
+edges: [Edge from 0 to 22, distance: 0, latency: 1
+	Edge from 0 to 45, distance: 0, latency: 1
+	Edge from 1 to 16, distance: 0, latency: 1
+	Edge from 10 to 11, distance: 0, latency: 1
+	Edge from 11 to 12, distance: 0, latency: 1
+	Edge from 12 to 17, distance: 0, latency: 1
+	Edge from 13 to 14, distance: 0, latency: 1
+	Edge from 14 to 18, distance: 0, latency: 1
+	Edge from 15 to 16, distance: 0, latency: 1
+	Edge from 16 to 17, distance: 0, latency: 1
+	Edge from 17 to 18, distance: 0, latency: 1
+	Edge from 18 to 43, distance: 0, latency: 1
+	Edge from 18 to 5, distance: 1, latency: 1
+	Edge from 19 to 21, distance: 0, latency: 1
+	Edge from 2 to 1, distance: 1, latency: 1
+	Edge from 2 to 11, distance: 0, latency: 1
+	Edge from 2 to 40, distance: 0, latency: 1
+	Edge from 20 to 21, distance: 0, latency: 1
+	Edge from 21 to 3, distance: 1, latency: 1
+	Edge from 21 to 44, distance: 0, latency: 1
+	Edge from 22 to 0, distance: 1, latency: 1
+	Edge from 22 to 23, distance: 0, latency: 1
+	Edge from 3 to 2, distance: 1, latency: 1
+	Edge from 3 to 41, distance: 0, latency: 1
+	Edge from 3 to 9, distance: 0, latency: 1
+	Edge from 34 to 15, distance: 0, latency: 1
+	Edge from 38 to 23, distance: 0, latency: 1
+	Edge from 39 to 13, distance: 0, latency: 1
+	Edge from 4 to 10, distance: 0, latency: 1
+	Edge from 4 to 19, distance: 0, latency: 1
+	Edge from 4 to 20, distance: 0, latency: 1
+	Edge from 4 to 9, distance: 0, latency: 1
+	Edge from 45 to 13, distance: 0, latency: 1
+	Edge from 5 to 4, distance: 1, latency: 1
+	Edge from 5 to 42, distance: 0, latency: 1
+	Edge from 5 to 6, distance: 0, latency: 1
+	Edge from 5 to 7, distance: 0, latency: 1
+	Edge from 6 to 8, distance: 0, latency: 1
+	Edge from 7 to 8, distance: 0, latency: 1
+	Edge from 8 to 15, distance: 0, latency: 1
+	Edge from 9 to 12, distance: 0, latency: 1],
+)

@@ -1,0 +1,14 @@
+0 instruction phi 40 10 6 -1 0 0
+1 instruction phi 40 11 7 -1 0 0
+2 instruction or 12 0 1 -1 0 0
+4 instruction mul 3 2 2 -1 0 0
+5 instruction sub 2 4 14 -1 0 0
+6 instruction bsfa 17 0 2 5 0 0
+7 instruction lshr 10 1 12 -1 0 0
+8 instruction blt 26 1 13 -1 0 0
+10 constant nil -1 -1 -1 -1 0 0
+11 live_in LiveInForInst 28 -1 -1 -1 0 0
+12 constant nil -1 -1 -1 -1 1 0
+13 live_in LiveInForBr 28 -1 -1 -1 0 0
+14 live_in LiveInFromInst 28 -1 -1 -1 0 0
+15 live_out LiveOut 31 -1 -1 -1 0 0

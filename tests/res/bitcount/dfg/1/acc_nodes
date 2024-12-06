@@ -1,0 +1,12 @@
+0 instruction phi 40 4 11 -1 0 0
+1 instruction phi 40 2 7 -1 0 0
+2 instruction add 1 1 8 -1 0 0
+3 instruction add 1 0 9 -1 0 0
+4 instruction and 11 3 0 -1 0 0
+5 instruction beq 24 4 10 -1 0 0
+7 constant nil -1 -1 -1 -1 0 0
+8 constant nil -1 -1 -1 -1 1 0
+9 constant nil -1 -1 -1 -1 -1 0
+10 live_in LiveInForBr 28 -1 -1 -1 0 0
+11 live_in LiveInFromArg 28 -1 -1 -1 0 0
+12 live_out LiveOut 31 -1 -1 -1 0 0

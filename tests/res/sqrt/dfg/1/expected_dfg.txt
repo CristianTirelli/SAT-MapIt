@@ -1,0 +1,32 @@
+DFG(
+nodes: [Constant Node 10: 0 at position 0
+	Constant Node 12: 1 at position 0
+	Instruction Node 0: phi, opcode: 40, left operand id: 10, right operand id: 6, predicate id: -1
+	Instruction Node 1: phi, opcode: 40, left operand id: 11, right operand id: 7, predicate id: -1
+	Instruction Node 2: or, opcode: 12, left operand id: 0, right operand id: 1, predicate id: -1
+	Instruction Node 4: mul, opcode: 3, left operand id: 2, right operand id: 2, predicate id: -1
+	Instruction Node 5: sub, opcode: 2, left operand id: 4, right operand id: 14, predicate id: -1
+	Instruction Node 6: bsfa, opcode: 17, left operand id: 0, right operand id: 2, predicate id: 5
+	Instruction Node 7: lshr, opcode: 10, left operand id: 1, right operand id: 12, predicate id: -1
+	Instruction Node 8: blt, opcode: 26, left operand id: 1, right operand id: 13, predicate id: -1
+	Live In Node 11
+	Live In Node 13
+	Live In Node 14
+	Live Out Node 15],
+edges: [Edge from 0 to 2, distance: 0, latency: 1
+	Edge from 0 to 6, distance: 0, latency: 1
+	Edge from 1 to 2, distance: 0, latency: 1
+	Edge from 1 to 7, distance: 0, latency: 1
+	Edge from 1 to 8, distance: 0, latency: 1
+	Edge from 11 to 1, distance: 0, latency: 1
+	Edge from 13 to 8, distance: 0, latency: 1
+	Edge from 14 to 5, distance: 0, latency: 1
+	Edge from 2 to 4, distance: 0, latency: 1
+	Edge from 2 to 4, distance: 0, latency: 1
+	Edge from 2 to 6, distance: 0, latency: 1
+	Edge from 4 to 5, distance: 0, latency: 1
+	Edge from 5 to 6, distance: 0, latency: 1
+	Edge from 6 to 0, distance: 1, latency: 1
+	Edge from 6 to 15, distance: 0, latency: 1
+	Edge from 7 to 1, distance: 1, latency: 1],
+)

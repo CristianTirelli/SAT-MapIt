@@ -1,0 +1,24 @@
+DFG(
+nodes: [Constant Node 7: 0 at position 0
+	Constant Node 8: 1 at position 0
+	Constant Node 9: -1 at position 0
+	Instruction Node 0: phi, opcode: 40, left operand id: 4, right operand id: 11, predicate id: -1
+	Instruction Node 1: phi, opcode: 40, left operand id: 2, right operand id: 7, predicate id: -1
+	Instruction Node 2: add, opcode: 1, left operand id: 1, right operand id: 8, predicate id: -1
+	Instruction Node 3: add, opcode: 1, left operand id: 0, right operand id: 9, predicate id: -1
+	Instruction Node 4: and, opcode: 11, left operand id: 3, right operand id: 0, predicate id: -1
+	Instruction Node 5: beq, opcode: 24, left operand id: 4, right operand id: 10, predicate id: -1
+	Live In Node 10
+	Live In Node 11
+	Live Out Node 12],
+edges: [Edge from 0 to 3, distance: 0, latency: 1
+	Edge from 0 to 4, distance: 0, latency: 1
+	Edge from 1 to 2, distance: 0, latency: 1
+	Edge from 10 to 5, distance: 0, latency: 1
+	Edge from 11 to 0, distance: 0, latency: 1
+	Edge from 2 to 1, distance: 1, latency: 1
+	Edge from 2 to 12, distance: 0, latency: 1
+	Edge from 3 to 4, distance: 0, latency: 1
+	Edge from 4 to 0, distance: 1, latency: 1
+	Edge from 4 to 5, distance: 0, latency: 1],
+)
