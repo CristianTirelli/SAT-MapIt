@@ -5,6 +5,9 @@ class node:
     def __init__(self, id: int):
         self.id = id
 
+    def __lt__(self, other):
+        return self.id < other.id
+
 class constant_node(node):
     def __init__(self, id: int, immediate: int, immediate_position: int):
         super().__init__(id)
@@ -80,6 +83,12 @@ class edge:
         self.distance = distance
         self.latency = latency
 
+    def __lt__(self, other):
+        return self.source.id < other.source.id or (self.source.id == other.source.id and self.destination.id < other.destination.id)
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
     def __str__(self):
         return f"Edge from {self.source.id} to {self.destination.id}, distance: {self.distance}, latency: {self.latency}"
 
@@ -94,8 +103,8 @@ class DFG:
 
     def __str__(self):
         return f"""DFG(
-nodes: [{'\n\t'.join(str(node) for node in self.nodes)}],
-edges: [{'\n\t'.join(str(edge) for edge in self.edges)}],
+nodes: [{'\n\t'.join(sorted(str(node) for node in self.nodes))}],
+edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges() + self.get_livein_edges() + self.get_liveout_edges()))}],
 )"""
 
     def addNode(self, n: node):
