@@ -296,7 +296,7 @@ class Mapper:
                     found_br = True
                 #select flag should be in rout
                 #avoid solutions that use internal registers
-                if self.DFG.getNode(nd).name in SEL and self.DFG.getNode(nd).predicate == ns:
+                if self.DFG.getNode(nd).name in SEL and self.DFG.getNode(nd).predicate.id == ns:
                     for (it1, it2) in itertools.product(c_n_it_p_literal[cs][ns], c_n_it_p_literal[cd][nd]):
                         if it1 == it2 and cd > cs:
                             for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
