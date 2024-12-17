@@ -505,7 +505,7 @@ class Mapper:
 
         solution = False
         while not solution:
-            logging.debug("II: " + str(II))
+            logging.info("II: " + str(II))
             self.generateKMS(II)
             nit = math.ceil((self.scheduleLen + 1) / II)
             logging.debug("nit " + str(self.scheduleLen + 1)+"/"+str(II) +"= "+str((self.scheduleLen + 1) / II) +"= "+str(nit))
@@ -1289,9 +1289,7 @@ class Mapper:
         if br_to_copy == None:
             raise Exception("No br instruction in the kernel")
         
-        logging.info("\n\n******************************************************\n")
-        logging.info("   BR location in the prologue must be set manually  ")
-        logging.info("\n******************************************************\n")
+        logging.info("BR location in the prologue must be set manually")
 
         # Update brs before kernel
         for t in range(0, init_len + prolog_len):#, init_len + prolog_len + kernel_len):
