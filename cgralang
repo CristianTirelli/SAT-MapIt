@@ -3,15 +3,18 @@
 X=4
 Y=4
 R=10
-while getopts "f:x:y:r:" opt; do
+LOG_LEVEL=WARNING
+while getopts "f:x:y:r:l:" opt; do
   case $opt in
     f) F=$OPTARG ;;
     x) X=$OPTARG ;;
     y) Y=$OPTARG ;;
     r) R=$OPTARG ;;
+    l) LOG_LEVEL=$OPTARG;;
     \?) echo "Invalid option -$OPTARG" >&2; exit 1 ;;
   esac
 done
+
 echo "$X"
 echo "$Y"
 ./llvm-project/build/bin/clang -O3 -fno-unroll-loops -fno-vectorize -fno-slp-vectorize -S -emit-llvm -o extracted.ll "$F"
@@ -19,7 +22,7 @@ echo "$Y"
 
 for folder in acc*; do
     if [ -d "$folder" ]; then
-    python3 -m mapper.main -path "$folder"/ -x "$X" -y "$Y" -r "$R" -no_assembly 1 > cgra-code-"$folder"
+        python3 -m mapper.main --log $LOG_LEVEL --log-file cgra-code-"$folder".log -path "$folder"/ -x "$X" -y "$Y" -r "$R" -no_assembly 1
     fi
 done
 

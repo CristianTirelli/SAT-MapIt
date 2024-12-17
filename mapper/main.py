@@ -43,12 +43,20 @@ def main():
     parser.add_argument('-y', type=int, help='Number or rows in the CGRA (default value: 4)', default=4)
     parser.add_argument('-r', type=int, help='Number of internal registers (default value: 5)', default=5)
     parser.add_argument('-no_assembly', type=bool, help='Disable assmbly generation (only return the mapping)', default=False)
+    parser.add_argument('--log', type=str, default="WARNING", help='The log level. Possible values are "DEBUG", "INFO", "WARNING", "ERROR" and "CRITICAL"')
+    parser.add_argument('--log-file', type=str, default="out.log", help='The file inside which the logs will be stored')
     
 
     #Parse Arguments
     args = parser.parse_args()
 
-    logging.basicConfig(format="%(levelname)s - %(message)s")
+    loglevel = args.log
+    logfile = args.log_file
+
+    numeric_level = getattr(logging, loglevel.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % loglevel)
+    logging.basicConfig(format="%(levelname)s - %(message)s", filemode='w', filename=logfile, level=numeric_level)
     
     CGRA_X = int(args.x)
     CGRA_Y = int(args.y)
