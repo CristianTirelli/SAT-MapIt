@@ -41,26 +41,6 @@ class Mapper:
 
         self.ra = None
 
-    def __del__(self):
-
-        self.DFG = None
-        self.ResII = 0
-        self.RecII = 0
-        self.II = 0
-        self.scheduleLen = 0
-        self.ASAP.clear()
-        self.ALAP.clear()
-        self.MS.clear()
-        self.KMS.clear()
-        self.schedule.clear()
-        self.prolog.clear()
-        self.kernel.clear()
-        self.epilog.clear()
-        self.init.clear()
-        self.fini.clear()
-        self.mapping.clear()
-        self.ra = None
-
     #Get Resource Iteration Interval
     def computeResII(self):
         #print(self.CGRA_x, self.CGRA_Y)
