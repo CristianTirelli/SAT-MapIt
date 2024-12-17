@@ -83,14 +83,8 @@ class Mapper:
                 self.ASAP[n.time] = []
             self.ASAP[n.time].append(n.id)
 
-        #print(self.ASAP)
-        print("\nASAP Schedule")
-        for t in range(0, len(self.ASAP)):
-            tmp = ""
-            for e in self.ASAP[t]:
-                tmp+= str(e) + " "
-            print(tmp)
-        print()
+        print("ASAP Schedule")
+        print(self.scheduleStr(self.ASAP))
     
     #Generate As-Late-As-Possible schedule
     def generateALAP(self):
@@ -116,14 +110,8 @@ class Mapper:
                 self.ALAP[self.scheduleLen - n.time] = []
             self.ALAP[self.scheduleLen - n.time].append(n.id)
         
-        #print(self.ALAP)
-        print("\nALAP Schedule")
-        for t in range(0, len(self.ALAP)):
-            tmp = ""
-            for e in self.ALAP[t]:
-                tmp+= str(e) + " "
-            print(tmp)
-        print()
+        print("ALAP Schedule")
+        print(self.scheduleStr(self.ALAP))
 
     def getASAPTime(self, id):
         for t in self.ASAP:
@@ -138,6 +126,13 @@ class Mapper:
                 if nid == id:
                     return t
         return -1
+
+    def scheduleStr(self, schedule) -> str:
+        ret = ""
+        for t in range(len(schedule)):
+            line = " ".join([str(e) for e in schedule[t]])
+            ret += line + "\n"
+        return ret
 
     #Generate Mobility schedule
     def generateMS(self):
@@ -156,13 +151,9 @@ class Mapper:
                     self.MS[t] = []
                 self.MS[t].append(n.id)
         
-        print("\nMobility Schedule")
-        for t in range(0, len(self.MS)):
-            tmp = ""
-            for e in self.MS[t]:
-                tmp+= str(e) + " "
-            print(tmp)
-        print()
+        print("Mobility Schedule")
+        print(self.scheduleStr(self.MS))
+
     
     #Generate Kernel Mobility Schedule
     def generateKMS(self, II):
