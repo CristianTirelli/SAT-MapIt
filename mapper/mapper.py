@@ -44,14 +44,12 @@ class Mapper:
 
     #Get Resource Iteration Interval
     def computeResII(self):
-        #print(self.CGRA_x, self.CGRA_Y)
         self.ResII = math.ceil(len(self.DFG.get_instruction_nodes())/(self.CGRA_x*self.CGRA_Y))
 
     #Get Recurrence Iteration Interval
     def computeRecII(self):
         
         for s in self.DFG.getSCCs():
-            #print("SCC size:" + str(len(s)))
             self.RecII = max(self.DFG.getPathDelay(s), self.RecII)        
 
     #Get Minimum Iteration Interval (MII)
@@ -168,8 +166,6 @@ class Mapper:
                 for nid in self.MS[i]:
                     self.KMS[i%II].append((it, nid))
         else:
-            #print(II, self.scheduleLen + 1)
-            
             dup = II - (self.scheduleLen + 1)
             it = 0
             tmpKMS = {}
@@ -188,15 +184,6 @@ class Mapper:
                     self.KMS[t] = []
                 for nid in tmpKMS[t]:
                     self.KMS[t].append((it, nid))
-            
-            #print(dup)
-            #for t in tmpKMS:
-            #    print(tmpKMS[t])
-            #print("TODO: implement", II, self.scheduleLen)
-            #exit(0)
-
-
-        #print(self.KMS)
 
     #Add constraint1 of the formulation
     #Only one literal for each node must be set to True
@@ -525,11 +512,6 @@ class Mapper:
                         if p[0] == it:
                             iterations[it][t].append(p[1])
 
-            #for it in iterations:
-            #    print("Iteration " + str(it))
-            #    for c in iterations[it]:
-            #        print("Cycle: " + str(c) + " " + str(iterations[it][c]))
-
             #Generate all the literals for the formulation
             literals = []
             for it in iterations:
@@ -577,7 +559,6 @@ class Mapper:
                     #cycle_pe_literals[ci][pj] = Not(Or(cycle_pe_literals[ci][pj]))
                     if len(cycle_pe_literals[ci][pj]) == 1:
                         cycle_pe_literals[ci][pj] = Not(cycle_pe_literals[ci][pj][0])
-                        #print(len(cycle_pe_literals[ci][pj]), ci, pj)	
                     else:
                         cycle_pe_literals[ci][pj] = Not(Or(cycle_pe_literals[ci][pj]))
 
@@ -772,7 +753,6 @@ class Mapper:
                             self.prolog[i + shift] = []
                         self.prolog[i + shift].append(n)
                 shift += self.II
-        #print(self.prolog)
 
     def generateEpilog(self):
         last_row = []
@@ -818,9 +798,6 @@ class Mapper:
                 self.pke[t][n_pe[n]] = n
 
             t += 1
-        #print("Prolog")
-        #print(self.pke)
-
 
         for i in range(0, len(self.kernel)):
             if t not in self.pke:
@@ -877,7 +854,6 @@ class Mapper:
 
         p_live = {}
         p_const = {}
-        #print("INIT")
         self.init.clear()
         #get all the constants and livein vars to use in the init phase
         for p in instructions:
@@ -885,17 +861,11 @@ class Mapper:
                 live_in_node = self.DFG.getAssociateLiveIn(inst.nodeid)
                 logging.debug(live_in_node)
                 init_const = self.DFG.getConstant(inst.nodeid)
-                #print(inst.id)
-                #print(init_const.id)
                 if live_in_node != None:
-                    #print("node with livein", live_in_node.id)
-                    #exit(0)
                     dest_p = p
                     #check if it should be in the righr or left operand
                     if inst.name == "phi":
-                        #print("destphi")
                         if inst.LOp == live_in_node.id:
-                            #print("livein in phi node left operand")
                             for p1 in instructions:
                                 for inst1 in instructions[p1]:
                                     if inst1.nodeid == inst.ROp:
@@ -914,9 +884,7 @@ class Mapper:
 
                 if init_const != None:
                     p1 = 0
-                    #print(init_const.id, inst.LOp)
                     if inst.LOp == init_const.id:
-                        #print("const on left")
                         #get pe of the ROp and save constant in that register or pe
                         nlop = self.DFG.getNode(inst.ROp)
                         for t in self.kernel:
@@ -927,7 +895,6 @@ class Mapper:
                             p_const[p1] = []
                         p_const[p1].append(init_const)
                     elif inst.ROp == init_const.id and inst.name == "phi":
-                        #print("const on rigth")
                         nrop = self.DFG.getNode(inst.LOp)
                         for t in self.kernel:
                             for p2 in self.kernel[t]:
@@ -1024,7 +991,6 @@ class Mapper:
                 for p1 in instructions:
                     for inst in instructions[p1]:
                         if inst.LOp == p_const[pe][i].id:
-                            #print("found const")
                             nrop = self.DFG.getNode(inst.ROp)
                         elif inst.ROp == p_const[pe][i].id:
                             nlop = self.DFG.getNode(inst.LOp)
@@ -1066,13 +1032,6 @@ class Mapper:
                     tmp.opcode = NOP
                     self.init[t][p] = tmp
         
-        # for i in range(0, init_len):
-        #    print("Time: " + str(i))
-        #    for p in self.init[i]:
-        #         print("node id: ", self.init[i][p].nodeid, "instruction id: ", self.init[i][p].instruction_id)
-        #    print()                
-        # exit(0)
-
     #Add finalization phase after epilogue
     #Store LiveOut variables
     #TODO: This function can be writte in a much better way
@@ -1080,7 +1039,6 @@ class Mapper:
     #      swi storest value to save in opA and address in opB)
     def generateFini(self, instructions):
         p_live = {}
-        #print("FINI")
         self.fini.clear()
         #get all the liveout vars to use in the fini phase
         for p in instructions:
@@ -1136,12 +1094,6 @@ class Mapper:
                     tmp.opcode = NOP
                     self.fini[t][p] = tmp
         
-        #for i in range(0, fini_len):
-        #    print("Time: " + str(i))
-        #    for p in self.fini[i]:
-        #        print(self.fini[i][p].id)
-        #    print()                            
-    
     #Generate the mapping after a solution to the SAT problem is found
     #This function also does:
     #1) Register Allocation and Assignment
@@ -1273,7 +1225,6 @@ class Mapper:
                     br_to_copy = self.mapping[t][p]
 
         logging.debug("Number of br instructions " + " " + str(br_count))
-        #print(br_location)
         logging.debug("Loop length should be = Loop lengh - " + " " + str(br_count))
         logging.debug("")
         logging.debug("If loop length is not know at runtime")
@@ -1355,14 +1306,6 @@ class Mapper:
                         self.mapping[t][p].opcode = BLE
 
 
-        #print("mapping")
-        #for i in range(0, len(self.mapping)):
-        #    print("Time " + str(i))
-        #    tmp = ""
-        #    for p in range(0, self.CGRA_x * self.CGRA_Y):
-        #        tmp += " " + str(self.mapping[i][p].id)
-        #    print(tmp)
-
     def printAssembly(self):
         if len(self.mapping) == 0:
             raise Exception("No mapping in memory")
@@ -1373,11 +1316,6 @@ class Mapper:
             for p in range(0, self.CGRA_x * self.CGRA_Y):    
                 logging.debug(self.mapping[t][p].printAssembly())
 
-        #for t in self.mapping:
-        #    for p in self.mapping[t]:
-        #        inst = self.mapping[t][p]
-        #        print(t, p, "---",inst.nodeid, inst.pe)
-                
         for t in range(0, len(self.mapping)):
             logging.debug("T = " + str(t))
             tmp = " _" * self.CGRA_Y*5 + " _ \n"
