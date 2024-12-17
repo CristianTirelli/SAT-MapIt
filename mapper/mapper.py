@@ -57,8 +57,8 @@ class Mapper:
         self.computeRecII()
         self.computeResII()
         self.II = max(self.RecII, self.ResII)
-        logging.debug("REC " + str(self.RecII))
-        logging.debug("RES " + str(self.ResII))
+        logging.debug(f"{self.RecII = }")
+        logging.debug(f"{self.ResII = }")
         return self.II
 
     #Generate As-Soon-As-Possible schedule
@@ -158,7 +158,7 @@ class Mapper:
     def generateKMS(self, II):
         self.KMS.clear()
         if II <= self.scheduleLen + 1:
-            for i in range(0,self.scheduleLen + 1):
+            for i in range(self.scheduleLen + 1):
                 it = i//II
                 
                 if (i%II) not in self.KMS:
@@ -169,8 +169,8 @@ class Mapper:
             dup = II - (self.scheduleLen + 1)
             it = 0
             tmpKMS = {}
-            for d in range(0, dup + 1):
-                for i in range(0, self.scheduleLen + 1):
+            for d in range(dup + 1):
+                for i in range(self.scheduleLen + 1):
                     if (i + d) not in tmpKMS:
                         tmpKMS[i + d] = []
                     for nid in self.MS[i]:
@@ -237,7 +237,7 @@ class Mapper:
                 #backdependencies handled in a different way
                 continue
             nodes = [e.source.id, e.destination.id]
-            logging.debug(nodes)
+            logging.debug(f"{nodes = }")
             tmp = []
             
             for (cs,cd) in itertools.product(c_n_it_p_literal, c_n_it_p_literal):
@@ -284,7 +284,7 @@ class Mapper:
                                         tmp2 = []
                                         for ci in range(cs + 1, II):
                                             tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-                                        for ci in range(0, cd):
+                                        for ci in range(cd):
                                             tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
 
                                         if len(tmp2) > 1:#before was only len(tmp2) != 0:
@@ -298,7 +298,7 @@ class Mapper:
                                         tmp2 = []
                                         if p1 == p2:
                                             continue
-                                        for ci in range(0, II):
+                                        for ci in range(II):
                                             if ci == cs:
                                                 continue
                                             tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
@@ -310,9 +310,8 @@ class Mapper:
                                         logging.error("Should not be here 2")
                         
                     if len(tmp) == 0:
-                        logging.error("No constraint for this dep. Need to check")
+                        logging.info(f"No constraint for dependency between {nodes[0]} and {nodes[1]}")
                         all_dep_encoded = False
-                        logging.error(str(nodes[0]) + " " + str(nodes[1]))
                         break
                     self.s.add(Or(tmp))
                     continue
@@ -347,7 +346,7 @@ class Mapper:
                                     tmp2 = []
                                     for ci in range(cs + 1, II):
                                         tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-                                    for ci in range(0, cd):
+                                    for ci in range(cd):
                                         tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
 
                                     if len(tmp2) > 1:#before was only len(tmp2) != 0:
@@ -361,7 +360,7 @@ class Mapper:
                                     tmp2 = []
                                     if p1 == p2:
                                         continue
-                                    for ci in range(0, II):
+                                    for ci in range(II):
                                         if ci == cs:
                                             continue
                                         tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
@@ -391,7 +390,7 @@ class Mapper:
                 #backdependencies handled in a different way
                 continue 
             nodes = [e.source.id, e.destination.id]
-            logging.debug(nodes)
+            logging.debug(f"{nodes = }")
             tmp = []
             for (cs,cd) in itertools.product(c_n_it_p_literal, c_n_it_p_literal):
                 if (nodes[0] not in c_n_it_p_literal[cs]) or (nodes[1] not in c_n_it_p_literal[cd]):
@@ -411,7 +410,7 @@ class Mapper:
                                     tmp2 = []
                                     for ci in range(cs + 1, II):
                                         tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-                                    for ci in range(0, cd):
+                                    for ci in range(cd):
                                         tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
 
                                     if len(tmp2) > 1:#before was only len(tmp2) != 0:
@@ -432,7 +431,7 @@ class Mapper:
                                     tmp2 = []
                                     for ci in range(cs + 1, II):
                                         tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-                                    for ci in range(0, cd):
+                                    for ci in range(cd):
                                         tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
 
                                     if len(tmp2) > 1:#before was only len(tmp2) != 0:
@@ -452,7 +451,7 @@ class Mapper:
                                 if p1 == p2:
                                     continue
                                 tmp2 = []
-                                for ci in range(0, II):
+                                for ci in range(II):
                                     if ci == cs:
                                         continue
                                     tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
@@ -492,17 +491,17 @@ class Mapper:
 
         solution = False
         while not solution:
-            logging.info("II: " + str(II))
+            logging.info(f"{II = }")
             self.generateKMS(II)
             nit = math.ceil((self.scheduleLen + 1) / II)
             logging.debug("nit " + str(self.scheduleLen + 1)+"/"+str(II) +"= "+str((self.scheduleLen + 1) / II) +"= "+str(nit))
             
             iterations = {}
             logging.debug("KMS")
-            for i in range(0,II):
-                logging.debug(self.KMS[i])
+            for i in range(II):
+                logging.debug(f"{self.KMS[i] = }")
 
-            for it in range(0, nit):
+            for it in range(nit):
                 if it not in iterations:
                     iterations[it] = {}
                 for t in self.KMS:
@@ -517,7 +516,7 @@ class Mapper:
             for it in iterations:
                 for c in iterations[it]:
                     for NodeId in iterations[it][c]:
-                        for pe in range(0, self.CGRA_x * self.CGRA_Y):
+                        for pe in range(self.CGRA_x * self.CGRA_Y):
                             literals.append((Bool("v_%s,%s,%s,%s" % (str(NodeId),str(pe),str(c),str(it)), ctx = self.ctx), NodeId, pe, c, it))
             
             #Group literals in Map(nodeid, Value = 'list of literals')
@@ -629,7 +628,7 @@ class Mapper:
                         n = int(tmp[0])
                         t = int(tmp[2])
                         it = int(tmp[3])
-                        logging.debug("Node " + str(n) + " on PE " + str(p) + " at time " + str(t) + " of it " + str(it))
+                        logging.debug(f"Node {n} on PE {p} at time {t} of iteration {it}")
                         if t not in self.kernel:
                             self.kernel[t] = {}
                         if p not in self.kernel[t]:
@@ -642,14 +641,14 @@ class Mapper:
                         self.schedule[it*II + t].append(n)
 
                 logging.debug("Kernel")
-                for i in range(0, len(self.kernel)):
+                for i in range(len(self.kernel)):
                     tmps = "[ "
                     for p in self.kernel[i]:
                         tmps += str(self.kernel[i][p]) + " "
                     logging.debug(tmps + "]")
 
                 logging.debug("Schedule")
-                for i in range(0, len(self.schedule)):
+                for i in range(len(self.schedule)):
                     logging.debug(self.schedule[i])
                 
             else:
@@ -761,7 +760,7 @@ class Mapper:
 
         contained = True
 
-        for t in range(0, len(self.schedule)):
+        for t in range(len(self.schedule)):
             
             contained = True
             for n in self.schedule[t]:
@@ -789,7 +788,7 @@ class Mapper:
 
         t = 0
 
-        for i in range(0, len(self.prolog)):
+        for i in range(len(self.prolog)):
             if t not in self.pke:
                 self.pke[t] = {}
             for n in self.prolog[i]:
@@ -799,7 +798,7 @@ class Mapper:
 
             t += 1
 
-        for i in range(0, len(self.kernel)):
+        for i in range(len(self.kernel)):
             if t not in self.pke:
                 self.pke[t] = {}
             for p in self.kernel[i]:
@@ -811,7 +810,7 @@ class Mapper:
 
 
 
-        for i in range(0, len(self.epilog)):
+        for i in range(len(self.epilog)):
             if t not in self.pke:
                 self.pke[t] = {}
             for n in self.epilog[i]:
@@ -859,7 +858,7 @@ class Mapper:
         for p in instructions:
             for inst in instructions[p]:
                 live_in_node = self.DFG.getAssociateLiveIn(inst.nodeid)
-                logging.debug(live_in_node)
+                logging.debug(f"{live_in_node = }")
                 init_const = self.DFG.getConstant(inst.nodeid)
                 if live_in_node != None:
                     dest_p = p
@@ -906,7 +905,7 @@ class Mapper:
 
         #get len of the init phase
         init_len = 0
-        for i in range(0, self.CGRA_x * self.CGRA_Y):
+        for i in range(self.CGRA_x * self.CGRA_Y):
             if i in p_live and i in p_const:
                 init_len = max(init_len, len(p_live[i]) + len(p_const[i]))
             if i in p_live:
@@ -915,7 +914,7 @@ class Mapper:
                 init_len = max(init_len, len(p_const[i]))
                 
         #set to None each element of init
-        for i in range(0, init_len):
+        for i in range(init_len):
             if i not in self.init:
                 self.init[i] = {}
         
@@ -923,7 +922,7 @@ class Mapper:
         #create load instructions for live-in vars
         occupied_spot = {}
         for p in p_live:
-            for i in range(0,len(p_live[p])):
+            for i in range(len(p_live[p])):
                 if i not in occupied_spot:
                     occupied_spot[i] = {}
                 if p not in occupied_spot[i]:
@@ -936,7 +935,7 @@ class Mapper:
                 tmp.opcode = LWD
                 #get where the instruction must save the loaded value
                 space_full = True
-                for j in range(0, len(self.ra.rf[p])):
+                for j in range(len(self.ra.rf[p])):
                     if self.ra.rf[p][j] == 0:
                         tmp.outreg = j
                         self.ra.rf[p][j] = 1
@@ -1020,10 +1019,10 @@ class Mapper:
 
 
         #set to NOP instruction all the other PEs
-        for t in range(0, len(self.init)):
+        for t in range(len(self.init)):
             if t not in self.init:
                 self.init = {}
-            for p in range(0, self.CGRA_x * self.CGRA_Y):
+            for p in range(self.CGRA_x * self.CGRA_Y):
                 if p not in self.init[t]:
                     self.init[t][p] = None
                 if self.init[t][p] == None:
@@ -1051,22 +1050,22 @@ class Mapper:
                     p_live[p].append(live_out_node)  
         #get length of fini phase 
         fini_len = 0
-        for i in range(0, self.CGRA_x * self.CGRA_Y):
+        for i in range(self.CGRA_x * self.CGRA_Y):
             if i in p_live:
                 fini_len = max(fini_len, len(p_live[i]))
             
         #initialize the fini phase
-        for i in range(0, fini_len):
+        for i in range(fini_len):
             if i not in self.fini:
                 self.fini[i] = {}
-            for j in range(0, self.CGRA_x * self.CGRA_Y):
+            for j in range(self.CGRA_x * self.CGRA_Y):
                 if j not in self.fini[i]:
                     self.fini[i][p] = None
 
         #create store instructions for the liveout var
         tmp_id = 0
         for p in p_live:
-            for i in range(0,len(p_live[p])):
+            for i in range(len(p_live[p])):
                 tmp = instruction(tmp_id, p_live[p][i].id)
                 tmp_id += 1
                 tmp.pe = p
@@ -1083,10 +1082,10 @@ class Mapper:
                 self.fini[i][p] = tmp
 
         #fill the other PEs with NOP instructions
-        for t in range(0, len(self.fini)):
+        for t in range(len(self.fini)):
             if t not in self.fini:
                 self.fini = {}
-            for p in range(0, self.CGRA_x * self.CGRA_Y):
+            for p in range(self.CGRA_x * self.CGRA_Y):
                 if p not in self.fini[t]:
                     self.fini[t][p] = None
                 if self.fini[t][p] == None:
@@ -1107,7 +1106,7 @@ class Mapper:
         self.mapping = {}
         self.generatePKE()
         logging.debug("PKE")
-        for i in range(0, len(self.pke)):
+        for i in range(len(self.pke)):
             s = "t: " + str(i) + "     "
             for p in self.pke[i]:
                 s += str(self.pke[i][p]) + " "
@@ -1140,11 +1139,11 @@ class Mapper:
         epilog_len = len(self.epilog)
         fini_len = len(self.fini)
         logging.debug("\n\n**************\n\n")
-        logging.debug("init_len: " + " " + str(init_len))
-        logging.debug("prolog_len: " + " " + str(prolog_len))
-        logging.debug("kernel_len: " + " " + str(kernel_len))
-        logging.debug("epilog_len: " + " " + str(epilog_len))
-        logging.debug("fini_len: " + " " + str(fini_len))
+        logging.debug(f"{init_len = }")
+        logging.debug(f"{prolog_len = }")
+        logging.debug(f"{kernel_len = }")
+        logging.debug(f"{epilog_len = }")
+        logging.debug(f"{fini_len = }")
         logging.debug("\n\n**************\n\n")
 
 
@@ -1161,10 +1160,10 @@ class Mapper:
             logging.debug("Fini: " + str(len(self.init) + len(self.pke)) + " - " + str(len(self.init) + len(self.pke) + len(self.fini) - 1))
         logging.debug("\n\n**************\n\n")
         #append pke to mapping
-        for tk in range(0, len(self.pke)):
+        for tk in range(len(self.pke)):
             if (tk + t) not in self.mapping:
                 self.mapping[tk + t] = {}
-            for pk in range(0, self.CGRA_Y * self.CGRA_x):
+            for pk in range(self.CGRA_Y * self.CGRA_x):
                 if pk not in self.mapping[tk + t]:
                     self.mapping[tk + t][pk] = None
                 #get instruction
@@ -1183,10 +1182,10 @@ class Mapper:
 
         t = len(self.mapping)        
         #append fini to mapping
-        for tk in range(0, len(self.fini)):
+        for tk in range(len(self.fini)):
             if (tk + t) not in self.mapping:
                 self.mapping[tk + t] = {}
-            for pk in range(0, self.CGRA_Y * self.CGRA_x):
+            for pk in range(self.CGRA_Y * self.CGRA_x):
                 if pk not in self.mapping[tk + t]:
                     self.mapping[tk + t][pk] = None
                 #fini is already populated, just copy it into mapping
@@ -1197,7 +1196,7 @@ class Mapper:
         if t not in self.mapping:
             self.mapping[t] = {}
         # Fill time slot with NOPs
-        for pk in range(0, self.CGRA_Y * self.CGRA_x):
+        for pk in range(self.CGRA_Y * self.CGRA_x):
             if pk not in self.mapping[t]:
                 tmp = instruction(-pk-1, -2)
                 tmp.opcode = NOP
@@ -1224,15 +1223,14 @@ class Mapper:
                     br_location.append(t)
                     br_to_copy = self.mapping[t][p]
 
-        logging.debug("Number of br instructions " + " " + str(br_count))
-        logging.debug("Loop length should be = Loop lengh - " + " " + str(br_count))
+        logging.debug(f"Number of br instructions {br_count}")
+        logging.debug(f"Loop length should be = Loop lengh - {br_count}")
         logging.debug("")
         logging.debug("If loop length is not know at runtime")
         logging.debug("running the code could produce wrong results")
         logging.debug("if a br in the prologue gets hit")
         # This can be solved by increasing the code length or decreasing the performances
         # Currently we do not deploy any fix, since its outside the scope of our research
-        logging.debug("")
 
         # Create a different instruction for each br and change the jmp location
         # WARNING: Currently we only support DFGs with 1 br instruction
@@ -1243,7 +1241,7 @@ class Mapper:
         logging.info("BR location in the prologue must be set manually")
 
         # Update brs before kernel
-        for t in range(0, init_len + prolog_len):#, init_len + prolog_len + kernel_len):
+        for t in range(init_len + prolog_len):#, init_len + prolog_len + kernel_len):
             for p in self.mapping[t]:
                 if self.mapping[t][p].getOpcodeName() in BRs:
                     tmp = instruction(0, self.mapping[t][p].nodeid)
@@ -1311,15 +1309,15 @@ class Mapper:
             raise Exception("No mapping in memory")
         BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
 
-        for t in range(0, len(self.mapping)):
-            logging.debug("T = " + str(t))
-            for p in range(0, self.CGRA_x * self.CGRA_Y):    
+        for t in range(len(self.mapping)):
+            logging.debug(f"T = {t}")
+            for p in range(self.CGRA_x * self.CGRA_Y):    
                 logging.debug(self.mapping[t][p].printAssembly())
 
-        for t in range(0, len(self.mapping)):
-            logging.debug("T = " + str(t))
+        for t in range(len(self.mapping)):
+            logging.debug(f"T = {t}")
             tmp = " _" * self.CGRA_Y*5 + " _ \n"
-            for p in range(0, self.CGRA_x * self.CGRA_Y):
+            for p in range(self.CGRA_x * self.CGRA_Y):
                 #tmp0 += "|   " + "_"*len(str(self.mapping[t][p].getOpcodeName())) + "  |"
                 tmp += "|  |" + str(self.mapping[t][p].getOpcodeName()) + "|  |"
                 #tmp2 += "|   " + "-"*len(str(self.mapping[t][p].getOpcodeName())) + "  |"
@@ -1332,10 +1330,10 @@ class Mapper:
             logging.debug(tmp)
 
         logging.debug("Output of the mapping with node id")
-        for t in range(0, len(self.mapping)):
-            logging.debug("T = " + str(t))
+        for t in range(len(self.mapping)):
+            logging.debug(f"T = {t}")
             tmp = " _" * self.CGRA_Y*5 + " _ \n"
-            for p in range(0, self.CGRA_x * self.CGRA_Y):
+            for p in range(self.CGRA_x * self.CGRA_Y):
                 if self.mapping[t][p].nodeid > -1:
                     tmp += "|  | " + str(self.mapping[t][p].nodeid) + " |  |"
                 else:
