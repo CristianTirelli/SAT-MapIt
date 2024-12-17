@@ -1,3 +1,4 @@
+import logging
 from .mapper import *
 from .parser import *
 
@@ -46,6 +47,8 @@ def main():
 
     #Parse Arguments
     args = parser.parse_args()
+
+    logging.basicConfig(format="%(levelname)s - %(message)s")
     
     CGRA_X = int(args.x)
     CGRA_Y = int(args.y)
@@ -68,8 +71,6 @@ def main():
  
     #Get the parsed DFG
     DFG = p.getDFG()
-    print(DFG)
-    print("#nodes: " + str(len(DFG.nodes)))
 
     #Initialize the mapper with the CGRA dimensions,
     #number of registers of each PE and the DFG
@@ -93,7 +94,7 @@ def main():
         for inst in instructions[p]:
             tmps = "Id: " + str(inst.nodeid) + " name: " + str(inst.name)+ " time: " + str(inst.time) + " pe: " + str(inst.pe)
             tmps += " Rout: " + inst.getOutputOperandAssignedRegister() + " opA: " + inst.getLeftOperandAssignedRegister() + " opB: " + inst.getRigthOperandAssignedRegister() + " immediate: " + str(inst.immediate)
-            print(tmps+"\n")
+            logging.debug(tmps+"\n")
 
 
     
