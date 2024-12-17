@@ -679,7 +679,7 @@ class Mapper:
             logging.debug("Time: " + str(end - start))
 
         if solution == False:
-            raise Excpetion("Mapping not found...\nLast II: " + str(II))
+            raise Exception("Mapping not found...\nLast II: " + str(II))
 
         self.II = II
 
@@ -1040,7 +1040,7 @@ class Mapper:
                             if inst.nodeid == nlop.id:
                                 tmp.outreg = inst.outreg
                 else:
-                    raise Excpetion("should not happen (Create inst for constant)")
+                    raise Exception("should not happen (Create inst for constant)")
 
                 for p1 in instructions:
                     for inst in instructions[p1]:
@@ -1287,7 +1287,7 @@ class Mapper:
         # WARNING: Currently we only support DFGs with 1 br instruction
         
         if br_to_copy == None:
-            raise Excpetion("No br instruction in the kernel")
+            raise Exception("No br instruction in the kernel")
         
         logging.info("\n\n******************************************************\n")
         logging.info("   BR location in the prologue must be set manually  ")
@@ -1367,7 +1367,7 @@ class Mapper:
 
     def printAssembly(self):
         if len(self.mapping) == 0:
-            raise Excpetion("No mapping in memory")
+            raise Exception("No mapping in memory")
         BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
 
         for t in range(0, len(self.mapping)):
