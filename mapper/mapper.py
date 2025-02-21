@@ -236,15 +236,14 @@ class Mapper:
             if e.distance > 0:
                 #backdependencies handled in a different way
                 continue
-            nodes = [e.source.id, e.destination.id]
-            logging.debug(f"{nodes = }")
+            ns = e.source.id
+            nd = e.destination.id
+            logging.debug(f"nodes = {ns, nd}")
             tmp = []
             
             for (cs,cd) in itertools.product(c_n_it_p_literal, c_n_it_p_literal):
-                if (nodes[0] not in c_n_it_p_literal[cs]) or (nodes[1] not in c_n_it_p_literal[cd]):
+                if (ns not in c_n_it_p_literal[cs]) or (nd not in c_n_it_p_literal[cd]):
                     continue
-                ns = nodes[0]
-                nd = nodes[1]
                 #filter for br node
                 #BR nodes can be mapped only on the last cycle of the kernel
                 #else additional resolution techniques needs to be implemented to handle BRs
@@ -310,7 +309,7 @@ class Mapper:
                                         logging.error("Should not be here 2")
                         
                     if len(tmp) == 0:
-                        logging.info(f"No constraint for dependency between {nodes[0]} and {nodes[1]}")
+                        logging.info(f"No constraint for dependency between {ns} and {nd}")
                         all_dep_encoded = False
                         break
                     self.s.add(Or(tmp))
@@ -372,7 +371,7 @@ class Mapper:
                                     logging.error("Should not be here 2")
                     
             if len(tmp) == 0:
-                logging.info(f"No constraint for dependency between {nodes[0]} and {nodes[1]}")
+                logging.info(f"No constraint for dependency between {ns} and {nd}")
                 all_dep_encoded = False
                 break
             self.s.add(Or(tmp))
@@ -389,14 +388,13 @@ class Mapper:
             if e.distance < 1:
                 #backdependencies handled in a different way
                 continue 
-            nodes = [e.source.id, e.destination.id]
-            logging.debug(f"{nodes = }")
+            ns = e.source.id
+            nd = e.destination.id
+            logging.debug(f"nodes = {ns, nd}")
             tmp = []
             for (cs,cd) in itertools.product(c_n_it_p_literal, c_n_it_p_literal):
-                if (nodes[0] not in c_n_it_p_literal[cs]) or (nodes[1] not in c_n_it_p_literal[cd]):
+                if (ns not in c_n_it_p_literal[cs]) or (nd not in c_n_it_p_literal[cd]):
                     continue
-                ns = nodes[0]
-                nd = nodes[1]
                 for (it1, it2) in itertools.product(c_n_it_p_literal[cs][ns], c_n_it_p_literal[cd][nd]):
                     if abs(it1 - it2) > 1:
                         continue
@@ -463,7 +461,7 @@ class Mapper:
                     
             if len(tmp) == 0:
                 logging.error("No constraint for this backdep. Need to check")
-                logging.error(nodes[0] + " " + nodes[1])
+                logging.error(ns + " " + nd)
                 all_dep_encoded = False
                 break
             self.s.add(Or(tmp))
