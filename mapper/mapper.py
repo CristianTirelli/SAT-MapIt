@@ -553,11 +553,7 @@ class Mapper:
             #precompute data
             for ci in cycle_pe_literals:
                 for pj in cycle_pe_literals[ci]:
-                    #cycle_pe_literals[ci][pj] = Not(Or(cycle_pe_literals[ci][pj]))
-                    if len(cycle_pe_literals[ci][pj]) == 1:
-                        cycle_pe_literals[ci][pj] = Not(cycle_pe_literals[ci][pj][0])
-                    else:
-                        cycle_pe_literals[ci][pj] = Not(Or(cycle_pe_literals[ci][pj]))
+                    cycle_pe_literals[ci][pj] = Not(Or(cycle_pe_literals[ci][pj]))
 
             #Group literals in Map(cycle, Value = Map(nodeid, Map(iteration,Map(pe, literal)))
             c_n_it_p_literal = {}
