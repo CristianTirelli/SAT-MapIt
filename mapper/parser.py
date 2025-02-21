@@ -43,6 +43,4 @@ class Parser:
                     
     def getDFG(self):
         self.dfg.fix_references()
-        self.dfg.nodes.sort()
-        self.dfg.edges.sort()
         return self.dfg
