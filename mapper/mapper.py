@@ -2,7 +2,6 @@ import math
 import itertools
 import time
 import logging
-from tracemalloc import take_snapshot
 from z3 import *
 from .RegisterAllocator import *
 
