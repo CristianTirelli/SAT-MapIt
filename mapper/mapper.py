@@ -2,7 +2,7 @@ import math
 import itertools
 import time
 import logging
-from z3 import *
+from z3 import Or, And, Not, Bool, Context, Solver, sat, is_true
 from .RegisterAllocator import *
 
 class Mapper:
