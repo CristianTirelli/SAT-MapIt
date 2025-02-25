@@ -349,11 +349,12 @@ class Mapper:
                                         print("Should not be here 2")
                         
                     if len(tmp) == 0:
+                        continue
                         print("No constraint for this dep. Need to check")
                         all_dep_encoded = False
                         print(nodes[0], nodes[1])
-                        break
-                    self.s.add(Or(tmp))
+                        # break
+                    # self.s.add(Or(tmp))
                     continue
 
 
