@@ -10,7 +10,7 @@ from mapper.parser import Parser
 class TestMapper(unittest.TestCase):
     CGRA_X = 4
     CGRA_Y = 4
-    CGRA_R = 100
+    CGRA_R = 10
 
     def parseDFG(self, path):
         p = Parser()
