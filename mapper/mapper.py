@@ -239,6 +239,7 @@ class Mapper:
             nd = e.destination.id
             logging.debug(f"nodes = {ns, nd}")
             tmp = []
+            is_dest_sel = self.DFG.getNode(nd).name in SEL and self.DFG.getNode(nd).predicate.id == ns
             
             for (cs,cd) in itertools.product(c_n_it_p_literal, c_n_it_p_literal):
                 if (ns not in c_n_it_p_literal[cs]) or (nd not in c_n_it_p_literal[cd]):
@@ -253,57 +254,6 @@ class Mapper:
                     found_br = True
                 #select flag should be in rout
                 #avoid solutions that use internal registers
-                if self.DFG.getNode(nd).name in SEL and self.DFG.getNode(nd).predicate.id == ns:
-                    for (it1, it2) in itertools.product(c_n_it_p_literal[cs][ns], c_n_it_p_literal[cd][nd]):
-                        if it1 == it2 and cd > cs:
-                            for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
-                                if(self.isNeighbor(p1, p2)):
-                                    distance = self.getCycleDistance(cs, cd, II)
-                                    if distance == 1:
-                                        tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
-                                    elif distance > 1:
-                                        tmp2 = []
-                                        for ci in range(cs + 1, cd):
-                                            tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-                                        tmp.append(And(tmp2))
-                                        #if p1 == p2:
-                                        #    tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
-                        elif abs(it1 - it2) == 1 and it1 < it2 and cd <= cs:
-                            for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
-                                if(self.isNeighbor(p1, p2)):
-                                    distance = self.getCycleDistance(cs, cd, II)
-                                    if distance == 1:
-                                        tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
-                                    elif distance > 1:
-                                        tmp2 = []
-                                        for ci in range(cs + 1, II):
-                                            tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-                                        for ci in range(cd):
-                                            tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-
-                                        tmp.append(And(tmp2))
-                                        #if p1 == p2:
-                                        #    tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
-                                    elif distance == 0:
-                                        tmp2 = []
-                                        if p1 == p2:
-                                            continue
-                                        for ci in range(II):
-                                            if ci == cs:
-                                                continue
-                                            tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-                                        tmp.append(And(tmp2))
-                                    else:
-                                        logging.error("Should not be here 2")
-                        
-                    if len(tmp) == 0:
-                        logging.info(f"No constraint for dependency between {ns} and {nd}")
-                        all_dep_encoded = False
-                        break
-                    self.s.add(Or(tmp))
-                    continue
-
-
 
                 for (it1, it2) in itertools.product(c_n_it_p_literal[cs][ns], c_n_it_p_literal[cd][nd]):
                     if it1 == it2 and cd > cs:
@@ -317,8 +267,8 @@ class Mapper:
                                     for ci in range(cs + 1, cd):
                                         tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
                                     tmp.append(And(tmp2))
-                                    if p1 == p2:
-                                        tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
+                                    if p1 == p2 and not is_dest_sel:
+                                       tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
                     elif abs(it1 - it2) == 1 and it1 < it2 and cd <= cs:
                         for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
                             if(self.isNeighbor(p1, p2)):
@@ -333,8 +283,8 @@ class Mapper:
                                         tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
 
                                     tmp.append(And(tmp2))
-                                    if p1 == p2:
-                                        tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
+                                    if p1 == p2 and not is_dest_sel:
+                                       tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
                                 elif distance == 0:
                                     tmp2 = []
                                     if p1 == p2:
