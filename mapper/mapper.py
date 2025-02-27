@@ -307,25 +307,19 @@ class Mapper:
                         lit1 = c_n_it_p_literal[cs][ns][it1][p1]
                         lit2 = c_n_it_p_literal[cd][nd][it2][p2]
                         distance = self.getCycleDistance(cs, cd, II)
-                        if same_it_valid:
-                            if distance == 1 or (distance > 1 and p1 == p2 and not is_dest_sel):
-                                tmp.append(And(lit1, lit2))
-                            elif distance > 1:
-                                tmp2 = []
-                                for ci in range(cs + 1, cd):
-                                    tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
-                                tmp.append(And(tmp2))
-                        elif diff_it_valid:
-                            if distance == 1 or (distance > 1 and p1 == p2 and not is_dest_sel):
-                                tmp.append(And(lit1, lit2))
-                            elif distance > 1:
-                                tmp2 = []
-                                for ci in range(cs + 1, II):
-                                    tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
+                        if distance == 1 or (distance > 1 and p1 == p2 and not is_dest_sel):
+                            tmp.append(And(lit1, lit2))
+                        elif distance > 1:
+                            tmp2 = []
+                            for ci in range(cs + 1, cd if same_it_valid else II):
+                                tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
+                            if not same_it_valid and diff_it_valid:
                                 for ci in range(cd):
                                     tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
+                            if len(tmp2) > 0:
                                 tmp.append(And(tmp2))
-                            elif distance == 0:
+                        if diff_it_valid:
+                            if distance == 0:
                                 tmp2 = []
                                 if p1 == p2:
                                     continue
