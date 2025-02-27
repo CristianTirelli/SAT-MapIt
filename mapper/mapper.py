@@ -297,9 +297,9 @@ class Mapper:
                     #             else:
                     #                 logging.error("Should not be here 2")
 
-                    same_it_valid = it1 == it2 and cd > cs
-                    diff_it_valid = abs(it1 - it2) == 1 and it1 < it2 and cd <= cs
-                    if not (same_it_valid or diff_it_valid):
+                    is_same_it = it1 == it2 and cd > cs
+                    is_diff_it = abs(it1 - it2) == 1 and it1 < it2 and cd <= cs
+                    if not (is_same_it or is_diff_it):
                         continue
                     for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
                         if not self.isNeighbor(p1, p2):
@@ -311,14 +311,14 @@ class Mapper:
                             tmp.append(And(lit1, lit2))
                         elif distance > 1:
                             tmp2 = []
-                            for ci in range(cs + 1, cd if same_it_valid else II):
+                            for ci in range(cs + 1, cd if is_same_it else II):
                                 tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
-                            if not same_it_valid and diff_it_valid:
+                            if is_diff_it:
                                 for ci in range(cd):
                                     tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
                             if len(tmp2) > 0:
                                 tmp.append(And(tmp2))
-                        elif distance == 0 and diff_it_valid and p1 != p2:
+                        elif distance == 0 and is_diff_it and p1 != p2:
                             tmp2 = []
                             for ci in range(II):
                                 if ci == cs:
