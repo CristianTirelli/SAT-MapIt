@@ -308,7 +308,7 @@ class Mapper:
                         lit2 = c_n_it_p_literal[cd][nd][it2][p2]
                         distance = self.getCycleDistance(cs, cd, II)
                         if same_it_valid:
-                            if distance == 1 or (p1 == p2 and not is_dest_sel):
+                            if distance == 1 or (distance > 1 and p1 == p2 and not is_dest_sel):
                                 tmp.append(And(lit1, lit2))
                             elif distance > 1:
                                 tmp2 = []
@@ -316,7 +316,7 @@ class Mapper:
                                     tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
                                 tmp.append(And(tmp2))
                         elif diff_it_valid:
-                            if distance == 1 or (p1 == p2 and not is_dest_sel):
+                            if distance == 1 or (distance > 1 and p1 == p2 and not is_dest_sel):
                                 tmp.append(And(lit1, lit2))
                             elif distance > 1:
                                 tmp2 = []
