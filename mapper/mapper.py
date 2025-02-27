@@ -304,25 +304,27 @@ class Mapper:
                     for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
                         if not self.isNeighbor(p1, p2):
                             continue
+                        lit1 = c_n_it_p_literal[cs][ns][it1][p1]
+                        lit2 = c_n_it_p_literal[cd][nd][it2][p2]
                         distance = self.getCycleDistance(cs, cd, II)
                         if same_it_valid:
                             if distance == 1 or (p1 == p2 and not is_dest_sel):
-                                tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
+                                tmp.append(And(lit1, lit2))
                             elif distance > 1:
                                 tmp2 = []
                                 for ci in range(cs + 1, cd):
-                                    tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                                    tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
                                 tmp.append(And(tmp2))
                         elif diff_it_valid:
                             distance = self.getCycleDistance(cs, cd, II)
                             if distance == 1 or (p1 == p2 and not is_dest_sel):
-                                tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
+                                tmp.append(And(lit1, lit2))
                             elif distance > 1:
                                 tmp2 = []
                                 for ci in range(cs + 1, II):
-                                    tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                                    tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
                                 for ci in range(cd):
-                                    tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                                    tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
                                 tmp.append(And(tmp2))
                             elif distance == 0:
                                 tmp2 = []
@@ -331,7 +333,7 @@ class Mapper:
                                 for ci in range(II):
                                     if ci == cs:
                                         continue
-                                    tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                                    tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
                                 tmp.append(And(tmp2))
                             else:
                                 logging.error("Should not be here 2")
