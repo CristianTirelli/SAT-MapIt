@@ -318,10 +318,8 @@ class Mapper:
                                     tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
                             if len(tmp2) > 0:
                                 tmp.append(And(tmp2))
-                        elif distance == 0 and diff_it_valid:
+                        elif distance == 0 and diff_it_valid and p1 != p2:
                             tmp2 = []
-                            if p1 == p2:
-                                continue
                             for ci in range(II):
                                 if ci == cs:
                                     continue
