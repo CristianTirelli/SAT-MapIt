@@ -318,16 +318,15 @@ class Mapper:
                                     tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
                             if len(tmp2) > 0:
                                 tmp.append(And(tmp2))
-                        if diff_it_valid:
-                            if distance == 0:
-                                tmp2 = []
-                                if p1 == p2:
+                        elif distance == 0 and diff_it_valid:
+                            tmp2 = []
+                            if p1 == p2:
+                                continue
+                            for ci in range(II):
+                                if ci == cs:
                                     continue
-                                for ci in range(II):
-                                    if ci == cs:
-                                        continue
-                                    tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
-                                tmp.append(And(tmp2))
+                                tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
+                            tmp.append(And(tmp2))
                     
             if len(tmp) == 0:
                 logging.info(f"No constraint for dependency between {ns} and {nd}")
