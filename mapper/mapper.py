@@ -316,7 +316,6 @@ class Mapper:
                                     tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
                                 tmp.append(And(tmp2))
                         elif diff_it_valid:
-                            distance = self.getCycleDistance(cs, cd, II)
                             if distance == 1 or (p1 == p2 and not is_dest_sel):
                                 tmp.append(And(lit1, lit2))
                             elif distance > 1:
