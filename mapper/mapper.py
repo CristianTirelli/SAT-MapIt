@@ -305,7 +305,7 @@ class Mapper:
                         if not self.isNeighbor(p1, p2):
                             continue
                         distance = self.getCycleDistance(cs, cd, II)
-                        if it1 == it2 and cd > cs:
+                        if same_it_valid:
                             if distance == 1 or (p1 == p2 and not is_dest_sel):
                                 tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
                             elif distance > 1:
@@ -313,7 +313,7 @@ class Mapper:
                                 for ci in range(cs + 1, cd):
                                     tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
                                 tmp.append(And(tmp2))
-                        elif abs(it1 - it2) == 1 and it1 < it2 and cd <= cs:
+                        elif diff_it_valid:
                             distance = self.getCycleDistance(cs, cd, II)
                             if distance == 1 or (p1 == p2 and not is_dest_sel):
                                 tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
