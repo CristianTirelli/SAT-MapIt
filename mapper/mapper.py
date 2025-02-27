@@ -335,8 +335,6 @@ class Mapper:
                                         continue
                                     tmp2.append(And(lit1, lit2, cycle_pe_literals[ci][p1]))
                                 tmp.append(And(tmp2))
-                            else:
-                                logging.error("Should not be here 2")
                     
             if len(tmp) == 0:
                 logging.info(f"No constraint for dependency between {ns} and {nd}")
