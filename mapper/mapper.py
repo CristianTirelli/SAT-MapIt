@@ -231,9 +231,10 @@ class Mapper:
         start = time.time()
         all_dep_encoded = True
         found_br = False
+        logging.info("Adding forward dependencies...")	
         for e in self.DFG.get_instruction_edges():
             if e.distance > 0:
-                #backdependencies handled in a different way
+                #backdependencies handled below
                 continue
             ns = e.source.id
             nd = e.destination.id
@@ -298,10 +299,10 @@ class Mapper:
             return all_dep_encoded
         all_dep_encoded = True
         #handle backdeps
-        logging.info("Adding back...")	
+        logging.info("Adding back dependencies...")	
         for e in self.DFG.get_instruction_edges():
             if e.distance < 1:
-                #backdependencies handled in a different way
+                # forward dependencies are handled above
                 continue 
             ns = e.source.id
             nd = e.destination.id
