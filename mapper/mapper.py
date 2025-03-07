@@ -341,35 +341,6 @@ class Mapper:
                                     continue
                                 tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
                             tmp.append(And(tmp2))
-
-                    # if (it1 == it2 and cs > cd) or (it1 > it2 and cs < cd):
-                    #     for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
-                    #         if(self.isNeighbor(p1, p2)):
-                    #             distance = self.getCycleDistance(cs, cd, II)
-                    #             if distance == 1:
-                    #                 tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
-                    #             elif distance > 1:
-                    #                 tmp2 = []
-                    #                 for ci in range(cs + 1, II):
-                    #                     tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-                    #                 for ci in range(cd):
-                    #                     tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-                    #                 tmp.append(And(tmp2))
-                    #                 if p1 == p2:
-                    #                     tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
-                    # elif it1 == it2 and cs == cd:
-                    #     for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
-                    #         if(self.isNeighbor(p1, p2)):
-                    #             if p1 == p2:
-                    #                 continue
-                    #             tmp2 = []
-                    #             for ci in range(II):
-                    #                 if ci == cs:
-                    #                     continue
-                    #                 tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-                    #             tmp.append(And(tmp2))
-                                        
-                    
             if len(tmp) == 0:
                 logging.info(f"No constraint for backdep between source: {ns} and dest: {nd}. Need to check")
                 all_dep_encoded = False
