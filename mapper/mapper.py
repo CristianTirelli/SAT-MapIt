@@ -314,42 +314,64 @@ class Mapper:
                 for (it1, it2) in itertools.product(c_n_it_p_literal[cs][ns], c_n_it_p_literal[cd][nd]):
                     if abs(it1 - it2) > 1:
                         continue
-                    if (it1 == it2 and cs > cd) or (it1 > it2 and cs < cd):
-                        for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
-                            if(self.isNeighbor(p1, p2)):
-                                distance = self.getCycleDistance(cs, cd, II)
-                                if distance == 1:
-                                    tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
-                                elif distance > 1:
-                                    tmp2 = []
-                                    for ci in range(cs + 1, II):
-                                        tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
-                                    for ci in range(cd):
-                                        tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
 
-                                    tmp.append(And(tmp2))
-                                    if p1 == p2:
-                                        tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
-                    elif it1 == it2 and cs == cd:
-                        #we need this to take care of loop carried dependencies (usually between phi nodes)
-                        #I will not find problems in the schedule because if there is a dependency and a
-                        #backdependecy for two nodes, the sat solver is not going to take this solution
-                        #because it will make the data dependency constraint unusable and viceversa.
-                        for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
-                            if(self.isNeighbor(p1, p2)):
-                                if p1 == p2:
-                                    continue
+                    same_it_diff_cycle = it1 == it2 and cs > cd
+                    diff_it = it1 > it2 and cs < cd
+                    same_it_same_cycle = it1 == it2 and cs == cd
+                    if not (same_it_diff_cycle or diff_it or same_it_same_cycle):
+                        continue
+                    for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
+                        if not self.isNeighbor(p1, p2):
+                            continue
+                        if same_it_diff_cycle or diff_it:
+                            distance = self.getCycleDistance(cs, cd, II)
+                            if distance == 1 or (distance > 1 and p1 == p2):
+                                tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
+                            if distance > 1:
                                 tmp2 = []
-                                for ci in range(II):
-                                    if ci == cs:
-                                        continue
+                                for ci in range(cs + 1, II):
+                                    tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                                for ci in range(cd):
                                     tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
                                 tmp.append(And(tmp2))
+                        elif same_it_same_cycle and p1 != p2:
+                            tmp2 = []
+                            for ci in range(II):
+                                if ci == cs:
+                                    continue
+                                tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                            tmp.append(And(tmp2))
+
+                    # if (it1 == it2 and cs > cd) or (it1 > it2 and cs < cd):
+                    #     for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
+                    #         if(self.isNeighbor(p1, p2)):
+                    #             distance = self.getCycleDistance(cs, cd, II)
+                    #             if distance == 1:
+                    #                 tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
+                    #             elif distance > 1:
+                    #                 tmp2 = []
+                    #                 for ci in range(cs + 1, II):
+                    #                     tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                    #                 for ci in range(cd):
+                    #                     tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                    #                 tmp.append(And(tmp2))
+                    #                 if p1 == p2:
+                    #                     tmp.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2]))
+                    # elif it1 == it2 and cs == cd:
+                    #     for (p1, p2) in itertools.product(c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]):
+                    #         if(self.isNeighbor(p1, p2)):
+                    #             if p1 == p2:
+                    #                 continue
+                    #             tmp2 = []
+                    #             for ci in range(II):
+                    #                 if ci == cs:
+                    #                     continue
+                    #                 tmp2.append(And(c_n_it_p_literal[cs][ns][it1][p1], c_n_it_p_literal[cd][nd][it2][p2], cycle_pe_literals[ci][p1]))
+                    #             tmp.append(And(tmp2))
                                         
                     
             if len(tmp) == 0:
-                logging.error("No constraint for this backdep. Need to check")
-                logging.error(ns + " " + nd)
+                logging.info(f"No constraint for backdep between source: {ns} and dest: {nd}. Need to check")
                 all_dep_encoded = False
                 break
             self.s.add(Or(tmp))
