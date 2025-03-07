@@ -221,15 +221,10 @@ class Mapper:
         end = time.time()
         logging.debug("Time: " + str(end - start))
 
-    #Add constraint3 of the formulation
-    #Map dependent nodes on neibours PEs
-    #TODO: (High priority) avoid useing regfile from S to D when S is the predicate of D
-    def addConstraint3(self, II, c_n_it_p_literal, cycle_pe_literals):
-        logging.info("Adding C3...")
+    def add_contraints_forward_edge(self, II: int, c_n_it_p_literal: dict, cycle_pe_literals: dict) -> bool:
+        all_dep_encoded = True
         BRs = ["beq","bne","blt","bge","ble","bgt"]
         SEL = ["bzfa", "bsfa"]
-        start = time.time()
-        all_dep_encoded = True
         found_br = False
         logging.info("Adding forward dependencies...")	
         for e in self.DFG.get_instruction_edges():
@@ -296,7 +291,22 @@ class Mapper:
 
         if not all_dep_encoded:
             self.s.reset()
-            return all_dep_encoded
+        return all_dep_encoded
+
+
+    #Add constraint3 of the formulation
+    #Map dependent nodes on neibours PEs
+    #TODO: (High priority) avoid useing regfile from S to D when S is the predicate of D
+    def addConstraint3(self, II, c_n_it_p_literal, cycle_pe_literals):
+        logging.info("Adding C3...")
+        start = time.time()
+
+        encoded_forward_dependencies = self.add_contraints_forward_edge(II, c_n_it_p_literal, cycle_pe_literals)
+        if not encoded_forward_dependencies:
+            logging.info("Couldn't encode forward dependencies, stopping here")
+            return False
+
+
         all_dep_encoded = True
         #handle backdeps
         logging.info("Adding back dependencies...")	
