@@ -412,7 +412,7 @@ class Mapper:
                 for c in iterations[it]:
                     for nodeId in iterations[it][c]:
                         for pe in range(self.CGRA_x * self.CGRA_Y):
-                            literals.append((Bool("v_%s,%s,%s,%s" % (str(nodeId),str(pe),str(c),str(it)), ctx = self.ctx), nodeId, pe, c, it))
+                            literals.append((Bool(f"v_{nodeId},{pe},{c},{it}", ctx = self.ctx), nodeId, pe, c, it))
             
             #Group literals in Map(nodeid, Value = 'list of literals')
             node_literals = {}
