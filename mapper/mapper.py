@@ -29,7 +29,8 @@ def timeit(description: str, print_args: bool = False):
     return decorator
 
 class Mapper:
-    def __init__(self, x, y, r, dfg, benchmark):
+    def __init__(self, x, y, r, dfg, benchmark, save_smt2_and_cnf: bool = False):
+        self.save_smt2_and_cnf = save_smt2_and_cnf
         
         self.CGRA_x = x
         self.CGRA_Y = y    
@@ -368,10 +369,11 @@ class Mapper:
             return False
         #OUTPUT OF SMT AND CNF FILE
         
-        #with open(self.benchmark + "_" + str(II) + ".smt2", "w") as f:
-        #    f.write(self.s.to_smt2())
-        #with open(self.benchmark + "_" + str(II) + ".cnf", "w") as f:
-        #    f.write(self.s.dimacs())
+        if self.save_smt2_and_cnf:
+            with open(f"{self.benchmark}_{II}.smt2", "w") as f:
+                f.write(self.s.to_smt2())
+            with open(f"{self.benchmark}_{II}.cnf", "w") as f:
+                f.write(self.s.dimacs())
         return True
 
     #Find mapping of the DFG starting from the MII

@@ -46,6 +46,7 @@ def main():
     parser.add_argument('-no_assembly', type=bool, help='Disable assmbly generation (only return the mapping)', default=False)
     parser.add_argument('--log', type=str, default="WARNING", help='The log level. Possible values are "DEBUG", "INFO", "WARNING", "ERROR" and "CRITICAL"')
     parser.add_argument('--log-file', type=str, default="out.log", help='The file inside which the logs will be stored')
+    parser.add_argument('-s', '--save-smt2-and-cnf', action="store_true", help='If the flag is given, save the smt2 and cnf files for the smallest II found')
     
 
     #Parse Arguments
@@ -83,7 +84,7 @@ def main():
 
     #Initialize the mapper with the CGRA dimensions,
     #number of registers of each PE and the DFG
-    m = Mapper(CGRA_X, CGRA_Y, CGRA_R, DFG, bench)
+    m = Mapper(CGRA_X, CGRA_Y, CGRA_R, DFG, bench, save_smt2_and_cnf=args.save_smt2_and_cnf)
 
     #Find the mapping and get the mapped kernel
     m.findMapping()
