@@ -48,3 +48,6 @@ BLE = 41
 BGT = 42
 BZFA = 43
 SRA = 44
+
+BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
+BRs_lower = ["beq","bne","blt","bge","ble","bgt"]

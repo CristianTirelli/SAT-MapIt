@@ -1,4 +1,3 @@
-from .instruction import *
 #nodes of the interference graph
 #a node refers to the liveness of a value
 class interval:

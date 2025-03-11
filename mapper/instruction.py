@@ -2,7 +2,6 @@ from .ISA import *
 
 #this is a class similar to node, but with more information 
 class instruction:
-
     def __init__(self,instruction_id, nodeid):
         self.instruction_id = instruction_id                # instruction id node not necessarly the same as the node id
         self.nodeid = nodeid
@@ -114,7 +113,6 @@ class instruction:
 
     def printAssembly(self):
         output = ""
-        BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
         if self.getOpcodeName() == "MV":
             output += "SADD " + self.getOutputOperandAssignedRegister() + ", "
             if self.opA == ZERO or self.opA == CONST:

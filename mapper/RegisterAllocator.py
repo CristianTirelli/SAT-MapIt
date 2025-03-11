@@ -1,5 +1,5 @@
 from .interference import *
-from .instruction import *
+# from .instruction import instruciton
 from .ISA import *
 
 import logging

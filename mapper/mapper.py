@@ -3,7 +3,9 @@ import itertools
 import time
 import logging
 from z3 import Or, And, Not, Bool, Context, Solver, sat, is_true
-from .RegisterAllocator import *
+from .RegisterAllocator import RegisterAllocator
+from .instruction import instruction
+from .ISA import *
 from functools import wraps
 
 def timeit(description: str, print_args: bool = False):
@@ -236,7 +238,6 @@ class Mapper:
 
     def add_contraints_forward_edge(self, II: int, c_n_it_p_literal: dict, cycle_pe_literals: dict) -> bool:
         all_dep_encoded = True
-        BRs = ["beq","bne","blt","bge","ble","bgt"]
         SEL = ["bzfa", "bsfa"]
         found_br = False
         logging.info("Adding forward dependencies...")	
@@ -257,7 +258,7 @@ class Mapper:
                 #BR nodes can be mapped only on the last cycle of the kernel
                 #else additional resolution techniques needs to be implemented to handle BRs
                 #This reduces the space of all the valid solutions
-                if self.DFG.getNode(nd).name in BRs and cd != (II - 1):
+                if self.DFG.getNode(nd).name.upper() in BRs and cd != (II - 1):
                     continue
                 else:
                     found_br = True
@@ -1103,8 +1104,6 @@ class Mapper:
 
         #update br node destination cycle and opcode
         #TODO: fix br problem here
-        BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
-
         br_count = 0
         br_to_copy = None
         br_location = []
@@ -1185,24 +1184,23 @@ class Mapper:
                 if self.mapping[t][p].getOpcodeName() in BRs:
                     self.mapping[t][p].cycle_destination = init_len + prolog_len
                     #invert jump condition
-                    if self.mapping[t][p].getOpcodeName() == "BEQ":
+                    if self.mapping[t][p].getOpcodeName() == "beq":
                         self.mapping[t][p].opcode = BNE
-                    elif self.mapping[t][p].getOpcodeName() == "BNE":
+                    elif self.mapping[t][p].getOpcodeName() == "bne":
                         self.mapping[t][p].opcode = BEQ
-                    elif self.mapping[t][p].getOpcodeName() == "BLT":
+                    elif self.mapping[t][p].getOpcodeName() == "blt":
                         self.mapping[t][p].opcode = BGE
-                    elif self.mapping[t][p].getOpcodeName() == "BGE":
+                    elif self.mapping[t][p].getOpcodeName() == "bge":
                         self.mapping[t][p].opcode = BLT
-                    elif self.mapping[t][p].getOpcodeName() == "BLE":
+                    elif self.mapping[t][p].getOpcodeName() == "ble":
                         self.mapping[t][p].opcode = BGT
-                    elif self.mapping[t][p].getOpcodeName() == "BGT":
+                    elif self.mapping[t][p].getOpcodeName() == "bgt":
                         self.mapping[t][p].opcode = BLE
 
 
     def printAssembly(self):
         if len(self.mapping) == 0:
             raise Exception("No mapping in memory")
-        BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
 
         for t in range(len(self.mapping)):
             logging.debug(f"T = {t}")

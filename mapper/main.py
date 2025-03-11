@@ -1,6 +1,7 @@
 import logging
-from .mapper import *
-from .parser import *
+from .mapper import Mapper
+from .parser import Parser
+from .instruction import instruction
 
 import argparse
 
