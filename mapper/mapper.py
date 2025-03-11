@@ -242,8 +242,7 @@ class Mapper:
         found_br = False
         logging.info("Adding forward dependencies...")	
         for e in self.DFG.get_instruction_edges():
-            if e.distance > 0:
-                #backdependencies handled below
+            if e.distance > 0: #backdependencies handled below
                 continue
             ns = e.source.id
             nd = e.destination.id
@@ -315,8 +314,7 @@ class Mapper:
         #handle backdeps
         logging.info("Adding back dependencies...")	
         for e in self.DFG.get_instruction_edges():
-            if e.distance < 1:
-                # forward dependencies are handled above
+            if e.distance < 1: # forward dependencies are handled above
                 continue 
             ns = e.source.id
             nd = e.destination.id
