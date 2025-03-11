@@ -4,9 +4,29 @@ import time
 import logging
 from z3 import Or, And, Not, Bool, Context, Solver, sat, is_true
 from .RegisterAllocator import *
+from functools import wraps
+
+def timeit(description: str, print_args: bool = False):
+    """Decorator to time the execution of a function"""
+    def decorator(func):
+        @wraps(func)
+        def wrap(*args, **kwargs):
+            ts = time.time()
+            if print_args:
+                logging.info(f"{description} -- {func.__name__}({args}, {kwargs})")
+            else:
+                logging.info(f"{description} -- {func.__name__}")
+            result = func(*args, **kwargs)
+            te = time.time()
+            if print_args:
+                logging.info(f"{func.__name__} args:[{args}, {kwargs}] took: {te - ts:2.4f} sec")
+            else:
+                logging.info(f"{func.__name__} took {te - ts:2.4f} sec")
+            return result
+        return wrap
+    return decorator
 
 class Mapper:
-    
     def __init__(self, x, y, r, dfg, benchmark):
         
         self.CGRA_x = x
@@ -186,9 +206,8 @@ class Mapper:
 
     #Add constraint1 of the formulation
     #Only one literal for each node must be set to True
+    @timeit("Adding C1...")
     def addConstraint1(self, node_literals):
-        logging.info("Adding C1...")
-        start = time.time()
         for nodeid in node_literals:
             phi = Or(node_literals[nodeid])
             tmp = []
@@ -198,14 +217,11 @@ class Mapper:
             tmp = And(tmp)
             exactlyone = And(phi,tmp)
             self.s.add(exactlyone)
-        end = time.time()
-        logging.debug("Time: " + str(end - start))
 
     #Add constraint2 of the formulation
     #Avoid two nodes on the same PE at the same time
+    @timeit("Adding C2...")
     def addConstraint2(self, cycle_pe_literals):
-        logging.info("Adding C2...")
-        start = time.time()
         for cycle in cycle_pe_literals:
             for pe in cycle_pe_literals[cycle]:
                 tmp = []
@@ -216,10 +232,7 @@ class Mapper:
                     tmp = And(tmp)
                 elif len(tmp) == 0:
                     continue
-                #tmp = And(tmp)
                 self.s.add(tmp)
-        end = time.time()
-        logging.debug("Time: " + str(end - start))
 
     def add_contraints_forward_edge(self, II: int, c_n_it_p_literal: dict, cycle_pe_literals: dict) -> bool:
         all_dep_encoded = True
@@ -297,15 +310,12 @@ class Mapper:
     #Add constraint3 of the formulation
     #Map dependent nodes on neibours PEs
     #TODO: (High priority) avoid useing regfile from S to D when S is the predicate of D
+    @timeit("Adding C3...")
     def addConstraint3(self, II, c_n_it_p_literal, cycle_pe_literals):
-        logging.info("Adding C3...")
-        start = time.time()
-
         encoded_forward_dependencies = self.add_contraints_forward_edge(II, c_n_it_p_literal, cycle_pe_literals)
         if not encoded_forward_dependencies:
             logging.info("Couldn't encode forward dependencies, stopping here")
             return False
-
 
         all_dep_encoded = True
         #handle backdeps
@@ -368,8 +378,6 @@ class Mapper:
         #    f.write(self.s.to_smt2())
         #with open(self.benchmark + "_" + str(II) + ".cnf", "w") as f:
         #    f.write(self.s.dimacs())
-        end = time.time()
-        logging.debug("Time: " + str(end - start))
         return all_dep_encoded
 
     #Find mapping of the DFG starting from the MII
