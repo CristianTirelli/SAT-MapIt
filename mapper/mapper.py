@@ -254,17 +254,10 @@ class Mapper:
             for (cs,cd) in itertools.product(c_n_it_p_literal, c_n_it_p_literal):
                 if (ns not in c_n_it_p_literal[cs]) or (nd not in c_n_it_p_literal[cd]):
                     continue
-                #filter for br node
-                #BR nodes can be mapped only on the last cycle of the kernel
-                #else additional resolution techniques needs to be implemented to handle BRs
-                #This reduces the space of all the valid solutions
                 if self.DFG.getNode(nd).name.upper() in BRs and cd != (II - 1):
                     continue
                 else:
                     found_br = True
-                #select flag should be in rout
-                #avoid solutions that use internal registers
-
                 for (it1, it2) in itertools.product(c_n_it_p_literal[cs][ns], c_n_it_p_literal[cd][nd]):
                     is_same_it = it1 == it2 and cd > cs
                     is_diff_it = abs(it1 - it2) == 1 and it1 < it2 and cd <= cs
