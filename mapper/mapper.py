@@ -295,21 +295,10 @@ class Mapper:
         if not found_br:
             logging.warning("Cannot find BR node in last cycle of the kernel.\n Comment this if you don't care or check DFG/MS")
 
-        if not all_dep_encoded:
-            self.s.reset()
         return all_dep_encoded
 
 
-    #Add constraint3 of the formulation
-    #Map dependent nodes on neibours PEs
-    #TODO: (High priority) avoid useing regfile from S to D when S is the predicate of D
-    @timeit("Adding C3...")
-    def addConstraint3(self, II, c_n_it_p_literal, cycle_pe_literals):
-        encoded_forward_dependencies = self.add_contraints_forward_edge(II, c_n_it_p_literal, cycle_pe_literals)
-        if not encoded_forward_dependencies:
-            logging.info("Couldn't encode forward dependencies, stopping here")
-            return False
-
+    def add_contraints_backward_edge(self, II: int, c_n_it_p_literal: dict, cycle_pe_literals: dict) -> bool:
         all_dep_encoded = True
         #handle backdeps
         logging.info("Adding back dependencies...")	
@@ -360,17 +349,30 @@ class Mapper:
                 all_dep_encoded = False
                 break
             self.s.add(Or(tmp))
+        return all_dep_encoded
 
-        if not all_dep_encoded:
+    #Add constraint3 of the formulation
+    #Map dependent nodes on neibours PEs
+    #TODO: (High priority) avoid useing regfile from S to D when S is the predicate of D
+    @timeit("Adding C3...")
+    def addConstraint3(self, II, c_n_it_p_literal, cycle_pe_literals):
+        encoded_forward_dependencies = self.add_contraints_forward_edge(II, c_n_it_p_literal, cycle_pe_literals)
+        if not encoded_forward_dependencies:
+            logging.info("Couldn't encode forward dependencies, stopping here")
             self.s.reset()
-            return all_dep_encoded
+            return False
+
+        encoded_backward_dependencies = self.add_contraints_backward_edge(II, c_n_it_p_literal, cycle_pe_literals)
+        if not encoded_backward_dependencies:
+            self.s.reset()
+            return False
         #OUTPUT OF SMT AND CNF FILE
         
         #with open(self.benchmark + "_" + str(II) + ".smt2", "w") as f:
         #    f.write(self.s.to_smt2())
         #with open(self.benchmark + "_" + str(II) + ".cnf", "w") as f:
         #    f.write(self.s.dimacs())
-        return all_dep_encoded
+        return True
 
     #Find mapping of the DFG starting from the MII
     #TODO: (Low priority) add upperbound for II
