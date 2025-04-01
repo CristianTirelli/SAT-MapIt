@@ -1201,7 +1201,7 @@ class Mapper:
         for t in range(len(self.mapping)):
             logging.debug(f"T = {t}")
             for p in range(self.CGRA_x * self.CGRA_Y):    
-                logging.debug(self.mapping[t][p].printAssembly())
+                logging.debug(self.mapping[t][p].getAssemblyStr())
 
         for t in range(len(self.mapping)):
             logging.debug(f"T = {t}")

@@ -111,7 +111,7 @@ class instruction:
         print("should not be here", self.opB)
         exit(0)
 
-    def printAssembly(self):
+    def getAssemblyStr(self):
         output = ""
         if self.getOpcodeName() == "MV":
             output += "SADD " + self.getOutputOperandAssignedRegister() + ", "
