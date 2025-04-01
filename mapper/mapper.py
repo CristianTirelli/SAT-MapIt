@@ -1206,34 +1206,35 @@ class Mapper:
             for p in range(self.CGRA_X * self.CGRA_Y):    
                 lines.append(self.mapping[t][p].getAssemblyStr())
 
+        separator = "| " + " -" * (2 + 2*self.CGRA_X + 2*self.CGRA_X) + " |"
         for t in range(len(self.mapping)):
             lines.append(f"T = {t}")
-            tmp = " _" * self.CGRA_Y*5 + " _ \n"
-            for p in range(self.CGRA_X * self.CGRA_Y):
-                tmp += "|  |" + str(self.mapping[t][p].getOpcodeName()) + "|  |"
-
-                if (p+1) % self.CGRA_Y == 0:
-                    tmp += "\n"
-                    if (p+1) != (self.CGRA_Y * self.CGRA_X):
-                        tmp += "|" + "- "*5*self.CGRA_Y + "- \n"
-            tmp += " -" * self.CGRA_Y*5 + "- -\n"
-            lines.append(tmp)
+            lines.append(separator)
+            for y in range(self.CGRA_Y):
+                line = '|  '
+                line += '  ||  '.join([
+                    f"{self.mapping[t][x + y * self.CGRA_X].getOpcodeName():4s}"
+                    for x in range(self.CGRA_X)
+                ])
+                line += '  |'
+                lines.append(line)
+                lines.append(separator)
+            lines.append("")
 
         lines.append("Output of the mapping with node id")
         for t in range(len(self.mapping)):
             lines.append(f"T = {t}")
-            tmp = " _" * self.CGRA_Y*5 + " _ \n"
-            for p in range(self.CGRA_X * self.CGRA_Y):
-                if self.mapping[t][p].nodeid > -1:
-                    tmp += "|  | " + str(self.mapping[t][p].nodeid) + " |  |"
-                else:
-                    tmp += "|  | " + "-1" + " |  |"
-                if (p+1) % self.CGRA_Y == 0:
-                    tmp += "\n"
-                    if (p+1) != (self.CGRA_Y * self.CGRA_X):
-                        tmp += "|" + "- "*5*self.CGRA_Y + "- \n"
-            tmp += " -" * self.CGRA_Y*5 + "- -\n"
-            lines.append(tmp)
+            lines.append(separator)
+            for y in range(self.CGRA_Y):
+                line = '|  '
+                line += '  ||  '.join([
+                    f"{self.mapping[t][x + y * self.CGRA_X].nodeid:2d}"
+                    for x in range(self.CGRA_X)
+                ])
+                line += '  |'
+                lines.append(line)
+                lines.append(separator)
+            lines.append("")
                 
         return '\n'.join(lines)
     def generateBinary(self):

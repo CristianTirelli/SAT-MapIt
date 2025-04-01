@@ -12,6 +12,8 @@ CGRA_Y = 4
 CGRA_R = 100
 
 class TestEndToEnd(unittest.TestCase):
+    maxDiff = None
+
     def parseDFG(self, path):
         p = Parser()
         edgefile = os.path.join(path, "acc_edges")
