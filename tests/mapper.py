@@ -51,7 +51,7 @@ class TestMapper(unittest.TestCase):
 
             m.s.reset()
     def test_bitcount(self):
-        self._test_benchmark("bitcount")
+        self._test_benchmark("bit_count")
 
     def test_gsm(self):
         self._test_benchmark("gsm")

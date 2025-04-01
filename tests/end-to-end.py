@@ -47,7 +47,7 @@ class TestEndToEnd(unittest.TestCase):
 
 
     def test_bitcount(self):
-        self._test_benchmark("bitcount")
+        self._test_benchmark("bit_count")
 
     # TODO: ask Cristian if he fixed the 'call' instruction issue
     # def test_gsm(self):
