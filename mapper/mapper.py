@@ -2,6 +2,7 @@ import math
 import itertools
 import time
 import logging
+from typing import Dict
 from z3 import Or, And, Not, Bool, Context, Solver, sat, is_true
 from .RegisterAllocator import RegisterAllocator
 from .instruction import instruction
@@ -60,7 +61,7 @@ class Mapper:
         self.pke = {}
         self.fini = {}
         #init + pke + fini = mapping
-        self.mapping = {}
+        self.mapping : Dict[int, Dict[int, instruction]]= {}
 
         self.ra = None
 
