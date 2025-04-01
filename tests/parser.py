@@ -32,7 +32,6 @@ class TestMapper(unittest.TestCase):
             with open(os.path.join(path, "dfg", str(i), "expected_dfg.txt")) as f:
                 expected = f.read()
                 self.assertEqual(str(dfg), expected)
-        pass
 
     def test_bitcount(self):
         self._test_benchmark("bitcount")
