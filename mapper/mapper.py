@@ -2,7 +2,7 @@ import math
 import itertools
 import time
 import logging
-from typing import Dict
+from typing import Dict, Optional
 from z3 import Or, And, Not, Bool, Context, Solver, sat, is_true, set_option
 from .RegisterAllocator import RegisterAllocator
 from .instruction import instruction
