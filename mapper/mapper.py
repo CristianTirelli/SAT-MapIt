@@ -1182,19 +1182,8 @@ class Mapper:
                 if self.mapping[t][p].getOpcodeName() in BRs:
                     self.mapping[t][p].cycle_destination = init_len + prolog_len
                     #invert jump condition
-                    if self.mapping[t][p].getOpcodeName() == "BEQ":
-                        self.mapping[t][p].opcode = BNE
-                    elif self.mapping[t][p].getOpcodeName() == "BNE":
-                        self.mapping[t][p].opcode = BEQ
-                    elif self.mapping[t][p].getOpcodeName() == "BLT":
-                        self.mapping[t][p].opcode = BGE
-                    elif self.mapping[t][p].getOpcodeName() == "BGE":
-                        self.mapping[t][p].opcode = BLT
-                    elif self.mapping[t][p].getOpcodeName() == "BLE":
-                        self.mapping[t][p].opcode = BGT
-                    elif self.mapping[t][p].getOpcodeName() == "BGT":
-                        self.mapping[t][p].opcode = BLE
-
+                    if self.mapping[t][p].opcode in BR_OPPOSITES:
+                        self.mapping[t][p].opcode = BR_OPPOSITES[self.mapping[t][p].opcode]
 
     def getAssembly(self) -> str:
         if len(self.mapping) == 0:

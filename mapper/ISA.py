@@ -1,4 +1,4 @@
-#Constants
+# Constants
 ROUT = -1
 RCR = 100
 RCT = 101
@@ -7,7 +7,7 @@ RCB = 103
 CONST = 104
 ZERO = 105
 
-#ISA
+# ISA
 EXIT = 0
 SADD = 1
 SSUB = 2
@@ -49,4 +49,7 @@ BGT = 42
 BZFA = 43
 SRA = 44
 
-BRs = ["BEQ","BNE","BLT","BGE","BLE","BGT"]
+BRs = ["BEQ", "BNE", "BLT", "BGE", "BLE", "BGT"]
+BR_OPPOSITES = {
+    k: v for pair in [(BEQ, BNE), (BLT, BGE), (BGT, BLE)] for k, v in (pair, pair[::-1])
+}
