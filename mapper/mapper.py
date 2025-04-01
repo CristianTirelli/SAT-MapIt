@@ -3,7 +3,7 @@ import itertools
 import time
 import logging
 from typing import Dict
-from z3 import Or, And, Not, Bool, Context, Solver, sat, is_true
+from z3 import Or, And, Not, Bool, Context, Solver, sat, is_true, set_option
 from .RegisterAllocator import RegisterAllocator
 from .instruction import instruction
 from .ISA import *
@@ -30,12 +30,14 @@ def timeit(description: str, print_args: bool = False):
     return decorator
 
 class Mapper:
-    def __init__(self, x, y, r, dfg, benchmark, save_smt2_and_cnf: bool = False):
+    def __init__(self, x, y, r, dfg, benchmark, save_smt2_and_cnf: bool = False, seed: Optional[int] = None):
         self.save_smt2_and_cnf = save_smt2_and_cnf
         
         self.CGRA_x = x
         self.CGRA_Y = y    
         self.CGRA_R = r
+        if seed is not None:
+            set_option('smt.random_seed', seed)
         self.ctx = Context()
         self.s = Solver(ctx=self.ctx)
         # self.s = Solver()
