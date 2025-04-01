@@ -33,7 +33,7 @@ class Mapper:
     def __init__(self, x, y, r, dfg, benchmark, save_smt2_and_cnf: bool = False, seed: Optional[int] = None):
         self.save_smt2_and_cnf = save_smt2_and_cnf
         
-        self.CGRA_x = x
+        self.CGRA_X = x
         self.CGRA_Y = y    
         self.CGRA_R = r
         if seed is not None:
@@ -69,7 +69,7 @@ class Mapper:
 
     #Get Resource Iteration Interval
     def computeResII(self):
-        self.ResII = math.ceil(len(self.DFG.get_instruction_nodes())/(self.CGRA_x*self.CGRA_Y))
+        self.ResII = math.ceil(len(self.DFG.get_instruction_nodes())/(self.CGRA_X*self.CGRA_Y))
 
     #Get Recurrence Iteration Interval
     def computeRecII(self):
@@ -414,7 +414,7 @@ class Mapper:
             for it in iterations:
                 for c in iterations[it]:
                     for nodeId in iterations[it][c]:
-                        for pe in range(self.CGRA_x * self.CGRA_Y):
+                        for pe in range(self.CGRA_X * self.CGRA_Y):
                             literals.append((Bool(f"v_{nodeId},{pe},{c},{it}", ctx = self.ctx), nodeId, pe, c, it))
             
             #Group literals in Map(nodeid, Value = 'list of literals')
@@ -612,7 +612,7 @@ class Mapper:
         if j1 == j2:
             if (pe1 == pe2 + self.CGRA_Y) or (pe1 == pe2 - self.CGRA_Y):
                 return True
-            if abs(i1 - i2) == self.CGRA_x - 1:
+            if abs(i1 - i2) == self.CGRA_X - 1:
                 return True
         #center
         if pe1 == pe2:
@@ -799,7 +799,7 @@ class Mapper:
 
         #get len of the init phase
         init_len = 0
-        for i in range(self.CGRA_x * self.CGRA_Y):
+        for i in range(self.CGRA_X * self.CGRA_Y):
             if i in p_live and i in p_const:
                 init_len = max(init_len, len(p_live[i]) + len(p_const[i]))
             if i in p_live:
@@ -916,7 +916,7 @@ class Mapper:
         for t in range(len(self.init)):
             if t not in self.init:
                 self.init = {}
-            for p in range(self.CGRA_x * self.CGRA_Y):
+            for p in range(self.CGRA_X * self.CGRA_Y):
                 if p not in self.init[t]:
                     self.init[t][p] = None
                 if self.init[t][p] == None:
@@ -944,7 +944,7 @@ class Mapper:
                     p_live[p].append(live_out_node)  
         #get length of fini phase 
         fini_len = 0
-        for i in range(self.CGRA_x * self.CGRA_Y):
+        for i in range(self.CGRA_X * self.CGRA_Y):
             if i in p_live:
                 fini_len = max(fini_len, len(p_live[i]))
             
@@ -952,7 +952,7 @@ class Mapper:
         for i in range(fini_len):
             if i not in self.fini:
                 self.fini[i] = {}
-            for j in range(self.CGRA_x * self.CGRA_Y):
+            for j in range(self.CGRA_X * self.CGRA_Y):
                 if j not in self.fini[i]:
                     self.fini[i][p] = None
 
@@ -979,7 +979,7 @@ class Mapper:
         for t in range(len(self.fini)):
             if t not in self.fini:
                 self.fini = {}
-            for p in range(self.CGRA_x * self.CGRA_Y):
+            for p in range(self.CGRA_X * self.CGRA_Y):
                 if p not in self.fini[t]:
                     self.fini[t][p] = None
                 if self.fini[t][p] == None:
@@ -1007,8 +1007,8 @@ class Mapper:
             logging.debug(s)
 
         #init ra and do register allocation
-        self.ra = RegisterAllocator(self.DFG, self.pke, self.kernel, instructions, self.CGRA_Y, self.CGRA_x, self.CGRA_R)
-        graphs = self.ra.generateInterferenceGraphs(self.kernel, self.CGRA_Y * self.CGRA_x, self.DFG, self.ra.instructions, self.CGRA_R)
+        self.ra = RegisterAllocator(self.DFG, self.pke, self.kernel, instructions, self.CGRA_Y, self.CGRA_X, self.CGRA_R)
+        graphs = self.ra.generateInterferenceGraphs(self.kernel, self.CGRA_Y * self.CGRA_X, self.DFG, self.ra.instructions, self.CGRA_R)
 
         self.ra.addInterferenceGraphs(graphs)
         logging.debug("\n\n**************\n\n")
@@ -1018,7 +1018,7 @@ class Mapper:
             #Uncomment following line to print the interference graphs for each PE
             #graphs[p].printDot(str(p))
             logging.debug("#Nodes: " + str(len(graphs[p].intervals)))
-        self.ra.assignRegisters(self.CGRA_Y, self.CGRA_x)
+        self.ra.assignRegisters(self.CGRA_Y, self.CGRA_X)
         logging.debug("\n\n**************\n\n")
         
         self.generateInit(instructions)
@@ -1057,7 +1057,7 @@ class Mapper:
         for tk in range(len(self.pke)):
             if (tk + t) not in self.mapping:
                 self.mapping[tk + t] = {}
-            for pk in range(self.CGRA_Y * self.CGRA_x):
+            for pk in range(self.CGRA_Y * self.CGRA_X):
                 if pk not in self.mapping[tk + t]:
                     self.mapping[tk + t][pk] = None
                 #get instruction
@@ -1079,7 +1079,7 @@ class Mapper:
         for tk in range(len(self.fini)):
             if (tk + t) not in self.mapping:
                 self.mapping[tk + t] = {}
-            for pk in range(self.CGRA_Y * self.CGRA_x):
+            for pk in range(self.CGRA_Y * self.CGRA_X):
                 if pk not in self.mapping[tk + t]:
                     self.mapping[tk + t][pk] = None
                 #fini is already populated, just copy it into mapping
@@ -1090,7 +1090,7 @@ class Mapper:
         if t not in self.mapping:
             self.mapping[t] = {}
         # Fill time slot with NOPs
-        for pk in range(self.CGRA_Y * self.CGRA_x):
+        for pk in range(self.CGRA_Y * self.CGRA_X):
             if pk not in self.mapping[t]:
                 tmp = instruction(-pk-1, -2)
                 tmp.opcode = NOP
@@ -1203,20 +1203,18 @@ class Mapper:
         lines = []
         for t in range(len(self.mapping)):
             lines.append(f"T = {t}")
-            for p in range(self.CGRA_x * self.CGRA_Y):    
+            for p in range(self.CGRA_X * self.CGRA_Y):    
                 lines.append(self.mapping[t][p].getAssemblyStr())
 
         for t in range(len(self.mapping)):
             lines.append(f"T = {t}")
             tmp = " _" * self.CGRA_Y*5 + " _ \n"
-            for p in range(self.CGRA_x * self.CGRA_Y):
-                #tmp0 += "|   " + "_"*len(str(self.mapping[t][p].getOpcodeName())) + "  |"
+            for p in range(self.CGRA_X * self.CGRA_Y):
                 tmp += "|  |" + str(self.mapping[t][p].getOpcodeName()) + "|  |"
-                #tmp2 += "|   " + "-"*len(str(self.mapping[t][p].getOpcodeName())) + "  |"
 
                 if (p+1) % self.CGRA_Y == 0:
                     tmp += "\n"
-                    if (p+1) != (self.CGRA_Y * self.CGRA_x):
+                    if (p+1) != (self.CGRA_Y * self.CGRA_X):
                         tmp += "|" + "- "*5*self.CGRA_Y + "- \n"
             tmp += " -" * self.CGRA_Y*5 + "- -\n"
             lines.append(tmp)
@@ -1225,14 +1223,14 @@ class Mapper:
         for t in range(len(self.mapping)):
             lines.append(f"T = {t}")
             tmp = " _" * self.CGRA_Y*5 + " _ \n"
-            for p in range(self.CGRA_x * self.CGRA_Y):
+            for p in range(self.CGRA_X * self.CGRA_Y):
                 if self.mapping[t][p].nodeid > -1:
                     tmp += "|  | " + str(self.mapping[t][p].nodeid) + " |  |"
                 else:
                     tmp += "|  | " + "-1" + " |  |"
                 if (p+1) % self.CGRA_Y == 0:
                     tmp += "\n"
-                    if (p+1) != (self.CGRA_Y * self.CGRA_x):
+                    if (p+1) != (self.CGRA_Y * self.CGRA_X):
                         tmp += "|" + "- "*5*self.CGRA_Y + "- \n"
             tmp += " -" * self.CGRA_Y*5 + "- -\n"
             lines.append(tmp)
