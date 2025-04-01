@@ -1194,17 +1194,18 @@ class Mapper:
                         self.mapping[t][p].opcode = BLE
 
 
-    def printAssembly(self):
+    def getAssembly(self) -> str:
         if len(self.mapping) == 0:
             raise Exception("No mapping in memory")
 
+        lines = []
         for t in range(len(self.mapping)):
-            logging.debug(f"T = {t}")
+            lines.append(f"T = {t}")
             for p in range(self.CGRA_x * self.CGRA_Y):    
-                logging.debug(self.mapping[t][p].getAssemblyStr())
+                lines.append(self.mapping[t][p].getAssemblyStr())
 
         for t in range(len(self.mapping)):
-            logging.debug(f"T = {t}")
+            lines.append(f"T = {t}")
             tmp = " _" * self.CGRA_Y*5 + " _ \n"
             for p in range(self.CGRA_x * self.CGRA_Y):
                 #tmp0 += "|   " + "_"*len(str(self.mapping[t][p].getOpcodeName())) + "  |"
@@ -1216,11 +1217,11 @@ class Mapper:
                     if (p+1) != (self.CGRA_Y * self.CGRA_x):
                         tmp += "|" + "- "*5*self.CGRA_Y + "- \n"
             tmp += " -" * self.CGRA_Y*5 + "- -\n"
-            logging.debug(tmp)
+            lines.append(tmp)
 
-        logging.debug("Output of the mapping with node id")
+        lines.append("Output of the mapping with node id")
         for t in range(len(self.mapping)):
-            logging.debug(f"T = {t}")
+            lines.append(f"T = {t}")
             tmp = " _" * self.CGRA_Y*5 + " _ \n"
             for p in range(self.CGRA_x * self.CGRA_Y):
                 if self.mapping[t][p].nodeid > -1:
@@ -1232,8 +1233,9 @@ class Mapper:
                     if (p+1) != (self.CGRA_Y * self.CGRA_x):
                         tmp += "|" + "- "*5*self.CGRA_Y + "- \n"
             tmp += " -" * self.CGRA_Y*5 + "- -\n"
-            logging.debug(tmp)
+            lines.append(tmp)
                 
+        return '\n'.join(lines)
     def generateBinary(self):
         #TODO: Convert in binary code the assembly generated
         pass

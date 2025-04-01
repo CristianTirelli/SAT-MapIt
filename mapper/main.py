@@ -97,7 +97,10 @@ def main():
     #Initialization (e.g., live in loading) + Prologue + Kernel + Epilogue + Finalization (e.g., store of liveout)
     instructions = generateInstructions(kernel, DFG)
     m.generateMapping(instructions)
-    m.printAssembly()
+    assembly = m.getAssembly()
+    with open("assembly", "w") as f:
+        f.write(assembly)
+    logging.debug(assembly)
 
     #Debug 
     for p in instructions:
