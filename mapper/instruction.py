@@ -2,6 +2,15 @@ from .ISA import *
 
 #this is a class similar to node, but with more information 
 class Instruction:
+    REGISTER_NAMES = {
+        RCR: "RCR",
+        RCL: "RCL",
+        RCT: "RCT",
+        RCB: "RCB",
+        ROUT: "ROUT",
+        ZERO: "ZERO",
+    }
+
     def __init__(self,instruction_id, nodeid):
         self.instruction_id = instruction_id                # instruction id node not necessarly the same as the node id
         self.nodeid = nodeid
@@ -66,49 +75,24 @@ class Instruction:
         print("should not be here", self.outreg)
         exit(0)
 
-    def getLeftOperandAssignedRegister(self):
-        #print("opA",self.opA)
-        if self.opA == RCR:
-            return "RCR"        
-        if self.opA == RCL:
-            return "RCL"
-        if self.opA == RCT:
-            return "RCT"
-        if self.opA == RCB:
-            return "RCB"
-        if self.opA == ROUT:
-            return "ROUT"
-        if self.opA == CONST:
+    @staticmethod
+    def getAssignedRegister(op: int) -> str:
+        ret = Instruction.REGISTER_NAMES.get(op, None)
+        if ret is not None:
+            return ret
+        if op == CONST:
             #print("Remove this after debug, opa")
             return ""
-        if self.opA == ZERO:
-            return "ZERO"  
-        if self.opA >= 0:
-            return "R" + str(self.opA)
+        if op >= 0:
+            return "R" + str(op)
         
-        raise ValueError(f"Invalid operand value: {self.opA}")
+        raise ValueError(f"Invalid operand value: {op}")
 
-    def getRigthOperandAssignedRegister(self):
-        #print("opB", self.opB)
-        if self.opB == RCR:
-            return "RCR"        
-        if self.opB == RCL:
-            return "RCL"
-        if self.opB == RCT:
-            return "RCT"
-        if self.opB == RCB:
-            return "RCB"
-        if self.opB == ROUT:
-            return "ROUT"
-        if self.opB == CONST:
-            #print("Remove this after debug, opb")
-            return ""
-        if self.opB == ZERO:
-            return "ZERO"
-        if self.opB >= 0:
-            return "R" + str(self.opB)
+    def getLeftOperandAssignedRegister(self) -> str:
+        return Instruction.getAssignedRegister(self.opA)
 
-        raise ValueError(f"Invalid operand value: {self.opA}")
+    def getRigthOperandAssignedRegister(self) -> str:
+        return Instruction.getAssignedRegister(self.opB)
 
     def getPredicateOperandAssignedRegister(self):
         if self.muxflag == RCR:
