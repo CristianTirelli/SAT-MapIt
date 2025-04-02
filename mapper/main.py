@@ -1,7 +1,7 @@
 import logging
 from .mapper import Mapper
 from .parser import Parser
-from .instruction import instruction
+from .instruction import Instruction
 
 import argparse
 
@@ -11,7 +11,7 @@ def generateInstructions(kernel, DFG):
     for t in kernel:
         for p in kernel[t]:
             node_id = kernel[t][p]
-            inst = instruction(inst_id, node_id)
+            inst = Instruction(inst_id, node_id)
             inst.pe = p
             inst.time = t
             n = DFG.getNode(node_id)

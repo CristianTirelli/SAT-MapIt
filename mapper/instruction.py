@@ -1,7 +1,7 @@
 from .ISA import *
 
 #this is a class similar to node, but with more information 
-class instruction:
+class Instruction:
     def __init__(self,instruction_id, nodeid):
         self.instruction_id = instruction_id                # instruction id node not necessarly the same as the node id
         self.nodeid = nodeid
@@ -25,8 +25,8 @@ class instruction:
         self.cycle_destination = -1 # jmp location
 
     @staticmethod
-    def copy(old: "instruction") -> "instruction":
-        ret = instruction(old.instruction_id, old.nodeid)
+    def copy(old: "Instruction") -> "Instruction":
+        ret = Instruction(old.instruction_id, old.nodeid)
         ret.name = old.name
         ret.outreg = old.outreg
         ret.time = old.time

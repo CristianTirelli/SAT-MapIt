@@ -5,7 +5,7 @@ import logging
 from typing import Dict, Optional
 from z3 import Or, And, Not, Bool, Context, Solver, sat, is_true, set_option
 from .RegisterAllocator import RegisterAllocator
-from .instruction import instruction
+from .instruction import Instruction
 from .ISA import *
 from functools import wraps
 
@@ -63,7 +63,7 @@ class Mapper:
         self.pke = {}
         self.fini = {}
         #init + pke + fini = mapping
-        self.mapping : Dict[int, Dict[int, instruction]]= {}
+        self.mapping : Dict[int, Dict[int, Instruction]]= {}
 
         self.ra = None
 
@@ -822,7 +822,7 @@ class Mapper:
                 if p not in occupied_spot[i]:
                     occupied_spot[i][p] = True
 
-                tmp = instruction(tmp_id, p_live[p][i].id)
+                tmp = Instruction(tmp_id, p_live[p][i].id)
                 tmp_id +=1
                 tmp.pe = p
                 tmp.time = i    
@@ -867,7 +867,7 @@ class Mapper:
                 if pe not in occupied_spot[t + i]:
                     occupied_spot[t + i][pe] = True
                 
-                tmp = instruction(tmp_id, p_const[pe][i].id)
+                tmp = Instruction(tmp_id, p_const[pe][i].id)
                 tmp_id += 1
                 tmp.pe = pe
                 tmp.time = t + i
@@ -921,7 +921,7 @@ class Mapper:
                     self.init[t][p] = None
                 if self.init[t][p] == None:
                     
-                    tmp = instruction(-p-1, -2)
+                    tmp = Instruction(-p-1, -2)
                     tmp.opcode = NOP
                     self.init[t][p] = tmp
         
@@ -960,7 +960,7 @@ class Mapper:
         tmp_id = 0
         for p in p_live:
             for i in range(len(p_live[p])):
-                tmp = instruction(tmp_id, p_live[p][i].id)
+                tmp = Instruction(tmp_id, p_live[p][i].id)
                 tmp_id += 1
                 tmp.pe = p
                 tmp.time = i
@@ -983,7 +983,7 @@ class Mapper:
                 if p not in self.fini[t]:
                     self.fini[t][p] = None
                 if self.fini[t][p] == None:
-                    tmp = instruction(-p-1, -2)
+                    tmp = Instruction(-p-1, -2)
                     tmp.opcode = NOP
                     self.fini[t][p] = tmp
         
@@ -1069,7 +1069,7 @@ class Mapper:
                 #if the pe is empty put a nop instruction on it
                 tmp_id = 0
                 if self.mapping[tk + t][pk] == None:
-                    tmp = instruction(-pk-1, -2)
+                    tmp = Instruction(-pk-1, -2)
                     tmp.opcode = NOP
                     self.mapping[tk + t][pk] = tmp
         
@@ -1092,11 +1092,11 @@ class Mapper:
         # Fill time slot with NOPs
         for pk in range(self.CGRA_Y * self.CGRA_X):
             if pk not in self.mapping[t]:
-                tmp = instruction(-pk-1, -2)
+                tmp = Instruction(-pk-1, -2)
                 tmp.opcode = NOP
                 self.mapping[t][pk] = tmp
         # Add exit instruction
-        tmp = instruction(-3, -2)
+        tmp = Instruction(-3, -2)
         tmp.opcode = EXIT
         self.mapping[t][0] = tmp
 
@@ -1136,7 +1136,7 @@ class Mapper:
         for t in range(init_len + prolog_len):#, init_len + prolog_len + kernel_len):
             for p in self.mapping[t]:
                 if self.mapping[t][p].getOpcodeName() in BRs:
-                    tmp = instruction.copy(self.mapping[t][p])
+                    tmp = Instruction.copy(self.mapping[t][p])
                     tmp.instruction_id = 0
                     tmp.time = t
                     #TODO: compute cycle_destination
@@ -1148,7 +1148,7 @@ class Mapper:
         for t in range(init_len + prolog_len + kernel_len, len(self.mapping) - 1):
             for p in self.mapping[t]:
                 if self.mapping[t][p].getOpcodeName() in BRs:
-                    tmp = instruction.copy(self.mapping[t][p])
+                    tmp = Instruction.copy(self.mapping[t][p])
                     tmp.instruction_id = 0
                     tmp.time = t
                     jmp_destination = t + 1
