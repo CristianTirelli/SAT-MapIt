@@ -1136,19 +1136,9 @@ class Mapper:
         for t in range(init_len + prolog_len):#, init_len + prolog_len + kernel_len):
             for p in self.mapping[t]:
                 if self.mapping[t][p].getOpcodeName() in BRs:
-                    tmp = instruction(0, self.mapping[t][p].nodeid)
-                    tmp.pe = self.mapping[t][p].pe
+                    tmp = instruction.copy(self.mapping[t][p])
+                    tmp.instruction_id = 0
                     tmp.time = t
-                    tmp.name = self.mapping[t][p].name
-                    tmp.opA = self.mapping[t][p].opA
-                    tmp.opB = self.mapping[t][p].opB
-                    tmp.LOp = self.mapping[t][p].LOp
-                    tmp.ROp = self.mapping[t][p].ROp
-                    tmp.outreg = self.mapping[t][p].outreg
-                    tmp.predicate = self.mapping[t][p].predicate
-                    tmp.immediate = self.mapping[t][p].immediate
-                    tmp.muxflag = self.mapping[t][p].muxflag
-                    tmp.opcode = self.mapping[t][p].opcode
                     #TODO: compute cycle_destination
                     jmp_destination = -1
                     tmp.cycle_destination = jmp_destination
@@ -1158,20 +1148,9 @@ class Mapper:
         for t in range(init_len + prolog_len + kernel_len, len(self.mapping) - 1):
             for p in self.mapping[t]:
                 if self.mapping[t][p].getOpcodeName() in BRs:
-                    tmp = instruction(0, self.mapping[t][p].nodeid)
-                    tmp.pe = self.mapping[t][p].pe
+                    tmp = instruction.copy(self.mapping[t][p])
+                    tmp.instruction_id = 0
                     tmp.time = t
-                    tmp.name = self.mapping[t][p].name
-                    tmp.opA = self.mapping[t][p].opA
-                    tmp.opB = self.mapping[t][p].opB
-                    tmp.LOp = self.mapping[t][p].LOp
-                    tmp.ROp = self.mapping[t][p].ROp
-                    tmp.outreg = self.mapping[t][p].outreg
-                    tmp.predicate = self.mapping[t][p].predicate
-                    tmp.immediate = self.mapping[t][p].immediate
-                    tmp.muxflag = self.mapping[t][p].muxflag
-                    tmp.opcode = self.mapping[t][p].opcode
-
                     jmp_destination = t + 1
                     tmp.cycle_destination = jmp_destination
                     self.mapping[t][p] = tmp

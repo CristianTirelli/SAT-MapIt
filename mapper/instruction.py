@@ -24,6 +24,24 @@ class instruction:
         self.opcode = -1            # instruction opcode
         self.cycle_destination = -1 # jmp location
 
+    @staticmethod
+    def copy(old: "instruction") -> "instruction":
+        ret = instruction(old.instruction_id, old.nodeid)
+        ret.name = old.name
+        ret.outreg = old.outreg
+        ret.time = old.time
+        ret.pe = old.pe
+        ret.LOp = old.LOp
+        ret.ROp = old.ROp
+        ret.predicate = old.predicate
+        ret.opA = old.opA
+        ret.opB = old.opB
+        ret.muxflag = old.muxflag
+        ret.immediate = old.immediate
+        ret.opcode = old.opcode
+        ret.cycle_destination = old.cycle_destination
+        return ret
+
     def __repr__(self) -> str:
         return str(self)
 
