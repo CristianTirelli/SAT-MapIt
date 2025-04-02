@@ -425,14 +425,7 @@ class Mapper:
             self.generateKMS(II)
             nit = math.ceil((self.scheduleLen + 1) / II)
             logging.debug(
-                "nit "
-                + str(self.scheduleLen + 1)
-                + "/"
-                + str(II)
-                + "= "
-                + str((self.scheduleLen + 1) / II)
-                + "= "
-                + str(nit)
+                f"nit {self.scheduleLen + 1}/{II} = {(self.scheduleLen + 1) / II} = {nit}"
             )
 
             iterations = {}
@@ -881,7 +874,9 @@ class Mapper:
                         break
 
                 if space_full:
-                    raise Exception(f"No register available on PE {p}  to store livein {tmp.nodeid}")
+                    raise Exception(
+                        f"No register available on PE {p}  to store livein {tmp.nodeid}"
+                    )
 
                 # search the instruction and update it's left or right operand with the register that stores the livein
                 for e in self.DFG.get_livein_edges():
