@@ -86,8 +86,7 @@ class Instruction:
         if self.opA >= 0:
             return "R" + str(self.opA)
         
-        print("should not be here", self.opA)
-        exit(0)
+        raise ValueError(f"Invalid operand value: {self.opA}")
 
     def getRigthOperandAssignedRegister(self):
         #print("opB", self.opB)
@@ -109,8 +108,7 @@ class Instruction:
         if self.opB >= 0:
             return "R" + str(self.opB)
 
-        print("should not be here", self.opB)
-        exit(0)
+        raise ValueError(f"Invalid operand value: {self.opA}")
 
     def getPredicateOperandAssignedRegister(self):
         if self.muxflag == RCR:
