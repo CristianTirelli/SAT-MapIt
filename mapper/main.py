@@ -128,7 +128,7 @@ def main():
     assembly = m.getAssembly()
     with open("assembly", "w") as f:
         f.write(assembly)
-    logging.debug(assembly)
+    print(assembly)
 
     # Debug
     for p in instructions:
