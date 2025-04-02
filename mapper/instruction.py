@@ -10,6 +10,49 @@ class Instruction:
         ROUT: "ROUT",
     }
 
+    OPCODE_NAMES = {
+        EXIT: "EXIT",
+        SADD: "SADD",
+        SSUB: "SSUB",
+        SMUL: "SMUL",
+        SDIV: "SDIV",
+        UADD: "UADD",
+        USUB: "USUB",
+        UMUL: "UMUL",
+        UDIV: "UDIV",
+        SLT: "SLT",
+        SRT: "SRT",
+        LAND: "LAND",
+        LOR: "LOR",
+        LXOR: "LXOR",
+        LNAND: "LNAND",
+        LNOR: "LNOR",
+        LXNOR: "LXNOR",
+        BSFA: "BSFA",
+        INA: "INA",
+        INB: "INB",
+        FXP_ADD: "FXP_ADD",
+        FXP_SUB: "FXP_SUB",
+        FXP_MUL: "FXP_MUL",
+        FXP_DIV: "FXP_DIV",
+        BEQ: "BEQ",
+        BNE: "BNE",
+        BLT: "BLT",
+        BGE: "BGE",
+        LWD: "LWD",
+        LWI: "LWI",
+        LWIPI: "LWIPI",
+        SWD: "SWD",
+        SWI: "SWI",
+        SWIPI: "SWIPI",
+        NOP: "NOP",
+        MV: "MV",
+        BLE: "BLE",
+        BGT: "BGT",
+        BZFA: "BZFA",
+        SRA: "SRA",
+    }
+
     def __init__(self,instruction_id, nodeid):
         self.instruction_id = instruction_id                # instruction id node not necessarly the same as the node id
         self.nodeid = nodeid
@@ -163,87 +206,4 @@ class Instruction:
         return output
     
     def getOpcodeName(self):
-
-        if self.opcode == EXIT:
-            return "EXIT"
-        if self.opcode == SADD:
-            return "SADD"
-        if self.opcode == SSUB:
-            return "SSUB"
-        if self.opcode == SMUL:
-            return "SMUL"
-        if self.opcode == SDIV:
-            return "SDIV"
-        if self.opcode == UADD:
-            return "UADD"
-        if self.opcode == USUB:
-            return "USUB"
-        if self.opcode == UMUL:
-            return "UMUL"
-        if self.opcode == UDIV:
-            return "UDIV"
-        if self.opcode == SLT:
-            return "SLT"
-        if self.opcode == SRT:
-            return "SRT"
-        if self.opcode == LAND:
-            return "LAND"
-        if self.opcode == LOR:
-            return "LOR"
-        if self.opcode == LXOR:
-            return "LXOR"
-        if self.opcode == LNAND:
-            return "LNAND"
-        if self.opcode == LNOR:
-            return "LNOR"
-        if self.opcode == LXNOR:
-            return "LXNOR"
-        if self.opcode == BSFA:
-            return "BSFA"
-        if self.opcode == INA:
-            return "INA"
-        if self.opcode == INB:
-            return "INB"
-        if self.opcode == FXP_ADD:
-            return "FXP_ADD"
-        if self.opcode == FXP_SUB:
-            return "FXP_SUB"
-        if self.opcode == FXP_MUL:
-            return "FXP_MUL"
-        if self.opcode == FXP_DIV:
-            return "FXP_DIV"
-        if self.opcode == BEQ:
-            return "BEQ"
-        if self.opcode == BNE:
-            return "BNE"
-        if self.opcode == BLT:
-            return "BLT"
-        if self.opcode == BGE:
-            return "BGE"
-        if self.opcode == LWD:
-            return "LWD"
-        if self.opcode == LWI:
-            return "LWI"
-        if self.opcode == LWIPI:
-            return "LWIPI"
-        if self.opcode == SWD:
-            return "SWD"
-        if self.opcode == SWI:
-            return "SWI"
-        if self.opcode == SWIPI:
-            return "SWIPI"
-        if self.opcode == NOP:
-            return "NOP"
-        if self.opcode == MV:
-            return "MV"
-        if self.opcode == BLE:
-            return "BLE"
-        if self.opcode == BGT:
-            return "BGT"
-        if self.opcode == BZFA:
-            return "BZFA"
-        if self.opcode == SRA:
-            return "SRA"
-        #print(self.opcode)
-
-        return "UNDEF"
+        return Instruction.OPCODE_NAMES.get(self.opcode, "UNDEF")
