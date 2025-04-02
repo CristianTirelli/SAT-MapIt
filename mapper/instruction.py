@@ -8,7 +8,6 @@ class Instruction:
         RCT: "RCT",
         RCB: "RCB",
         ROUT: "ROUT",
-        ZERO: "ZERO",
     }
 
     def __init__(self,instruction_id, nodeid):
@@ -80,6 +79,8 @@ class Instruction:
         ret = Instruction.REGISTER_NAMES.get(op, None)
         if ret is not None:
             return ret
+        if op == ZERO:
+            return "ZERO"
         if op == CONST:
             #print("Remove this after debug, opa")
             return ""
@@ -95,19 +96,9 @@ class Instruction:
         return Instruction.getAssignedRegister(self.opB)
 
     def getPredicateOperandAssignedRegister(self):
-        if self.muxflag == RCR:
-            return "RCR"        
-        if self.muxflag == RCL:
-            return "RCL"
-        if self.muxflag == RCT:
-            return "RCT"
-        if self.muxflag == RCB:
-            return "RCB"
-        if self.muxflag == ROUT:
-            return "ROUT"
-
-        print("should not be here", self.opB)
-        exit(0)
+        if self.muxflag not in Instruction.REGISTER_NAMES:
+            raise ValueError(f"Invalid muxflag value: {self.muxflag}")
+        return Instruction.REGISTER_NAMES[self.muxflag]
 
     def getAssemblyStr(self):
         output = ""
