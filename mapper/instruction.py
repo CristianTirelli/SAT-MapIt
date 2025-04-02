@@ -114,8 +114,7 @@ class Instruction:
         if self.outreg >= 0:
             return "R" + str(self.outreg)
 
-        print("should not be here", self.outreg)
-        exit(0)
+        raise ValueError(f"Invalid outreg value: {self.outreg}")
 
     @staticmethod
     def getAssignedRegister(op: int) -> str:
@@ -196,9 +195,7 @@ class Instruction:
                     output += self.getOpcodeName() + " " + self.getOutputOperandAssignedRegister() + ", "
                     output += self.getLeftOperandAssignedRegister() + ", " + str(self.immediate)
                 else:
-                    print("Error in CONST checking.")
-                    print(self.nodeid, self.opA, self.opB)
-                    exit(0)
+                    raise ValueError(f"Error in CONST checking. {self.nodeid = } {self.opA = } {self.opB = }")
             else:
                 output += self.getOpcodeName() + " " + self.getOutputOperandAssignedRegister() + ", " 
                 output += self.getLeftOperandAssignedRegister() + ", " + self.getRigthOperandAssignedRegister()
