@@ -516,16 +516,11 @@ class Mapper:
             c_n_it_p_literal = self._group_by_all(literals)
             if not self.addConstraint3(II, c_n_it_p_literal, cycle_pe_literals):
                 logging.info(
-                    "Can't encode all the dependency - II too small\nManually add routing nodes to solve this dep or let the code run."
-                )
-                logging.info(
-                    "NOTE: we force the br instruction to be in the last time step of the kernel."
-                )
-                logging.info(
-                    "This leads to suboptimal results, but makes easier the assembly generation. "
-                )
-                logging.info(
-                    "To obtain optimal results set the BRs = [] and SEL = [] at the start of addConstraint3"
+                    "Can't encode all the dependency - II too small\n"
+                    "Manually add routing nodes to solve this dep or let the code run.\n"
+                    "NOTE: we force the br instruction to be in the last time step of the kernel.\n"
+                    "This leads to suboptimal results, but makes easier the assembly generation.\n"
+                    "To obtain optimal results set the BRs = [] and SEL = [] at the start of addConstraint3\n"
                 )
                 II += 1
                 continue
