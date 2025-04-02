@@ -205,20 +205,15 @@ class Mapper:
         else:
             dup = II - (self.scheduleLen + 1)
             it = 0
-            tmpKMS = {}
+            tmpKMS = defaultdict(list)
             for d in range(dup + 1):
                 for i in range(self.scheduleLen + 1):
-                    if (i + d) not in tmpKMS:
-                        tmpKMS[i + d] = []
                     for nid in self.MS[i]:
                         if nid not in tmpKMS[i + d]:
                             tmpKMS[i + d].append(nid)
-
                 d += 1
 
             for t in tmpKMS:
-                if t not in self.KMS:
-                    self.KMS[t] = []
                 for nid in tmpKMS[t]:
                     self.KMS[t].append((it, nid))
 
