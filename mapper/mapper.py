@@ -206,16 +206,15 @@ class Mapper:
             dup = II - (self.scheduleLen + 1)
             it = 0
             tmpKMS = defaultdict(list)
+            # TODO: ask cristian why we are incrementing d at the end of the loop
             for d in range(dup + 1):
                 for i in range(self.scheduleLen + 1):
-                    for nid in self.MS[i]:
-                        if nid not in tmpKMS[i + d]:
-                            tmpKMS[i + d].append(nid)
+                    tmpKMS[i + d] = [nid for nid in self.MS[i] if nid not in tmpKMS[i + d]]
                 d += 1
 
             for t in tmpKMS:
                 for nid in tmpKMS[t]:
-                    self.KMS[t].append((it, nid))
+                    self.KMS[t] = [(it, nid) for nid in tmpKMS[t]]
 
     # Add constraint1 of the formulation
     # Only one literal for each node must be set to True
