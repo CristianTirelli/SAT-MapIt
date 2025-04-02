@@ -15,8 +15,6 @@ class Instruction:
         self.ROp = -1               # rigth operand node id
         self.predicate = -1         # predicate operand node id
 
-
-
         self.opA = -1               # left operand assigned register (look constants.py file)
         self.opB = -1               # rigth operand assigned register (look constants.py file)
         self.muxflag = -1           # predicate operand assigned register (look constants.py file)
