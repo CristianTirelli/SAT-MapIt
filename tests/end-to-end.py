@@ -41,10 +41,11 @@ class TestEndToEnd(unittest.TestCase):
 
         dfgs = self.get_DFGs(path)
         for i, dfg in enumerate(dfgs, 1):
+            actual_assembly = self.getAssembly(dfg)
+
             with open(os.path.join(path, "assemblies", str(i), "assembly")) as f:
                 expected_assembly = f.read()
 
-            actual_assembly = self.getAssembly(dfg)
             self.assertEqual(actual_assembly, expected_assembly, f"Benchmark {problem} (#dfg: {i})doesn't have matching final assembly")
 
 
