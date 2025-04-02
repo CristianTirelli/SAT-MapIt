@@ -2,13 +2,14 @@ import math
 import itertools
 import time
 import logging
-from typing import Dict, NamedTuple, Optional
+from typing import Dict, Optional
 from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true, set_option
 from .RegisterAllocator import RegisterAllocator
 from .instruction import Instruction
 from .ISA import *
 from functools import wraps
 from dataclasses import dataclass
+from collections import defaultdict
 
 
 @dataclass
@@ -66,8 +67,8 @@ class Mapper:
         self.II = 0
         self.ASAP = {}
         self.ALAP = {}
-        self.MS = {}
-        self.KMS = {}
+        self.MS: dict[int, list[int]] = defaultdict(list)
+        self.KMS: dict[int, list[tuple[int, int]]] = defaultdict(list)
         self.scheduleLen = 0
 
         # schedule found by solver that can be modulo scheduled
@@ -188,8 +189,6 @@ class Mapper:
             t_alap = self.getALAPTime(n.id)
 
             for t in range(t_asap, t_alap + 1):
-                if t not in self.MS:
-                    self.MS[t] = []
                 self.MS[t].append(n.id)
 
         logging.debug("Mobility Schedule")
@@ -201,9 +200,6 @@ class Mapper:
         if II <= self.scheduleLen + 1:
             for i in range(self.scheduleLen + 1):
                 it = i // II
-
-                if (i % II) not in self.KMS:
-                    self.KMS[i % II] = []
                 for nid in self.MS[i]:
                     self.KMS[i % II].append((it, nid))
         else:
@@ -229,7 +225,7 @@ class Mapper:
     # Add constraint1 of the formulation
     # Only one literal for each node must be set to True
     @timeit("Adding C1...")
-    def addConstraint1(self, node_literals):
+    def addConstraint1(self, node_literals: dict[int, list[ExprRef]]):
         for nodeid in node_literals:
             phi = Or(node_literals[nodeid])
             tmp = []
@@ -421,27 +417,23 @@ class Mapper:
                 f.write(self.s.dimacs())
         return True
 
-    def _compute_iterations(self, II: int):
+    def _compute_iterations(self, II: int) -> dict[int, dict[int, list[int]]]:
         nit = math.ceil((self.scheduleLen + 1) / II)
         logging.debug(f"nit {self.scheduleLen + 1}/{II} = {(self.scheduleLen + 1) / II} = {nit}")
 
-        iterations = {}
+        iterations: dict[int, dict[int, list[int]]] = defaultdict(lambda: defaultdict(list))
         logging.debug("KMS")
         for i in range(II):
             logging.debug(f"{self.KMS[i] = }")
 
         for it in range(nit):
-            if it not in iterations:
-                iterations[it] = {}
             for t in self.KMS:
-                if t not in iterations[it]:
-                    iterations[it][t] = []
                 for p in self.KMS[t]:
                     if p[0] == it:
                         iterations[it][t].append(p[1])
         return iterations
 
-    def _build_literals(self, iterations):
+    def _build_literals(self, iterations: dict[int, dict[int, list[int]]]) -> list[NodeLiteral]:
         literals = []
         for it in iterations:
             for c in iterations[it]:
@@ -455,7 +447,7 @@ class Mapper:
         return literals
 
     @staticmethod
-    def _group_by_node(literals: list[NodeLiteral]):
+    def _group_by_node(literals: list[NodeLiteral]) -> dict[int, list[ExprRef]]:
         node_literals = {}
         for l in literals:
             if l.nodeid not in node_literals:
@@ -464,18 +456,15 @@ class Mapper:
         return node_literals
 
     @staticmethod
-    def _group_by_cycle_and_pe(literals: list[NodeLiteral]):
-        cycle_pe_literals = {}
+    def _group_by_cycle_and_pe(literals: list[NodeLiteral]) -> dict[int, dict[int, list[ExprRef]]]:
+        cycle_pe_literals: dict[int, dict[int, list[ExprRef]]] = defaultdict(
+            lambda: defaultdict(list)
+        )
         for l in literals:
-            if l.cycle not in cycle_pe_literals:
-                cycle_pe_literals[l.cycle] = {}
-
-            if l.pe not in cycle_pe_literals[l.cycle]:
-                cycle_pe_literals[l.cycle][l.pe] = []
-
             cycle_pe_literals[l.cycle][l.pe].append(l.literal)
         return cycle_pe_literals
 
+    # TODO: Arno, check the type of this parameter, it should be  dict[int, dict[int, list[ExprRef]]], but we are overriding it, which is kinda cringe
     @staticmethod
     def _precompute_pe_exclusivity(cycle_pe_literals):
         for ci in cycle_pe_literals:
@@ -518,17 +507,13 @@ class Mapper:
             # 1) exactly one variable True for each node
             self.addConstraint1(self._group_by_node(literals))
 
-            # Group literals in Map(cycle, Value = Map(pe, literal))
             # 2) At most one node on one PE at a given time
             cycle_pe_literals = self._group_by_cycle_and_pe(literals)
             self.addConstraint2(cycle_pe_literals)
 
-            # precompute data
-            self._precompute_pe_exclusivity(cycle_pe_literals)
-            # Group literals in Map(cycle, Value = Map(nodeid, Map(iteration,Map(pe, literal)))
-            c_n_it_p_literal = self._group_by_all(literals)
-
             # 3) encode all dependencies
+            self._precompute_pe_exclusivity(cycle_pe_literals)
+            c_n_it_p_literal = self._group_by_all(literals)
             if not self.addConstraint3(II, c_n_it_p_literal, cycle_pe_literals):
                 logging.info(
                     "Can't encode all the dependency - II too small\nManually add routing nodes to solve this dep or let the code run."
