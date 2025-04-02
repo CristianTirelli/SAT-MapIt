@@ -1044,14 +1044,14 @@ class Mapper:
 
         logging.debug("\n\n**************\n\n")
         if len(self.init) > 0:
-            logging.debug("Init: 0 - " + str(len(self.init) - 1))
+            logging.debug(f"Init: 0 - {len(self.init) - 1}")
         if len(self.prolog) > 0:
-            logging.debug("Prolog: " + str(len(self.init)) + " - " + str(len(self.init) + len(self.prolog) - 1))
-        logging.debug("Kernel: " + str(len(self.prolog) + len(self.init)) + " - " + str(len(self.init) + len(self.prolog) + len(self.kernel) - 1))
+            logging.debug(f"Prolog: {len(self.init)} - {len(self.init) + len(self.prolog) - 1}")
+        logging.debug(f"Kernel: {len(self.prolog) + len(self.init)} - {len(self.init) + len(self.prolog) + len(self.kernel) - 1}")
         if len(self.epilog) > 0:
-            logging.debug("Epilog: " + str(len(self.init) + len(self.pke) - len(self.epilog)) + " - " + str(len(self.init) + len(self.pke) - 1))
+            logging.debug(f"Epilog: {len(self.init) + len(self.pke) - len(self.epilog)} - {len(self.init) + len(self.pke) - 1}")
         if len(self.fini) > 0:
-            logging.debug("Fini: " + str(len(self.init) + len(self.pke)) + " - " + str(len(self.init) + len(self.pke) + len(self.fini) - 1))
+            logging.debug(f"Fini: {len(self.init) + len(self.pke)} - {len(self.init) + len(self.pke) + len(self.fini) - 1}")
         logging.debug("\n\n**************\n\n")
         #append pke to mapping
         for tk in range(len(self.pke)):
