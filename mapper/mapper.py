@@ -2,12 +2,22 @@ import math
 import itertools
 import time
 import logging
-from typing import Dict, Optional
-from z3 import Or, And, Not, Bool, Context, Solver, sat, is_true, set_option
+from typing import Dict, NamedTuple, Optional
+from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true, set_option
 from .RegisterAllocator import RegisterAllocator
 from .instruction import Instruction
 from .ISA import *
 from functools import wraps
+from dataclasses import dataclass
+
+
+@dataclass
+class NodeLiteral:
+    literal: ExprRef
+    nodeid: int
+    pe: int
+    cycle: int
+    iteration: int
 
 
 def timeit(description: str, print_args: bool = False):
@@ -411,110 +421,114 @@ class Mapper:
                 f.write(self.s.dimacs())
         return True
 
+    def _compute_iterations(self, II: int):
+        nit = math.ceil((self.scheduleLen + 1) / II)
+        logging.debug(f"nit {self.scheduleLen + 1}/{II} = {(self.scheduleLen + 1) / II} = {nit}")
+
+        iterations = {}
+        logging.debug("KMS")
+        for i in range(II):
+            logging.debug(f"{self.KMS[i] = }")
+
+        for it in range(nit):
+            if it not in iterations:
+                iterations[it] = {}
+            for t in self.KMS:
+                if t not in iterations[it]:
+                    iterations[it][t] = []
+                for p in self.KMS[t]:
+                    if p[0] == it:
+                        iterations[it][t].append(p[1])
+        return iterations
+
+    def _build_literals(self, iterations):
+        literals = []
+        for it in iterations:
+            for c in iterations[it]:
+                for nodeId in iterations[it][c]:
+                    for pe in range(self.CGRA_X * self.CGRA_Y):
+                        literals.append(
+                            NodeLiteral(
+                                Bool(f"v_{nodeId},{pe},{c},{it}", ctx=self.ctx), nodeId, pe, c, it
+                            )
+                        )
+        return literals
+
+    @staticmethod
+    def _group_by_node(literals: list[NodeLiteral]):
+        node_literals = {}
+        for l in literals:
+            if l.nodeid not in node_literals:
+                node_literals[l.nodeid] = []
+            node_literals[l.nodeid].append(l.literal)
+        return node_literals
+
+    @staticmethod
+    def _group_by_cycle_and_pe(literals: list[NodeLiteral]):
+        cycle_pe_literals = {}
+        for l in literals:
+            if l.cycle not in cycle_pe_literals:
+                cycle_pe_literals[l.cycle] = {}
+
+            if l.pe not in cycle_pe_literals[l.cycle]:
+                cycle_pe_literals[l.cycle][l.pe] = []
+
+            cycle_pe_literals[l.cycle][l.pe].append(l.literal)
+        return cycle_pe_literals
+
+    @staticmethod
+    def _precompute_pe_exclusivity(cycle_pe_literals):
+        for ci in cycle_pe_literals:
+            for pj in cycle_pe_literals[ci]:
+                cycle_pe_literals[ci][pj] = Not(Or(cycle_pe_literals[ci][pj]))
+
+    @staticmethod
+    def _group_by_all(literals: list[NodeLiteral]):
+        c_n_it_p_literal = {}
+        for l in literals:
+            if l.cycle not in c_n_it_p_literal:
+                c_n_it_p_literal[l.cycle] = {}
+
+            if l.nodeid not in c_n_it_p_literal[l.cycle]:
+                c_n_it_p_literal[l.cycle][l.nodeid] = {}
+
+            if l.iteration not in c_n_it_p_literal[l.cycle][l.nodeid]:
+                c_n_it_p_literal[l.cycle][l.nodeid][l.iteration] = {}
+
+            if l.pe not in c_n_it_p_literal[l.cycle][l.nodeid][l.iteration]:
+                c_n_it_p_literal[l.cycle][l.nodeid][l.iteration][l.pe] = ''
+
+            c_n_it_p_literal[l.cycle][l.nodeid][l.iteration][l.pe] = l.literal
+        return c_n_it_p_literal
+
     # Find mapping of the DFG starting from the MII
     # TODO: (Low priority) add upperbound for II
     def findMapping(self):
-
         II = self.getStartingII()
-
         self.generateMS()
 
         solution = False
         while not solution:
             logging.info(f"{II = }")
             self.generateKMS(II)
-            nit = math.ceil((self.scheduleLen + 1) / II)
-            logging.debug(
-                f"nit {self.scheduleLen + 1}/{II} = {(self.scheduleLen + 1) / II} = {nit}"
-            )
 
-            iterations = {}
-            logging.debug("KMS")
-            for i in range(II):
-                logging.debug(f"{self.KMS[i] = }")
+            iterations = self._compute_iterations(II)
+            literals = self._build_literals(iterations)
 
-            for it in range(nit):
-                if it not in iterations:
-                    iterations[it] = {}
-                for t in self.KMS:
-                    if t not in iterations[it]:
-                        iterations[it][t] = []
-                    for p in self.KMS[t]:
-                        if p[0] == it:
-                            iterations[it][t].append(p[1])
-
-            # Generate all the literals for the formulation
-            literals = []
-            for it in iterations:
-                for c in iterations[it]:
-                    for nodeId in iterations[it][c]:
-                        for pe in range(self.CGRA_X * self.CGRA_Y):
-                            literals.append(
-                                (Bool(f"v_{nodeId},{pe},{c},{it}", ctx=self.ctx), nodeId, pe, c, it)
-                            )
-
-            # Group literals in Map(nodeid, Value = 'list of literals')
-            node_literals = {}
-            for l in literals:
-                literal = l[0]
-                nodeid = l[1]
-                if nodeid not in node_literals:
-                    node_literals[nodeid] = []
-                node_literals[nodeid].append(literal)
-
-            # 1)
-            # exactly one variable True for each node
-            self.addConstraint1(node_literals)
+            # 1) exactly one variable True for each node
+            self.addConstraint1(self._group_by_node(literals))
 
             # Group literals in Map(cycle, Value = Map(pe, literal))
-            cycle_pe_literals = {}
-            for l in literals:
-                literal = l[0]
-                pe = l[2]
-                cycle = l[3]
-
-                if cycle not in cycle_pe_literals:
-                    cycle_pe_literals[cycle] = {}
-
-                if pe not in cycle_pe_literals[cycle]:
-                    cycle_pe_literals[cycle][pe] = []
-
-                cycle_pe_literals[cycle][pe].append(literal)
-            # 2)
-            # At most one node on one PE at a given time
+            # 2) At most one node on one PE at a given time
+            cycle_pe_literals = self._group_by_cycle_and_pe(literals)
             self.addConstraint2(cycle_pe_literals)
 
             # precompute data
-            for ci in cycle_pe_literals:
-                for pj in cycle_pe_literals[ci]:
-                    cycle_pe_literals[ci][pj] = Not(Or(cycle_pe_literals[ci][pj]))
-
+            self._precompute_pe_exclusivity(cycle_pe_literals)
             # Group literals in Map(cycle, Value = Map(nodeid, Map(iteration,Map(pe, literal)))
-            c_n_it_p_literal = {}
-            for l in literals:
+            c_n_it_p_literal = self._group_by_all(literals)
 
-                literal = l[0]
-                nodeid = l[1]
-                pe = l[2]
-                cycle = l[3]
-                iteration = l[4]
-
-                if cycle not in c_n_it_p_literal:
-                    c_n_it_p_literal[cycle] = {}
-
-                if nodeid not in c_n_it_p_literal[cycle]:
-                    c_n_it_p_literal[cycle][nodeid] = {}
-
-                if iteration not in c_n_it_p_literal[cycle][nodeid]:
-                    c_n_it_p_literal[cycle][nodeid][iteration] = {}
-
-                if pe not in c_n_it_p_literal[cycle][nodeid][iteration]:
-                    c_n_it_p_literal[cycle][nodeid][iteration][pe] = ''
-
-                c_n_it_p_literal[cycle][nodeid][iteration][pe] = literal
-
-            # 3)
-            # encode all dependencies
+            # 3) encode all dependencies
             if not self.addConstraint3(II, c_n_it_p_literal, cycle_pe_literals):
                 logging.info(
                     "Can't encode all the dependency - II too small\nManually add routing nodes to solve this dep or let the code run."
