@@ -143,64 +143,79 @@ class Instruction:
         return Instruction.REGISTER_NAMES[self.muxflag]
 
     def getAssemblyStr(self):
-        output = ""
-        if self.getOpcodeName() == "MV":
-            output += "SADD " + self.getOutputOperandAssignedRegister() + ", "
-            if self.opA == ZERO or self.opA == CONST:
-                output += self.getRigthOperandAssignedRegister() + ", "
-            else:
-                output += self.getLeftOperandAssignedRegister() + ", "
+        handler = self._assembly_dispatch().get(self.getOpcodeName(), self._handle_default)
+        return handler()
 
-            output += "ZERO"
-        elif self.getOpcodeName() == "LWI":
-            output += "LWI " + self.getOutputOperandAssignedRegister() + ", "
-            # not sure this case actually makes sense, but in theory it should be allowed
-            if self.opB == CONST:
-                output += str(self.immediate)
-            else:    
-                output += self.getLeftOperandAssignedRegister()      
-        elif self.getOpcodeName() == "LWD":
-            output += "LWD " + self.getOutputOperandAssignedRegister()
-        elif self.getOpcodeName() == "SWI":
-            output += "SWI " + self.getLeftOperandAssignedRegister() + ", "
-            # not sure this case actually makes sense, but in theory it should be allowed
-            if self.opB == CONST:
-                output += str(self.immediate)
-            else:    
-                output += self.getRigthOperandAssignedRegister()              
-        elif self.getOpcodeName() == "SWD":
-            output += "SWD " + self.getOutputOperandAssignedRegister()
-        elif self.getOpcodeName() == "BSFA" or self.getOpcodeName() == "BZFA":
-            output += self.getOpcodeName() + " " + self.getOutputOperandAssignedRegister() + ", "
-            output += self.getLeftOperandAssignedRegister() + ", " + self.getRigthOperandAssignedRegister() 
-            output +=  ", " + self.getPredicateOperandAssignedRegister()
-        elif self.getOpcodeName() in BRs:
-            output += self.getOpcodeName() + " " + self.getLeftOperandAssignedRegister() + ", "
-            output += self.getRigthOperandAssignedRegister() + ", " + str(self.cycle_destination)
-            if self.opB == CONST:
-                print("BR opcode can only have one immediate and it's the br destination.\nStore the constant in a register.")
-                #exit(0)
-        elif self.getOpcodeName() == "NOP":
-            output = "NOP"
-        elif self.getOpcodeName() == "EXIT":
-            output = "EXIT"
+    def _assembly_dispatch(self):
+        return {
+            "MV": self._handle_mv,
+            "LWI": self._handle_lwi,
+            "LWD": self._handle_lwd,
+            "SWI": self._handle_swi,
+            "SWD": self._handle_swd,
+            "BSFA": self._handle_bsfa_bzfa,
+            "BZFA": self._handle_bsfa_bzfa,
+            "NOP": lambda: "NOP",
+            "EXIT": lambda: "EXIT",
+            **{op: self._handle_branch for op in BRs}
+        }
+
+    def _handle_mv(self):
+        reg_out = self.getOutputOperandAssignedRegister()
+        if self.opA in (ZERO, CONST):
+            reg_src = self.getRigthOperandAssignedRegister()
         else:
-            if self.hasConstant():
-                if self.opA == CONST:
-                    #print("opA Const")
-                    output += self.getOpcodeName() + " " + self.getOutputOperandAssignedRegister() + ", " 
-                    output += self.getRigthOperandAssignedRegister() + ", " + str(self.immediate)
-                elif self.opB == CONST:
-                    #print("opB Const")
-                    output += self.getOpcodeName() + " " + self.getOutputOperandAssignedRegister() + ", "
-                    output += self.getLeftOperandAssignedRegister() + ", " + str(self.immediate)
-                else:
-                    raise ValueError(f"Error in CONST checking. {self.nodeid = } {self.opA = } {self.opB = }")
+            reg_src = self.getLeftOperandAssignedRegister()
+        return f"SADD {reg_out}, {reg_src}, ZERO"
+
+    def _handle_lwi(self):
+        reg_out = self.getOutputOperandAssignedRegister()
+        if self.opB == CONST:
+            return f"LWI {reg_out}, {self.immediate}"
+        return f"LWI {reg_out}, {self.getLeftOperandAssignedRegister()}"
+
+    def _handle_lwd(self):
+        return f"LWD {self.getOutputOperandAssignedRegister()}"
+
+    def _handle_swi(self):
+        reg_src = self.getLeftOperandAssignedRegister()
+        if self.opB == CONST:
+            return f"SWI {reg_src}, {self.immediate}"
+        return f"SWI {reg_src}, {self.getRigthOperandAssignedRegister()}"
+
+    def _handle_swd(self):
+        return f"SWD {self.getOutputOperandAssignedRegister()}"
+
+    def _handle_bsfa_bzfa(self):
+        return f"{self.getOpcodeName()} {self.getOutputOperandAssignedRegister()}, " \
+               f"{self.getLeftOperandAssignedRegister()}, {self.getRigthOperandAssignedRegister()}, " \
+               f"{self.getPredicateOperandAssignedRegister()}"
+
+    def _handle_branch(self):
+        if self.opB == CONST:
+            print("BR opcode can only have one immediate and it's the br destination.\nStore the constant in a register.")
+            # exit(0)
+            # TODO: ask Cristian about this
+        return f"{self.getOpcodeName()} {self.getLeftOperandAssignedRegister()}, " \
+               f"{self.getRigthOperandAssignedRegister()}, {self.cycle_destination}"
+
+    def _handle_default(self):
+        opcode = self.getOpcodeName()
+        reg_out = self.getOutputOperandAssignedRegister()
+
+        if self.hasConstant():
+            if self.opA == CONST:
+                reg_b = self.getRigthOperandAssignedRegister()
+                return f"{opcode} {reg_out}, {reg_b}, {self.immediate}"
+            elif self.opB == CONST:
+                reg_a = self.getLeftOperandAssignedRegister()
+                return f"{opcode} {reg_out}, {reg_a}, {self.immediate}"
             else:
-                output += self.getOpcodeName() + " " + self.getOutputOperandAssignedRegister() + ", " 
-                output += self.getLeftOperandAssignedRegister() + ", " + self.getRigthOperandAssignedRegister()
-            
-        return output
+                raise ValueError(f"CONST error: nodeid={self.nodeid}, opA={self.opA}, opB={self.opB}")
+        else:
+            reg_a = self.getLeftOperandAssignedRegister()
+            reg_b = self.getRigthOperandAssignedRegister()
+            return f"{opcode} {reg_out}, {reg_a}, {reg_b}"
     
     def getOpcodeName(self):
         return Instruction.OPCODE_NAMES.get(self.opcode, "UNDEF")
