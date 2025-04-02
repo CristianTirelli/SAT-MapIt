@@ -1,6 +1,6 @@
 from .ISA import *
 
-#this is a class similar to node, but with more information 
+# this is a class similar to node, but with more information
 class Instruction:
     REGISTER_NAMES = {
         RCR: "RCR",
@@ -53,12 +53,12 @@ class Instruction:
         SRA: "SRA",
     }
 
-    def __init__(self,instruction_id, nodeid):
+    def __init__(self, instruction_id, nodeid):
         self.instruction_id = instruction_id                # instruction id node not necessarly the same as the node id
         self.nodeid = nodeid
         self.name = ""
 
-        self.outreg = -1   
+        self.outreg = -1
         self.time = -1
         self.pe = -1
 
@@ -71,7 +71,7 @@ class Instruction:
         self.muxflag = -1           # predicate operand assigned register (look constants.py file)
         self.immediate = 0          # immediate value
         self.opcode = -1            # instruction opcode
-        self.cycle_destination = -1 # jmp location
+        self.cycle_destination = -1   # jmp location
 
     @staticmethod
     def copy(old: "Instruction") -> "Instruction":
@@ -97,7 +97,6 @@ class Instruction:
     def __str__(self) -> str:
         return f"Instruction({self.instruction_id} {self.nodeid} {self.name} {self.outreg} {self.time} {self.pe} {self.LOp} {self.ROp} {self.predicate} {self.opA} {self.opB} {self.muxflag} {self.immediate} {self.opcode} {self.cycle_destination})"
 
-
     def hasPredicate(self):
         if self.predicate == -1:
             return False
@@ -110,7 +109,7 @@ class Instruction:
 
     def getOutputOperandAssignedRegister(self):
         if self.outreg == -1:
-            return "ROUT"        
+            return "ROUT"
         if self.outreg >= 0:
             return "R" + str(self.outreg)
 
@@ -124,11 +123,11 @@ class Instruction:
         if op == ZERO:
             return "ZERO"
         if op == CONST:
-            #print("Remove this after debug, opa")
+            # print("Remove this after debug, opa")
             return ""
         if op >= 0:
             return "R" + str(op)
-        
+
         raise ValueError(f"Invalid operand value: {op}")
 
     def getLeftOperandAssignedRegister(self) -> str:
@@ -157,7 +156,7 @@ class Instruction:
             "BZFA": self._handle_bsfa_bzfa,
             "NOP": lambda: "NOP",
             "EXIT": lambda: "EXIT",
-            **{op: self._handle_branch for op in BRs}
+            **{op: self._handle_branch for op in BRs},
         }
 
     def _handle_mv(self):
@@ -187,17 +186,24 @@ class Instruction:
         return f"SWD {self.getOutputOperandAssignedRegister()}"
 
     def _handle_bsfa_bzfa(self):
-        return f"{self.getOpcodeName()} {self.getOutputOperandAssignedRegister()}, " \
-               f"{self.getLeftOperandAssignedRegister()}, {self.getRigthOperandAssignedRegister()}, " \
-               f"{self.getPredicateOperandAssignedRegister()}"
+        return (
+            f"{self.getOpcodeName()} {self.getOutputOperandAssignedRegister()}, "
+            f"{self.getLeftOperandAssignedRegister()}, {self.getRigthOperandAssignedRegister()}, "
+            f"{self.getPredicateOperandAssignedRegister()}"
+        )
 
     def _handle_branch(self):
         if self.opB == CONST:
-            print("BR opcode can only have one immediate and it's the br destination.\nStore the constant in a register.")
+            print(
+                "BR opcode can only have one immediate and it's the br destination.\n"
+                "Store the constant in a register."
+            )
             # exit(0)
             # TODO: ask Cristian about this
-        return f"{self.getOpcodeName()} {self.getLeftOperandAssignedRegister()}, " \
-               f"{self.getRigthOperandAssignedRegister()}, {self.cycle_destination}"
+        return (
+            f"{self.getOpcodeName()} {self.getLeftOperandAssignedRegister()}, "
+            f"{self.getRigthOperandAssignedRegister()}, {self.cycle_destination}"
+        )
 
     def _handle_default(self):
         opcode = self.getOpcodeName()
@@ -211,11 +217,13 @@ class Instruction:
                 reg_a = self.getLeftOperandAssignedRegister()
                 return f"{opcode} {reg_out}, {reg_a}, {self.immediate}"
             else:
-                raise ValueError(f"CONST error: nodeid={self.nodeid}, opA={self.opA}, opB={self.opB}")
+                raise ValueError(
+                    f"CONST error: nodeid={self.nodeid}, opA={self.opA}, opB={self.opB}"
+                )
         else:
             reg_a = self.getLeftOperandAssignedRegister()
             reg_b = self.getRigthOperandAssignedRegister()
             return f"{opcode} {reg_out}, {reg_a}, {reg_b}"
-    
+
     def getOpcodeName(self):
         return Instruction.OPCODE_NAMES.get(self.opcode, "UNDEF")
