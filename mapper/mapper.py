@@ -1174,7 +1174,7 @@ class Mapper:
             for p in range(self.CGRA_X * self.CGRA_Y):    
                 lines.append(self.mapping[t][p].getAssemblyStr())
 
-        separator = "| " + " -" * (2 + 2*self.CGRA_X + 2*self.CGRA_X) + " |"
+        separator = "| " + " -" * int(1 + (4*self.CGRA_X + 6*(self.CGRA_X-1))/2) + " |"
         for t in range(len(self.mapping)):
             lines.append(f"T = {t}")
             lines.append(separator)
@@ -1189,6 +1189,7 @@ class Mapper:
                 lines.append(separator)
             lines.append("")
 
+        separator = "| " + " -" * int(1 + (2*self.CGRA_X + 6*(self.CGRA_X-1))/2) + " |"
         lines.append("Output of the mapping with node id")
         for t in range(len(self.mapping)):
             lines.append(f"T = {t}")
