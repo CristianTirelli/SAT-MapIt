@@ -2,57 +2,6 @@ from .ISA import *
 
 # this is a class similar to node, but with more information
 class Instruction:
-    REGISTER_NAMES = {
-        RCR: "RCR",
-        RCL: "RCL",
-        RCT: "RCT",
-        RCB: "RCB",
-        ROUT: "ROUT",
-    }
-
-    OPCODE_NAMES = {
-        EXIT: "EXIT",
-        SADD: "SADD",
-        SSUB: "SSUB",
-        SMUL: "SMUL",
-        SDIV: "SDIV",
-        UADD: "UADD",
-        USUB: "USUB",
-        UMUL: "UMUL",
-        UDIV: "UDIV",
-        SLT: "SLT",
-        SRT: "SRT",
-        LAND: "LAND",
-        LOR: "LOR",
-        LXOR: "LXOR",
-        LNAND: "LNAND",
-        LNOR: "LNOR",
-        LXNOR: "LXNOR",
-        BSFA: "BSFA",
-        INA: "INA",
-        INB: "INB",
-        FXP_ADD: "FXP_ADD",
-        FXP_SUB: "FXP_SUB",
-        FXP_MUL: "FXP_MUL",
-        FXP_DIV: "FXP_DIV",
-        BEQ: "BEQ",
-        BNE: "BNE",
-        BLT: "BLT",
-        BGE: "BGE",
-        LWD: "LWD",
-        LWI: "LWI",
-        LWIPI: "LWIPI",
-        SWD: "SWD",
-        SWI: "SWI",
-        SWIPI: "SWIPI",
-        NOP: "NOP",
-        MV: "MV",
-        BLE: "BLE",
-        BGT: "BGT",
-        BZFA: "BZFA",
-        SRA: "SRA",
-    }
-
     def __init__(self, instruction_id, nodeid):
         self.instruction_id = instruction_id                # instruction id node not necessarly the same as the node id
         self.nodeid = nodeid
@@ -117,7 +66,7 @@ class Instruction:
 
     @staticmethod
     def getAssignedRegister(op: int) -> str:
-        ret = Instruction.REGISTER_NAMES.get(op, None)
+        ret = REGISTER_NAMES.get(op, None)
         if ret is not None:
             return ret
         if op == ZERO:
@@ -137,9 +86,9 @@ class Instruction:
         return Instruction.getAssignedRegister(self.opB)
 
     def getPredicateOperandAssignedRegister(self):
-        if self.muxflag not in Instruction.REGISTER_NAMES:
+        if self.muxflag not in REGISTER_NAMES:
             raise ValueError(f"Invalid muxflag value: {self.muxflag}")
-        return Instruction.REGISTER_NAMES[self.muxflag]
+        return REGISTER_NAMES[self.muxflag]
 
     def getAssemblyStr(self):
         handler = self._assembly_dispatch().get(self.getOpcodeName(), self._handle_default)
@@ -226,4 +175,4 @@ class Instruction:
             return f"{opcode} {reg_out}, {reg_a}, {reg_b}"
 
     def getOpcodeName(self):
-        return Instruction.OPCODE_NAMES.get(self.opcode, "UNDEF")
+        return OPCODE_NAMES.get(self.opcode, "UNDEF")

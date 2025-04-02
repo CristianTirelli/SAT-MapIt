@@ -7,6 +7,15 @@ RCB = 103
 CONST = 104
 ZERO = 105
 
+REGISTER_NAMES = {
+    RCR: "RCR",
+    RCL: "RCL",
+    RCT: "RCT",
+    RCB: "RCB",
+    ROUT: "ROUT",
+}
+
+
 # ISA
 EXIT = 0
 SADD = 1
@@ -48,6 +57,50 @@ BLE = 41
 BGT = 42
 BZFA = 43
 SRA = 44
+
+OPCODE_NAMES = {
+    EXIT: "EXIT",
+    SADD: "SADD",
+    SSUB: "SSUB",
+    SMUL: "SMUL",
+    SDIV: "SDIV",
+    UADD: "UADD",
+    USUB: "USUB",
+    UMUL: "UMUL",
+    UDIV: "UDIV",
+    SLT: "SLT",
+    SRT: "SRT",
+    LAND: "LAND",
+    LOR: "LOR",
+    LXOR: "LXOR",
+    LNAND: "LNAND",
+    LNOR: "LNOR",
+    LXNOR: "LXNOR",
+    BSFA: "BSFA",
+    INA: "INA",
+    INB: "INB",
+    FXP_ADD: "FXP_ADD",
+    FXP_SUB: "FXP_SUB",
+    FXP_MUL: "FXP_MUL",
+    FXP_DIV: "FXP_DIV",
+    BEQ: "BEQ",
+    BNE: "BNE",
+    BLT: "BLT",
+    BGE: "BGE",
+    LWD: "LWD",
+    LWI: "LWI",
+    LWIPI: "LWIPI",
+    SWD: "SWD",
+    SWI: "SWI",
+    SWIPI: "SWIPI",
+    NOP: "NOP",
+    MV: "MV",
+    BLE: "BLE",
+    BGT: "BGT",
+    BZFA: "BZFA",
+    SRA: "SRA",
+}
+
 
 BRs = ["BEQ", "BNE", "BLT", "BGE", "BLE", "BGT"]
 BR_OPPOSITES = {
