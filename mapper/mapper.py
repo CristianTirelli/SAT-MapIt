@@ -72,7 +72,7 @@ class Mapper:
         self.scheduleLen = 0
 
         # schedule found by solver that can be modulo scheduled
-        self.schedule = {}
+        self.schedule = defaultdict(list)
         self.prolog = {}
         self.kernel = defaultdict(lambda: defaultdict(lambda: -1))
         self.epilog = {}
@@ -537,10 +537,6 @@ class Mapper:
                         n, p, t, it = (int(e) for e in tmp)
                         logging.debug(f"Node {n} on PE {p} at time {t} of iteration {it}")
                         self.kernel[t][p] = n
-
-                        if (it * II + t) not in self.schedule:
-                            self.schedule[it * II + t] = []
-
                         self.schedule[it * II + t].append(n)
 
                 logging.debug("Kernel")
