@@ -553,7 +553,7 @@ class Mapper:
             logging.debug("Time: " + str(end - start))
 
         if solution == False:
-            raise Exception("Mapping not found...\nLast II: " + str(II))
+            raise Exception(f"Mapping not found. Last {II = }")
 
         self.II = II
 
