@@ -62,8 +62,6 @@ class Mapper:
         self.benchmark = benchmark
 
         self.DFG = dfg
-        self.ResII = 0
-        self.RecII = 0
         self.II = 0
         self.ASAP = {}
         self.ALAP = {}
@@ -87,22 +85,21 @@ class Mapper:
 
     # Get Resource Iteration Interval
     def computeResII(self):
-        self.ResII = math.ceil(len(self.DFG.get_instruction_nodes()) / (self.CGRA_X * self.CGRA_Y))
+        return math.ceil(len(self.DFG.get_instruction_nodes()) / (self.CGRA_X * self.CGRA_Y))
 
     # Get Recurrence Iteration Interval
     def computeRecII(self):
-
+        recII = 0
         for s in self.DFG.getSCCs():
-            self.RecII = max(self.DFG.getPathDelay(s), self.RecII)
+            recII = max(self.DFG.getPathDelay(s), recII)
+        return recII
 
     # Get Minimum Iteration Interval (MII)
     def getStartingII(self):
-        self.computeRecII()
-        self.computeResII()
-        self.II = max(self.RecII, self.ResII)
-        logging.debug(f"{self.RecII = }")
-        logging.debug(f"{self.ResII = }")
-        return self.II
+        recII = self.computeRecII()
+        resII = self.computeResII()
+        logging.debug(f"{recII = }, {resII = }")
+        return max(recII, resII)
 
     # Generate As-Soon-As-Possible schedule
     def generateASAP(self):
