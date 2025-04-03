@@ -170,11 +170,7 @@ class Mapper:
         return -1
 
     def scheduleStr(self, schedule) -> str:
-        ret = ""
-        for t in range(len(schedule)):
-            line = " ".join([str(e) for e in schedule[t]])
-            ret += line + "\n"
-        return ret
+        return "\n".join([' '.join([str(e) for e in schedule[t]]) for t in range(len(schedule))])
 
     # Generate Mobility schedule
     def generateMS(self):
