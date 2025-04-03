@@ -437,6 +437,7 @@ class Mapper:
         return literals
 
     @staticmethod
+    @timeit("Grouping literals by node")
     def _group_by_node(literals: list[NodeLiteral]) -> dict[int, list[ExprRef]]:
         node_literals = defaultdict(list)
         for l in literals:
