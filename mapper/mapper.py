@@ -534,10 +534,7 @@ class Mapper:
                 for t in m.decls():
                     if is_true(m[t]):
                         tmp = str(t).split('_')[1].split(',')
-                        p = int(tmp[1])
-                        n = int(tmp[0])
-                        t = int(tmp[2])
-                        it = int(tmp[3])
+                        n, p, t, it = (int(e) for e in tmp)
                         logging.debug(f"Node {n} on PE {p} at time {t} of iteration {it}")
                         self.kernel[t][p] = n
 
