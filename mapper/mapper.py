@@ -543,8 +543,7 @@ class Mapper:
                     logging.debug(tmps + "]")
 
                 logging.debug("Schedule")
-                for i in range(len(self.schedule)):
-                    logging.debug(self.schedule[i])
+                logging.debug(self.scheduleStr(self.schedule))
 
             else:
                 self.s.reset()
