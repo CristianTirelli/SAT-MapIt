@@ -2,7 +2,7 @@ import math
 import itertools
 import time
 import logging
-from typing import Dict, Optional
+from typing import Callable, Dict, Optional
 from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true, set_option
 from .RegisterAllocator import RegisterAllocator
 from .instruction import Instruction
@@ -1170,6 +1170,37 @@ class Mapper:
                     if self.mapping[t][p].opcode in BR_OPPOSITES:
                         self.mapping[t][p].opcode = BR_OPPOSITES[self.mapping[t][p].opcode]
 
+    def _chip_str(
+        self,
+        what_to_extract: Callable[[Instruction], str],
+        border='|',
+        v_sep='||',
+        cell_size=9,
+    ) -> str:
+        h_sep = (
+            border
+            + " -" * ((cell_size * self.CGRA_X + len(v_sep) * (self.CGRA_X - 1)) // 2)
+            + " "
+            + border
+        )
+        lines = []
+        for t in range(len(self.mapping)):
+            lines.append(f"T = {t}")
+            lines.append(h_sep)
+            for y in range(self.CGRA_Y):
+                line = border
+                line += '||'.join(
+                    [
+                        f"{what_to_extract(self.mapping[t][x + y * self.CGRA_X]):^{cell_size}}"
+                        for x in range(self.CGRA_X)
+                    ]
+                )
+                line += " " + border
+                lines.append(line)
+                lines.append(h_sep)
+            lines.append("")
+        return '\n'.join(lines)
+
     def getAssembly(self) -> str:
         if len(self.mapping) == 0:
             raise Exception("No mapping in memory")
@@ -1180,41 +1211,8 @@ class Mapper:
             for p in range(self.CGRA_X * self.CGRA_Y):
                 lines.append(self.mapping[t][p].getAssemblyStr())
 
-        separator = "| " + " -" * int(1 + (4 * self.CGRA_X + 6 * (self.CGRA_X - 1)) / 2) + " |"
-        for t in range(len(self.mapping)):
-            lines.append(f"T = {t}")
-            lines.append(separator)
-            for y in range(self.CGRA_Y):
-                line = '|  '
-                line += '  ||  '.join(
-                    [
-                        f"{self.mapping[t][x + y * self.CGRA_X].getOpcodeName():4s}"
-                        for x in range(self.CGRA_X)
-                    ]
-                )
-                line += '  |'
-                lines.append(line)
-                lines.append(separator)
-            lines.append("")
-
-        separator = "| " + " -" * int(1 + (2 * self.CGRA_X + 6 * (self.CGRA_X - 1)) / 2) + " |"
-        lines.append("Output of the mapping with node id")
-        for t in range(len(self.mapping)):
-            lines.append(f"T = {t}")
-            lines.append(separator)
-            for y in range(self.CGRA_Y):
-                line = '|  '
-                line += '  ||  '.join(
-                    [
-                        f"{self.mapping[t][x + y * self.CGRA_X].nodeid:2d}"
-                        for x in range(self.CGRA_X)
-                    ]
-                )
-                line += '  |'
-                lines.append(line)
-                lines.append(separator)
-            lines.append("")
-
+        lines.append(self._chip_str(lambda i: i.getOpcodeName()))
+        lines.append(self._chip_str(lambda i: i.nodeid, cell_size=6))
         return '\n'.join(lines)
 
     def generateBinary(self):

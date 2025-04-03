@@ -1,6 +1,7 @@
 import unittest
 
 import os, sys
+
 sys.path.append("..")
 from mapper.DFG import DFG
 from mapper.main import generateInstructions
@@ -10,6 +11,7 @@ from mapper.parser import Parser
 CGRA_X = 4
 CGRA_Y = 4
 CGRA_R = 100
+
 
 class TestEndToEnd(unittest.TestCase):
     maxDiff = None
@@ -43,11 +45,17 @@ class TestEndToEnd(unittest.TestCase):
         for i, dfg in enumerate(dfgs, 1):
             actual_assembly = self.getAssembly(dfg)
 
+            # with open(os.path.join(path, "assemblies", str(i), "assembly"), "w") as f:
+            #     f.write(actual_assembly)
+
             with open(os.path.join(path, "assemblies", str(i), "assembly")) as f:
                 expected_assembly = f.read()
 
-            self.assertEqual(actual_assembly, expected_assembly, f"Benchmark {problem} (#dfg: {i})doesn't have matching final assembly")
-
+            self.assertEqual(
+                expected_assembly,
+                actual_assembly,
+                f"Benchmark {problem} (#dfg: {i})doesn't have matching final assembly",
+            )
 
     def test_bitcount(self):
         self._test_benchmark("bit_count")
@@ -70,4 +78,3 @@ class TestEndToEnd(unittest.TestCase):
 
     def test_string_search(self):
         self._test_benchmark("string_search")
-
