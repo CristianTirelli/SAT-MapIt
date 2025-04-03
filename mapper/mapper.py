@@ -466,6 +466,16 @@ class Mapper:
             c_n_it_p_literal[l.cycle][l.nodeid][l.iteration][l.pe] = l.literal
         return c_n_it_p_literal
 
+    def _parse_z3_output(self, II: int) -> None:
+        model = self.s.model()
+        for t in model.decls():
+            if is_true(model[t]):
+                tmp = str(t).split('_')[1].split(',')
+                n, p, t, it = (int(e) for e in tmp)
+                logging.debug(f"Node {n} on PE {p} at time {t} of iteration {it}")
+                self.kernel[t][p] = n
+                self.schedule[it * II + t].append(n)
+
     # Find mapping of the DFG starting from the MII
     # TODO: (Low priority) add upperbound for II
     def findMapping(self):
@@ -525,15 +535,8 @@ class Mapper:
                 #        break
                 solution = True
                 logging.info("SAT")
-                m = self.s.model()
                 # parse z3 output
-                for t in m.decls():
-                    if is_true(m[t]):
-                        tmp = str(t).split('_')[1].split(',')
-                        n, p, t, it = (int(e) for e in tmp)
-                        logging.debug(f"Node {n} on PE {p} at time {t} of iteration {it}")
-                        self.kernel[t][p] = n
-                        self.schedule[it * II + t].append(n)
+                self._parse_z3_output(II)
 
                 logging.debug("Kernel")
                 for i in range(len(self.kernel)):
