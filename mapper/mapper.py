@@ -74,7 +74,7 @@ class Mapper:
         # schedule found by solver that can be modulo scheduled
         self.schedule = {}
         self.prolog = {}
-        self.kernel = {}
+        self.kernel = defaultdict(lambda: defaultdict(lambda: -1))
         self.epilog = {}
 
         self.init = {}
@@ -442,10 +442,8 @@ class Mapper:
 
     @staticmethod
     def _group_by_node(literals: list[NodeLiteral]) -> dict[int, list[ExprRef]]:
-        node_literals = {}
+        node_literals = defaultdict(list)
         for l in literals:
-            if l.nodeid not in node_literals:
-                node_literals[l.nodeid] = []
             node_literals[l.nodeid].append(l.literal)
         return node_literals
 
@@ -467,20 +465,8 @@ class Mapper:
 
     @staticmethod
     def _group_by_all(literals: list[NodeLiteral]):
-        c_n_it_p_literal = {}
+        c_n_it_p_literal = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
         for l in literals:
-            if l.cycle not in c_n_it_p_literal:
-                c_n_it_p_literal[l.cycle] = {}
-
-            if l.nodeid not in c_n_it_p_literal[l.cycle]:
-                c_n_it_p_literal[l.cycle][l.nodeid] = {}
-
-            if l.iteration not in c_n_it_p_literal[l.cycle][l.nodeid]:
-                c_n_it_p_literal[l.cycle][l.nodeid][l.iteration] = {}
-
-            if l.pe not in c_n_it_p_literal[l.cycle][l.nodeid][l.iteration]:
-                c_n_it_p_literal[l.cycle][l.nodeid][l.iteration][l.pe] = ''
-
             c_n_it_p_literal[l.cycle][l.nodeid][l.iteration][l.pe] = l.literal
         return c_n_it_p_literal
 
@@ -553,10 +539,6 @@ class Mapper:
                         t = int(tmp[2])
                         it = int(tmp[3])
                         logging.debug(f"Node {n} on PE {p} at time {t} of iteration {it}")
-                        if t not in self.kernel:
-                            self.kernel[t] = {}
-                        if p not in self.kernel[t]:
-                            self.kernel[t][p] = -1
                         self.kernel[t][p] = n
 
                         if (it * II + t) not in self.schedule:
