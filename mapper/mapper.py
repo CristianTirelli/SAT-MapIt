@@ -474,6 +474,22 @@ class Mapper:
                 self.kernel[t][p] = n
                 self.schedule[it * II + t].append(n)
 
+    def _add_constraints(self, II: int) -> bool:
+        iterations = self._compute_iterations(II)
+        literals = self._build_literals(iterations)
+
+        # 1) exactly one variable True for each node
+        self.addConstraint1(self._group_by_node(literals))
+
+        # 2) At most one node on one PE at a given time
+        cycle_pe_literals = self._group_by_cycle_and_pe(literals)
+        self.addConstraint2(cycle_pe_literals)
+
+        # 3) encode all dependencies
+        self._precompute_pe_exclusivity(cycle_pe_literals)
+        c_n_it_p_literal = self._group_by_all(literals)
+        return self.addConstraint3(II, c_n_it_p_literal, cycle_pe_literals)
+
     # Find mapping of the DFG starting from the MII
     # TODO: (Low priority) add upperbound for II
     def findMapping(self):
@@ -485,20 +501,7 @@ class Mapper:
             logging.info(f"{II = }")
             self.generateKMS(II)
 
-            iterations = self._compute_iterations(II)
-            literals = self._build_literals(iterations)
-
-            # 1) exactly one variable True for each node
-            self.addConstraint1(self._group_by_node(literals))
-
-            # 2) At most one node on one PE at a given time
-            cycle_pe_literals = self._group_by_cycle_and_pe(literals)
-            self.addConstraint2(cycle_pe_literals)
-
-            # 3) encode all dependencies
-            self._precompute_pe_exclusivity(cycle_pe_literals)
-            c_n_it_p_literal = self._group_by_all(literals)
-            if not self.addConstraint3(II, c_n_it_p_literal, cycle_pe_literals):
+            if not self._add_constraints(II):
                 logging.info(
                     "Can't encode all the dependency - II too small\n"
                     "Manually add routing nodes to solve this dep or let the code run.\n"
