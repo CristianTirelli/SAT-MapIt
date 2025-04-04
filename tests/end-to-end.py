@@ -13,6 +13,7 @@ CGRA_Y = 4
 CGRA_R = 100
 
 
+# NOTE: these tests are not reliable as the register allocation is prolly flawed, use the schedule.py for now
 class TestEndToEnd(unittest.TestCase):
     maxDiff = None
 
