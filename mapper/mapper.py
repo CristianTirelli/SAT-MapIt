@@ -57,10 +57,11 @@ class Mapper:
         self.CGRA_X = x
         self.CGRA_Y = y
         self.CGRA_R = r
-        if seed is not None:
-            set_option('smt.random_seed', seed)
         self.ctx = Context()
         self.s = Solver(ctx=self.ctx)
+        if seed is not None:
+            self.s.set('random_seed', seed)
+
         # self.s = Solver()
         self.benchmark = benchmark
 
