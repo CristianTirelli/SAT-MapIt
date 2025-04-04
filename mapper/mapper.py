@@ -563,7 +563,7 @@ class Mapper:
                 break
 
         if solution == False:
-            raise Exception(f"Mapping not found. Last {II = }")
+            raise ScheduleNotFound(f"Mapping not found. Last II = {maxII}. Most likely due to the timeout being too short")
 
         self.generateProlog()
         self.generateEpilog()
