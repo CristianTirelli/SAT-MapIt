@@ -3,9 +3,10 @@ import itertools
 import time
 import logging
 from typing import Callable, Dict, Optional
-from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true, set_option
+from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, unsat, is_true, set_option
 
 from mapper.DFG import DFG
+from mapper.errors import ScheduleNotFound
 from .RegisterAllocator import RegisterAllocator
 from .instruction import Instruction
 from .ISA import *
@@ -476,6 +477,7 @@ class Mapper:
                 self.kernel[t][p] = n
                 self.schedule[it * II + t].append(n)
 
+    @timeit("Adding constraints")
     def _add_constraints(self, II: int) -> bool:
         iterations = self._compute_iterations(II)
         literals = self._build_literals(iterations)
@@ -492,18 +494,61 @@ class Mapper:
         c_n_it_p_literal = self._group_by_all(literals)
         return self.addConstraint3(II, c_n_it_p_literal, cycle_pe_literals)
 
+    @timeit("Solving the z3 problem")
+    def _z3_solve(self, II, model_number: int = 0):
+        if self.s.check() == unsat:
+            self.s.reset()
+            return False
+
+        # model_number = 0
+        # while self.s.check() == sat:
+        #
+        #    print("MODEL " + str(model_number))
+        #    model_number+=1
+        #    m = self.s.model()
+        #    block = []
+        #    for z3_decl in m: # FuncDeclRef
+        #        arg_domains = []
+        #        for i in range(z3_decl.arity()):
+        #            domain, arg_domain = z3_decl.domain(i), []
+        #            for j in range(domain.num_constructors()):
+        #                arg_domain.append( domain.constructor(j) () )
+        #            arg_domains.append(arg_domain)
+        #        for args in itertools.product(*arg_domains):
+        #            block.append(z3_decl(*args) != m.eval(z3_decl(*args)))
+        #    self.s.add(Or(block))
+        #    if model_number == 120:
+        #        break
+
+        logging.info("SAT")
+        # parse z3 output
+        self._parse_z3_output(II)
+
+        logging.debug("Kernel")
+        for i in range(len(self.kernel)):
+            tmps = "[ "
+            for p in self.kernel[i]:
+                tmps += str(self.kernel[i][p]) + " "
+            logging.debug(tmps + "]")
+
+        logging.debug("Schedule")
+        logging.debug(self.scheduleStr(self.schedule))
+        return True
+
+
     # Find mapping of the DFG starting from the MII
-    # TODO: (Low priority) add upperbound for II
     def findMapping(self):
-        II = self.getStartingII()
+        self.II = self.getStartingII()
+        maxII = len(self.DFG.get_instruction_nodes)
         self.generateMS()
 
         solution = False
-        while not solution:
+        for II in range(self.getStartingII(), maxII + 1):
+            self.II = II
             logging.info(f"{II = }")
             self.generateKMS(II)
 
-            if not self._add_constraints(II):
+            if not self._add_constraints(self.II):
                 logging.info(
                     "Can't encode all the dependency - II too small\n"
                     "Manually add routing nodes to solve this dep or let the code run.\n"
@@ -511,57 +556,14 @@ class Mapper:
                     "This leads to suboptimal results, but makes easier the assembly generation.\n"
                     "To obtain optimal results set the BRs = [] and SEL = [] at the start of addConstraint3\n"
                 )
-                II += 1
                 continue
 
-            start = time.time()
-
-            if self.s.check() == sat:
-                # model_number = 0
-                # while self.s.check() == sat:
-                #
-                #    print("MODEL " + str(model_number))
-                #    model_number+=1
-                #    m = self.s.model()
-                #    block = []
-                #    for z3_decl in m: # FuncDeclRef
-                #        arg_domains = []
-                #        for i in range(z3_decl.arity()):
-                #            domain, arg_domain = z3_decl.domain(i), []
-                #            for j in range(domain.num_constructors()):
-                #                arg_domain.append( domain.constructor(j) () )
-                #            arg_domains.append(arg_domain)
-                #        for args in itertools.product(*arg_domains):
-                #            block.append(z3_decl(*args) != m.eval(z3_decl(*args)))
-                #    self.s.add(Or(block))
-                #    if model_number == 120:
-                #        break
+            if self._z3_solve(II):
                 solution = True
-                logging.info("SAT")
-                # parse z3 output
-                self._parse_z3_output(II)
-
-                logging.debug("Kernel")
-                for i in range(len(self.kernel)):
-                    tmps = "[ "
-                    for p in self.kernel[i]:
-                        tmps += str(self.kernel[i][p]) + " "
-                    logging.debug(tmps + "]")
-
-                logging.debug("Schedule")
-                logging.debug(self.scheduleStr(self.schedule))
-
-            else:
-                self.s.reset()
-                II += 1
-
-            end = time.time()
-            logging.debug("Time: " + str(end - start))
+                break
 
         if solution == False:
             raise Exception(f"Mapping not found. Last {II = }")
-
-        self.II = II
 
         self.generateProlog()
         self.generateEpilog()
