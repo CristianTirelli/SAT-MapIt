@@ -562,35 +562,6 @@ class Mapper:
         self.generateEpilog()
         self.generatePKE()
 
-        # The code below needs to be adapted.
-        # It's used to generate more mapping for a given DFG at a given IIå
-        # print("Solving...")
-        # start = time.time()
-        ##TODO: add function to generate different models (useful during RA)
-        # model_number = 0
-        # while self.s.check() == sat:
-        #    solution = "False"
-        #    print("MODEL " + str(model_number))
-        #    model_number+=1
-        #
-        #    block = []
-        #    for z3_decl in m: # FuncDeclRef
-        #        arg_domains = []
-        #        for i in range(z3_decl.arity()):
-        #            domain, arg_domain = z3_decl.domain(i), []
-        #            for j in range(domain.num_constructors()):
-        #                arg_domain.append( domain.constructor(j) () )
-        #            arg_domains.append(arg_domain)
-        #        for args in itertools.product(*arg_domains):
-        #            block.append(z3_decl(*args) != m.eval(z3_decl(*args)))
-        #    self.s.add(Or(block))
-        #    if model_number == 1:
-        #        break
-        # print("Number of solutions: " + str(iii))
-
-        # end = time.time()
-        # print("Time: " + str(end - start))
-
     # Return True if pe1 and pe2 are neighbour on a 2D-mesh shaped topology
     # If the topology is different this function must be changed
     def isNeighbor(self, pe1, pe2):
