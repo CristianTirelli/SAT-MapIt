@@ -83,6 +83,9 @@ class edge:
         self.distance = distance
         self.latency = latency
 
+    def is_backedge(self):
+        return self.distance == 1
+
     def __lt__(self, other):
         return self.source.id < other.source.id or (self.source.id == other.source.id and self.destination.id < other.destination.id)
 
