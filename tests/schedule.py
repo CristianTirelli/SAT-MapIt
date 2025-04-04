@@ -20,6 +20,16 @@ class TestSchedule(unittest.TestCase):
 
     maxDiff = None
 
+    expected_IIs = {
+        "bit_count": (4,),
+        "reverse_bits": (3,),
+        "gsm": (8,),
+        "sha1": (9, 9),
+        "sha2": (7,),
+        "sqrt": (5,),
+        "string_search": (9,),
+    }
+
     def parseDFG(self, path) -> DFG:
         p = Parser()
         edgefile = os.path.join(path, "acc_edges")
@@ -61,8 +71,9 @@ class TestSchedule(unittest.TestCase):
         path = os.path.join("tests", "res", problem)
 
         dfgs = self.get_DFGs(path)
-        for dfg in dfgs:
+        for i, dfg in enumerate(dfgs):
             schedule = self.getSchedule(dfg)
+            self.assertEqual(len(schedule), self.expected_IIs[problem][i])
             self.assertCorrectDependencies(schedule, dfg)
 
     def test_bitcount(self):
