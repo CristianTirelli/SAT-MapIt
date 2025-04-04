@@ -4,6 +4,8 @@ import time
 import logging
 from typing import Callable, Dict, Optional
 from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true, set_option
+
+from mapper.DFG import DFG
 from .RegisterAllocator import RegisterAllocator
 from .instruction import Instruction
 from .ISA import *
@@ -47,7 +49,7 @@ def timeit(description: str, print_args: bool = False):
 
 class Mapper:
     def __init__(
-        self, x, y, r, dfg, benchmark, save_smt2_and_cnf: bool = False, seed: Optional[int] = None
+        self, x, y, r, dfg: DFG, benchmark, save_smt2_and_cnf: bool = False, seed: Optional[int] = None
     ):
         self.save_smt2_and_cnf = save_smt2_and_cnf
 
@@ -61,7 +63,7 @@ class Mapper:
         # self.s = Solver()
         self.benchmark = benchmark
 
-        self.DFG = dfg
+        self.DFG: DFG = dfg
         self.II = 0
         self.ASAP = {}
         self.ALAP = {}
@@ -85,12 +87,12 @@ class Mapper:
 
     # Get Resource Iteration Interval
     def computeResII(self):
-        return math.ceil(len(self.DFG.get_instruction_nodes()) / (self.CGRA_X * self.CGRA_Y))
+        return math.ceil(len(self.DFG.get_instruction_nodes) / (self.CGRA_X * self.CGRA_Y))
 
     # Get Recurrence Iteration Interval
     def computeRecII(self):
         recII = 0
-        for s in self.DFG.getSCCs():
+        for s in self.DFG.getSCCs:
             recII = max(self.DFG.getPathDelay(s), recII)
         return recII
 
@@ -117,7 +119,7 @@ class Mapper:
             to_explore = tmp[:]
             tmp.clear()
 
-        for n in self.DFG.get_instruction_nodes():
+        for n in self.DFG.get_instruction_nodes:
             if n.time not in self.ASAP:
                 self.ASAP[n.time] = []
             self.ASAP[n.time].append(n.id)
@@ -144,7 +146,7 @@ class Mapper:
             to_explore = tmp[:]
             tmp.clear()
 
-        for n in self.DFG.get_instruction_nodes():
+        for n in self.DFG.get_instruction_nodes:
             if (self.scheduleLen - n.time) not in self.ALAP:
                 self.ALAP[self.scheduleLen - n.time] = []
             self.ALAP[self.scheduleLen - n.time].append(n.id)
@@ -176,7 +178,7 @@ class Mapper:
         self.generateASAP()
         self.generateALAP()
 
-        for n in self.DFG.get_instruction_nodes():
+        for n in self.DFG.get_instruction_nodes:
 
             t_asap = self.getASAPTime(n.id)
             t_alap = self.getALAPTime(n.id)
@@ -251,7 +253,7 @@ class Mapper:
         SEL = ["bzfa", "bsfa"]
         found_br = False
         logging.info("Adding forward dependencies...")
-        for e in self.DFG.get_instruction_edges():
+        for e in self.DFG.get_instruction_edges:
             if e.distance > 0:   # backdependencies handled below
                 continue
             ns = e.source.id
@@ -321,7 +323,7 @@ class Mapper:
         all_dep_encoded = True
         # handle backdeps
         logging.info("Adding back dependencies...")
-        for e in self.DFG.get_instruction_edges():
+        for e in self.DFG.get_instruction_edges:
             if e.distance < 1:   # forward dependencies are handled above
                 continue
             ns = e.source.id
@@ -812,7 +814,7 @@ class Mapper:
                     )
 
                 # search the instruction and update it's left or right operand with the register that stores the livein
-                for e in self.DFG.get_livein_edges():
+                for e in self.DFG.get_livein_edges:
                     if e.source.id == p_live[p][i].id:
                         for inst in instructions[p]:
                             if inst.nodeid == e.destination.id:
@@ -937,7 +939,7 @@ class Mapper:
                 tmp.time = i
                 # TODO: check if value to save is in lop or rop
                 # get the register that store the value to save in memory
-                for e in self.DFG.get_liveout_edges():
+                for e in self.DFG.get_liveout_edges:
                     if e.destination.id == p_live[p][i].id:
                         for inst in instructions[p]:
                             if inst.nodeid == e.source.id:
