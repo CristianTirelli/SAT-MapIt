@@ -3,7 +3,7 @@ import itertools
 import time
 import logging
 from typing import Callable, Dict, Optional
-from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, unsat, is_true, set_option
+from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true
 
 from mapper.DFG import DFG
 from mapper.errors import ScheduleNotFound
@@ -484,8 +484,7 @@ class Mapper:
 
     @timeit("Solving the z3 problem")
     def _z3_solve(self, II, model_number: int = 0):
-        if self.s.check() == unsat:
-            self.s.reset()
+        if self.s.check() != sat:
             return False
 
         # model_number = 0
@@ -524,10 +523,13 @@ class Mapper:
         return True
 
     # Find mapping of the DFG starting from the MII
-    def findMapping(self, save_smt2_and_cnf: bool = False):
+    def findMapping(self, *, save_smt2_and_cnf: bool = False, timeout_ms: Optional[int] = None):
         self.II = self.getStartingII()
         maxII = len(self.DFG.get_instruction_nodes)
         self.generateMS()
+
+        if timeout_ms is not None:
+            self.s.set('timeout', timeout_ms)
 
         solution = False
         for II in range(self.getStartingII(), maxII + 1):
@@ -552,9 +554,11 @@ class Mapper:
                     f.write(self.s.to_smt2())
                 with open(f"{self.benchmark}_{II}.cnf", "w") as f:
                     f.write(self.s.dimacs())
+
             if self._z3_solve(II):
                 solution = True
                 break
+            self.s.reset()
 
         if solution == False:
             raise ScheduleNotFound(

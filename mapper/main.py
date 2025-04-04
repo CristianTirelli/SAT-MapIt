@@ -75,6 +75,12 @@ def main():
         action="store_true",
         help='If the flag is given, save the smt2 and cnf files for the smallest II found',
     )
+    parser.add_argument(
+        "-t",
+        "--timeout",
+        type=int,
+        help="The amount of time after which z3 stops trying to solve. In milliseconds. If option not given, z3 will not timeout",
+    )
 
     # Parse Arguments
     args = parser.parse_args()
@@ -115,7 +121,7 @@ def main():
     m = Mapper(CGRA_X, CGRA_Y, CGRA_R, DFG, bench)
 
     # Find the mapping and get the mapped kernel
-    m.findMapping(save_smt2_and_cnf=args.save_smt2_and_cnf)
+    m.findMapping(save_smt2_and_cnf=args.save_smt2_and_cnf, timeout_ms=args.timeout)
     kernel = m.getKernel()
 
     # Generate instructions for the kernel, final mapping and than assembly
