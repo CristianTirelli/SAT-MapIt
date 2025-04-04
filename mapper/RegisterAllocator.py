@@ -126,7 +126,7 @@ class RegisterAllocator:
         #assign registers to operands
         #Only handle the RCL,RCR,RCT,RCB and ROUT cases
         #To use the internal registers the interference graph must be colored
-        for e in self.DFG.get_instruction_edges():
+        for e in self.DFG.get_instruction_edges:
             #print(e.source.id, "--->" ,e.destination.id)
             source = self.getInstruction(e.source.id)
             destination = self.getInstruction(e.destination.id)
@@ -299,7 +299,7 @@ class RegisterAllocator:
                 destination.opB = destination.opA
 
         # Assign immediate values
-        for c in self.DFG.get_constant_nodes():
+        for c in self.DFG.get_constant_nodes:
             destination = self.DFG.get_constant_target(c)
             assert len(destination) == 1, "Constant node has more than one successor"
             inst = self.getInstruction(destination[0].id)
@@ -455,7 +455,7 @@ def addNodes(instructions, g, kernel, DFG, p):
     #print(kernel)
     #print("Kernel length: " + str(kernel_length))
     interval_id = 0
-    for e in DFG.get_instruction_edges():
+    for e in DFG.get_instruction_edges:
         for s in instructions:
             if s.nodeid == e.source.id:
                 for d in instructions:
