@@ -112,10 +112,10 @@ def main():
 
     # Initialize the mapper with the CGRA dimensions,
     # number of registers of each PE and the DFG
-    m = Mapper(CGRA_X, CGRA_Y, CGRA_R, DFG, bench, save_smt2_and_cnf=args.save_smt2_and_cnf)
+    m = Mapper(CGRA_X, CGRA_Y, CGRA_R, DFG, bench)
 
     # Find the mapping and get the mapped kernel
-    m.findMapping()
+    m.findMapping(save_smt2_and_cnf=args.save_smt2_and_cnf)
     kernel = m.getKernel()
 
     # Generate instructions for the kernel, final mapping and than assembly

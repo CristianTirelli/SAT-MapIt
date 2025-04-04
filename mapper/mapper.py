@@ -49,11 +49,7 @@ def timeit(description: str, print_args: bool = False):
 
 
 class Mapper:
-    def __init__(
-        self, x, y, r, dfg: DFG, benchmark, save_smt2_and_cnf: bool = False, seed: Optional[int] = None
-    ):
-        self.save_smt2_and_cnf = save_smt2_and_cnf
-
+    def __init__(self, x, y, r, dfg: DFG, benchmark, seed: Optional[int] = None):
         self.CGRA_X = x
         self.CGRA_Y = y
         self.CGRA_R = r
@@ -390,22 +386,13 @@ class Mapper:
         )
         if not encoded_forward_dependencies:
             logging.info("Couldn't encode forward dependencies, stopping here")
-            self.s.reset()
             return False
 
         encoded_backward_dependencies = self.add_contraints_backward_edge(
             II, c_n_it_p_literal, cycle_pe_literals
         )
-        if not encoded_backward_dependencies:
-            self.s.reset()
-            return False
-        # OUTPUT OF SMT AND CNF FILE
+        return encoded_backward_dependencies
 
-        if self.save_smt2_and_cnf:
-            with open(f"{self.benchmark}_{II}.smt2", "w") as f:
-                f.write(self.s.to_smt2())
-            with open(f"{self.benchmark}_{II}.cnf", "w") as f:
-                f.write(self.s.dimacs())
         return True
 
     def _compute_iterations(self, II: int) -> dict[int, dict[int, list[int]]]:
@@ -536,9 +523,8 @@ class Mapper:
         logging.debug(self.scheduleStr(self.schedule))
         return True
 
-
     # Find mapping of the DFG starting from the MII
-    def findMapping(self):
+    def findMapping(self, save_smt2_and_cnf: bool = False):
         self.II = self.getStartingII()
         maxII = len(self.DFG.get_instruction_nodes)
         self.generateMS()
@@ -549,7 +535,8 @@ class Mapper:
             logging.info(f"{II = }")
             self.generateKMS(II)
 
-            if not self._add_constraints(self.II):
+            if not self._add_constraints(II):
+                self.s.reset()
                 logging.info(
                     "Can't encode all the dependency - II too small\n"
                     "Manually add routing nodes to solve this dep or let the code run.\n"
