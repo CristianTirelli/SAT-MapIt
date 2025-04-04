@@ -17,6 +17,7 @@ class TestSchedule(unittest.TestCase):
     """
     Tests if the generated schedules respects the constraints that the source arrives before the destination of a forward edge in the DFG
     """
+
     maxDiff = None
 
     def parseDFG(self, path) -> DFG:
@@ -32,7 +33,7 @@ class TestSchedule(unittest.TestCase):
         m.findMapping()
         sched = m.getSchedule()
         self.assertIsNotNone(sched)
-        assert sched is not None # for pylint
+        assert sched is not None   # for pylint
         return sched
 
     def getCyleOfNode(self, node: int, schedule: dict[int, list[int]]):
@@ -85,4 +86,3 @@ class TestSchedule(unittest.TestCase):
 
     def test_string_search(self):
         self._test_benchmark("string_search")
-
