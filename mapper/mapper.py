@@ -559,12 +559,20 @@ class Mapper:
                 )
                 continue
 
+            # OUTPUT OF SMT AND CNF FILE
+            if save_smt2_and_cnf:
+                with open(f"{self.benchmark}_{II}.smt2", "w") as f:
+                    f.write(self.s.to_smt2())
+                with open(f"{self.benchmark}_{II}.cnf", "w") as f:
+                    f.write(self.s.dimacs())
             if self._z3_solve(II):
                 solution = True
                 break
 
         if solution == False:
-            raise ScheduleNotFound(f"Mapping not found. Last II = {maxII}. Most likely due to the timeout being too short")
+            raise ScheduleNotFound(
+                f"Mapping not found. Last II = {maxII}. Most likely due to the timeout being too short"
+            )
 
         self.generateProlog()
         self.generateEpilog()
