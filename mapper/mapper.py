@@ -530,7 +530,6 @@ class Mapper:
 
     # Return True if pe1 and pe2 are neighbour on a 2D-mesh shaped topology
     # If the topology is different this function must be changed
-    @cache
     def isNeighbor(self, pe1: int, pe2: int) -> bool:
         i1 = pe1 // self.CGRA_Y
         j1 = pe1 % self.CGRA_Y

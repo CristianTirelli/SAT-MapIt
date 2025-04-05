@@ -28,7 +28,7 @@ def timeit(description: str, print_args: bool = False):
             result = func(*args, **kwargs)
             te = time.time()
 
-            indent = '\t' * _thread_local.tab_level
+            indent = '    ' * _thread_local.tab_level
             if print_args:
                 logging.info(
                     f"{indent}{func.__name__} args:[{args}, {kwargs}] took: {te - ts:2.4f} sec"
