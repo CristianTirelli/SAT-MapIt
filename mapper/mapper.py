@@ -2,7 +2,6 @@ import math
 import itertools
 import logging
 from typing import Callable, Dict, Optional
-from functools import cache
 from z3 import AtMost, ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true, PbEq
 from dataclasses import dataclass
 from collections import defaultdict
