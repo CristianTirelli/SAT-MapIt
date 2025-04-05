@@ -1,6 +1,7 @@
-#node of the DFG
+# node of the DFG
 from functools import cached_property
 from .ISA import LWD, SWD
+
 
 class node:
     def __init__(self, id: int):
@@ -8,6 +9,7 @@ class node:
 
     def __lt__(self, other):
         return self.id < other.id
+
 
 class constant_node(node):
     def __init__(self, id: int, immediate: int, immediate_position: int):
@@ -24,6 +26,7 @@ class constant_node(node):
     def __str__(self):
         return f"Constant Node {self.id}: {self.immediate} at position {self.immediate_position}"
 
+
 class live_node(node):
     def __init__(self, id: int, opcode: int):
         super().__init__(id)
@@ -33,12 +36,14 @@ class live_node(node):
     def set_name(self, name):
         self.name = name
 
+
 class livein_node(live_node):
     def __init__(self, id: int):
         super().__init__(id, LWD)
 
     def __str__(self):
         return f"Live In Node {self.id}"
+
 
 class liveout_node(live_node):
     def __init__(self, id: int):
@@ -47,8 +52,17 @@ class liveout_node(live_node):
     def __str__(self):
         return f"Live Out Node {self.id}"
 
+
 class instruction_node(node):
-    def __init__(self, id: int, name: str, opcode: int = -1, lOp_id: int = -1, rOp_id: int = -1, predicate_id: int = -1):
+    def __init__(
+        self,
+        id: int,
+        name: str,
+        opcode: int = -1,
+        lOp_id: int = -1,
+        rOp_id: int = -1,
+        predicate_id: int = -1,
+    ):
         super().__init__(id)
         self.name = name
         self.opcode = opcode
@@ -76,7 +90,8 @@ class instruction_node(node):
     def __str__(self):
         return f"Instruction Node {self.id}: {self.name}, opcode: {self.opcode}, left operand id: {self.lOp_id}, right operand id: {self.rOp_id}, predicate id: {self.predicate_id}"
 
-#edge of the DFG
+
+# edge of the DFG
 class edge:
     def __init__(self, source: node, destination: node, distance: int, latency: int):
         self.source = source
@@ -89,7 +104,9 @@ class edge:
         return self.distance == 1
 
     def __lt__(self, other):
-        return self.source.id < other.source.id or (self.source.id == other.source.id and self.destination.id < other.destination.id)
+        return self.source.id < other.source.id or (
+            self.source.id == other.source.id and self.destination.id < other.destination.id
+        )
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -97,8 +114,9 @@ class edge:
     def __str__(self):
         return f"Edge from {self.source.id} to {self.destination.id}, distance: {self.distance}, latency: {self.latency}"
 
-#data flow graph of the loop, with information on livein, liveout and constants
-#constants, livein, liveout could be handled better
+
+# data flow graph of the loop, with information on livein, liveout and constants
+# constants, livein, liveout could be handled better
 class DFG:
     def __init__(self):
         self.nodes: list[node] = []
@@ -117,7 +135,7 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
 
     def addEdge(self, n: edge):
         self.edges.append(n)
-    
+
     def getEdge(self, source: node, destination: node):
         for e in self.edges:
             if e.source == source and e.destination == destination:
@@ -134,7 +152,12 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
 
     @cached_property
     def get_instruction_edges(self) -> list[edge]:
-        return [edge for edge in self.edges if isinstance(edge.source, instruction_node) and isinstance(edge.destination, instruction_node)]
+        return [
+            edge
+            for edge in self.edges
+            if isinstance(edge.source, instruction_node)
+            and isinstance(edge.destination, instruction_node)
+        ]
 
     @cached_property
     def get_livein_edges(self) -> list[edge]:
@@ -169,7 +192,7 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
                 preds.append(e.source)
         return preds
 
-    #return nodes that have no predecessor (phi nodes usually)
+    # return nodes that have no predecessor (phi nodes usually)
     def getStartingNodes(self) -> set[instruction_node]:
         starting_nodes = set()
         for n in self.get_instruction_nodes:
@@ -178,10 +201,10 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
 
         return starting_nodes
 
-    #return nodes that have no successor or node whose only successor is a phi node
+    # return nodes that have no successor or node whose only successor is a phi node
     def getEndingNodes(self) -> set[instruction_node]:
         ending_nodes = set()
-        
+
         for n in self.get_instruction_nodes:
             if len(self.getSuccessors(n)) == 0:
                 ending_nodes.add(n)
@@ -190,13 +213,13 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
             for suc in self.getSuccessors(n):
                 if suc.name != "phi":
                     allphi = False
-            
+
             if allphi:
                 ending_nodes.add(n)
 
         return ending_nodes
 
-    #Get Strongly Connected Components in the DFG
+    # Get Strongly Connected Components in the DFG
     @cached_property
     def getSCCs(self) -> list[instruction_node]:
         sccs = []
@@ -204,8 +227,8 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
             if n.index == -1:
                 self.strongConnect(n, sccs)
         return sccs
-    
-    #Utility function used by getSCCs
+
+    # Utility function used by getSCCs
     def strongConnect(self, n, sccs):
         n.index = self.index
         n.lowlink = self.index
@@ -229,27 +252,26 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
 
                 if n.id == w.id:
                     break
-        
+
             if len(tmp_sccs) > 1:
                 sccs.append(tmp_sccs[:])
 
-    #Utility function used by getSCCs
+    # Utility function used by getSCCs
     def getPathDelay(self, scc):
         for n in scc:
-            r = None    
+            r = None
             for e in self.edges:
                 if e.distance > 0 and n.id == e.destination.id:
                     r = n
 
             if r == None:
                 continue
-        
+
             to_explore = []
             visited = []
             curr = []
-            delay = 0 
-        
-            
+            delay = 0
+
             visited.append(r)
             to_explore.append(r)
             explored = 1
@@ -262,17 +284,17 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
                         if succ in scc:
                             if succ.latency <= n.latency:
                                 succ.latency = n.latency + 1
-                            
+
                             delay = max(delay, succ.latency)
-                            
+
                             if succ not in visited:
                                 curr.append(succ)
                                 visited.append(succ)
                             explored += 1
-                
-                to_explore = curr[:]#create shadow copy
+
+                to_explore = curr[:]  # create shadow copy
                 curr.clear()
-        
+
         return delay
 
     def getNode(self, id):
@@ -286,7 +308,7 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
             if n.id == id:
                 return n
         # raise ValueError(f"Live In Node with id '{id}' is not in the DFG")
-    
+
     def getLiveOutNode(self, id):
         for n in self.nodes:
             if n.id == id:
@@ -308,11 +330,10 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
             if isinstance(e.source, livein_node) and e.destination.id == id:
                 return e.source
         # raise ValueError(f"There was no live in node associated to node with id '{id}'")
-        
 
     def getAssociateLiveOut(self, id):
         for e in self.edges:
-            if isinstance(e.destination, liveout_node) and  e.source.id == id:
+            if isinstance(e.destination, liveout_node) and e.source.id == id:
                 return e.destination
         # raise ValueError(f"There was no live out node associated to node with id '{id}'")
 
