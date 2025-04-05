@@ -301,7 +301,7 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
         for n in self.nodes:
             if n.id == id:
                 return n
-        # raise ValueError(f"Node with id '{id}' is not in the DFG")
+        raise ValueError(f"Node with id '{id}' is not in the DFG")
 
     def getLiveInNode(self, id):
         for n in self.nodes:
