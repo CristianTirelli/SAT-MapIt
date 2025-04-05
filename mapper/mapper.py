@@ -2,7 +2,7 @@ import math
 import itertools
 import logging
 from typing import Callable, Dict, Optional
-from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true, PbEq
+from z3 import AtMost, ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true, PbEq
 from dataclasses import dataclass
 from collections import defaultdict
 
@@ -197,22 +197,10 @@ class Mapper:
     # Avoid two nodes on the same PE at the same time
     @timeit("Adding C2...")
     def addConstraint2(self, cycle_pe_literals):
-        for cycle in cycle_pe_literals:
-            for pe in cycle_pe_literals[cycle]:
-                tmp = []
-                for i in range(len(cycle_pe_literals[cycle][pe]) - 1):
-                    for j in range(i + 1, len(cycle_pe_literals[cycle][pe])):
-                        tmp.append(
-                            Or(
-                                Not(cycle_pe_literals[cycle][pe][i]),
-                                Not(cycle_pe_literals[cycle][pe][j]),
-                            )
-                        )
-                if len(tmp) > 1:
-                    tmp = And(tmp)
-                elif len(tmp) == 0:
-                    continue
-                self.s.add(tmp)
+        for pe_dict in cycle_pe_literals.values():
+            for literals in pe_dict.values():
+                if len(literals) > 0:
+                    self.s.add(AtMost(*literals, 1))
 
     @timeit("Addeding forward edges")
     def add_contraints_forward_edge(
