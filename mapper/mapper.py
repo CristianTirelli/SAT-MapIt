@@ -2,6 +2,7 @@ import math
 import itertools
 import logging
 from typing import Callable, Dict, Optional
+from functools import cache
 from z3 import AtMost, ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true, PbEq
 from dataclasses import dataclass
 from collections import defaultdict
@@ -529,7 +530,8 @@ class Mapper:
 
     # Return True if pe1 and pe2 are neighbour on a 2D-mesh shaped topology
     # If the topology is different this function must be changed
-    def isNeighbor(self, pe1, pe2):
+    @cache
+    def isNeighbor(self, pe1: int, pe2: int) -> bool:
         i1 = pe1 // self.CGRA_Y
         j1 = pe1 % self.CGRA_Y
 
