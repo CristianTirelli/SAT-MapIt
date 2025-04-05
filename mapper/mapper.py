@@ -1,18 +1,17 @@
 import math
 import itertools
-import time
 import logging
 from typing import Callable, Dict, Optional
 from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true
+from dataclasses import dataclass
+from collections import defaultdict
 
 from mapper.DFG import DFG
 from mapper.errors import ScheduleNotFound
 from .RegisterAllocator import RegisterAllocator
 from .instruction import Instruction
 from .ISA import *
-from functools import wraps
-from dataclasses import dataclass
-from collections import defaultdict
+from .utils import timeit
 
 
 @dataclass
@@ -22,30 +21,6 @@ class NodeLiteral:
     pe: int
     cycle: int
     iteration: int
-
-
-def timeit(description: str, print_args: bool = False):
-    """Decorator to time the execution of a function"""
-
-    def decorator(func):
-        @wraps(func)
-        def wrap(*args, **kwargs):
-            ts = time.time()
-            if print_args:
-                logging.info(f"{description} -- {func.__name__}({args}, {kwargs})")
-            else:
-                logging.info(f"{description} -- {func.__name__}")
-            result = func(*args, **kwargs)
-            te = time.time()
-            if print_args:
-                logging.info(f"{func.__name__} args:[{args}, {kwargs}] took: {te - ts:2.4f} sec")
-            else:
-                logging.info(f"{func.__name__} took {te - ts:2.4f} sec")
-            return result
-
-        return wrap
-
-    return decorator
 
 
 class Mapper:
@@ -244,13 +219,13 @@ class Mapper:
                     continue
                 self.s.add(tmp)
 
+    @timeit("Addeding forward edges")
     def add_contraints_forward_edge(
         self, II: int, c_n_it_p_literal: dict, cycle_pe_literals: dict
     ) -> bool:
         all_dep_encoded = True
         SEL = ["bzfa", "bsfa"]
         found_br = False
-        logging.info("Adding forward dependencies...")
         for e in self.DFG.get_instruction_edges:
             if e.distance > 0:   # backdependencies handled below
                 continue
@@ -315,12 +290,12 @@ class Mapper:
 
         return all_dep_encoded
 
+    @timeit("Addeding backward edges")
     def add_contraints_backward_edge(
         self, II: int, c_n_it_p_literal: dict, cycle_pe_literals: dict
     ) -> bool:
         all_dep_encoded = True
         # handle backdeps
-        logging.info("Adding back dependencies...")
         for e in self.DFG.get_instruction_edges:
             if e.distance < 1:   # forward dependencies are handled above
                 continue
