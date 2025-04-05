@@ -2,7 +2,21 @@ import math
 import itertools
 import logging
 from typing import Callable, Dict, Optional
-from z3 import AtMost, ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true, PbEq
+from z3 import (
+    AtMost,
+    ExprRef,
+    DatatypeSortRef,
+    FuncDeclRef,
+    Or,
+    And,
+    Not,
+    Bool,
+    Context,
+    Solver,
+    sat,
+    is_true,
+    PbEq,
+)
 from dataclasses import dataclass
 from collections import defaultdict
 
@@ -439,29 +453,31 @@ class Mapper:
         return self.addConstraint3(II, c_n_it_p_literal, cycle_pe_literals)
 
     @timeit("Solving the z3 problem")
-    def _z3_solve(self, II, model_number: int = 0):
+    def _z3_solve(self, II, wanted_model: int = 0):
         if self.s.check() != sat:
             return False
 
-        # model_number = 0
-        # while self.s.check() == sat:
-        #
-        #    print("MODEL " + str(model_number))
-        #    model_number+=1
-        #    m = self.s.model()
-        #    block = []
-        #    for z3_decl in m: # FuncDeclRef
-        #        arg_domains = []
-        #        for i in range(z3_decl.arity()):
-        #            domain, arg_domain = z3_decl.domain(i), []
-        #            for j in range(domain.num_constructors()):
-        #                arg_domain.append( domain.constructor(j) () )
-        #            arg_domains.append(arg_domain)
-        #        for args in itertools.product(*arg_domains):
-        #            block.append(z3_decl(*args) != m.eval(z3_decl(*args)))
-        #    self.s.add(Or(block))
-        #    if model_number == 120:
-        #        break
+        current_model = 0
+        for model_n in range(wanted_model):
+            assert (
+                self.s.check() == sat
+            ), f"Couldn't find a model after going through {model_n} different models (was trying to reach model number {wanted_model})"
+            logging.debug("MODEL " + str(wanted_model))
+            current_model += 1
+            m = self.s.model()
+            block = []
+            for z3_decl in m:
+                arg_domains = []
+                assert isinstance(z3_decl, FuncDeclRef)
+                for i in range(z3_decl.arity()):
+                    domain, arg_domain = z3_decl.domain(i), []
+                    assert isinstance(domain, DatatypeSortRef)
+                    for j in range(domain.num_constructors()):
+                        arg_domain.append(domain.constructor(j)())
+                    arg_domains.append(arg_domain)
+                for args in itertools.product(*arg_domains):
+                    block.append(z3_decl(*args) != m.eval(z3_decl(*args)))
+            self.s.add(Or(block))
 
         logging.info("SAT")
         # parse z3 output
@@ -479,7 +495,13 @@ class Mapper:
         return True
 
     # Find mapping of the DFG starting from the MII
-    def findMapping(self, *, save_smt2_and_cnf: bool = False, timeout_ms: Optional[int] = None):
+    def findMapping(
+        self,
+        *,
+        save_smt2_and_cnf: bool = False,
+        timeout_ms: Optional[int] = None,
+        model_number: int = 0,
+    ):
         self.II = self.getStartingII()
         maxII = len(self.DFG.get_instruction_nodes)
         self.generateMS()
@@ -511,7 +533,7 @@ class Mapper:
                 with open(f"{self.benchmark}_{II}.cnf", "w") as f:
                     f.write(self.s.dimacs())
 
-            if self._z3_solve(II):
+            if self._z3_solve(II, model_number):
                 solution = True
                 break
             self.s.reset()

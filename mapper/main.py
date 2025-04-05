@@ -81,7 +81,13 @@ def main():
         type=int,
         help="The amount of time after which z3 stops trying to solve. In milliseconds. If option not given, z3 will not timeout",
     )
-
+    parser.add_argument(
+        "-m",
+        "--model",
+        default=0,
+        type=int,
+        help="The model to be used. 0 is the default and the first one z3 will find, 1 is the second one, etc.",
+    )
     # Parse Arguments
     args = parser.parse_args()
 
@@ -121,7 +127,11 @@ def main():
     m = Mapper(CGRA_X, CGRA_Y, CGRA_R, DFG, bench)
 
     # Find the mapping and get the mapped kernel
-    m.findMapping(save_smt2_and_cnf=args.save_smt2_and_cnf, timeout_ms=args.timeout)
+    m.findMapping(
+        save_smt2_and_cnf=args.save_smt2_and_cnf,
+        timeout_ms=args.timeout,
+        model_number=args.model,
+    )
     kernel = m.getKernel()
 
     # Generate instructions for the kernel, final mapping and than assembly
