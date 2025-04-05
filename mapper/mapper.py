@@ -2,7 +2,7 @@ import math
 import itertools
 import logging
 from typing import Callable, Dict, Optional
-from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true
+from z3 import ExprRef, Or, And, Not, Bool, Context, Solver, sat, is_true, PbEq
 from dataclasses import dataclass
 from collections import defaultdict
 
@@ -188,15 +188,10 @@ class Mapper:
     # Only one literal for each node must be set to True
     @timeit("Adding C1...")
     def addConstraint1(self, node_literals: dict[int, list[ExprRef]]):
-        for nodeid in node_literals:
-            phi = Or(node_literals[nodeid])
-            tmp = []
-            for i in range(len(node_literals[nodeid]) - 1):
-                for j in range(i + 1, len(node_literals[nodeid])):
-                    tmp.append(Not(And(node_literals[nodeid][i], node_literals[nodeid][j])))
-            tmp = And(tmp)
-            exactlyone = And(phi, tmp)
-            self.s.add(exactlyone)
+        for literals in node_literals.values():
+            if len(literals) > 0:
+                # basically saying lit1 * 1 + lit2 * 1 + lit3 * 1 + ... = 1
+                self.s.add(PbEq([(lit, 1) for lit in literals], 1))
 
     # Add constraint2 of the formulation
     # Avoid two nodes on the same PE at the same time
