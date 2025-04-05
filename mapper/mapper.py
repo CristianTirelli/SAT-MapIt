@@ -70,8 +70,6 @@ class Mapper:
         # init + pke + fini = mapping
         self.mapping: Dict[int, Dict[int, Instruction]] = {}
 
-        self.ra = None
-
     # Get Resource Iteration Interval
     def computeResII(self):
         return math.ceil(len(self.DFG.get_instruction_nodes) / (self.CGRA_X * self.CGRA_Y))
@@ -696,7 +694,7 @@ class Mapper:
     # Add initialization phase before the prolog
     # Loading of LiveIn variables and constants used usually by the phi nodes
     # TODO: This function can be writte in a much better way
-    def generateInit(self, instructions):
+    def generateInit(self, instructions, ra: RegisterAllocator):
 
         p_live = {}
         p_const = {}
@@ -781,10 +779,10 @@ class Mapper:
                 tmp.opcode = LWD
                 # get where the instruction must save the loaded value
                 space_full = True
-                for j in range(len(self.ra.rf[p])):
-                    if self.ra.rf[p][j] == 0:
+                for j in range(len(ra.rf[p])):
+                    if ra.rf[p][j] == 0:
                         tmp.outreg = j
-                        self.ra.rf[p][j] = 1
+                        ra.rf[p][j] = 1
                         space_full = False
                         break
 
@@ -960,25 +958,25 @@ class Mapper:
             logging.debug(s)
 
         # init ra and do register allocation
-        self.ra = RegisterAllocator(
+        ra = RegisterAllocator(
             self.DFG, self.pke, self.kernel, instructions, self.CGRA_Y, self.CGRA_X, self.CGRA_R
         )
-        graphs = self.ra.generateInterferenceGraphs(
-            self.kernel, self.CGRA_Y * self.CGRA_X, self.DFG, self.ra.instructions, self.CGRA_R
+        graphs = ra.generateInterferenceGraphs(
+            self.kernel, self.CGRA_Y * self.CGRA_X, self.DFG, ra.instructions, self.CGRA_R
         )
 
-        self.ra.addInterferenceGraphs(graphs)
+        ra.addInterferenceGraphs(graphs)
         logging.debug("\n\n**************\n\n")
         logging.debug("Interference graphs : " + str(len(graphs)))
-        self.ra.allocateRegisters()
+        ra.allocateRegisters()
         for p in graphs:
             # Uncomment following line to print the interference graphs for each PE
             # graphs[p].printDot(str(p))
             logging.debug("#Nodes: " + str(len(graphs[p].intervals)))
-        self.ra.assignRegisters(self.CGRA_Y, self.CGRA_X)
+        ra.assignRegisters(self.CGRA_Y, self.CGRA_X)
         logging.debug("\n\n**************\n\n")
 
-        self.generateInit(instructions)
+        self.generateInit(instructions, ra)
         self.generateFini(instructions)
         t = 0
         # append init to mapping
