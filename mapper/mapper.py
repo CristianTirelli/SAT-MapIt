@@ -351,8 +351,6 @@ class Mapper:
         )
         return encoded_backward_dependencies
 
-        return True
-
     def _compute_iterations(self, II: int) -> dict[int, dict[int, list[int]]]:
         nit = math.ceil((self.scheduleLen + 1) / II)
         logging.debug(f"nit {self.scheduleLen + 1}/{II} = {(self.scheduleLen + 1) / II} = {nit}")
