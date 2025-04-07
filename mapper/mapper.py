@@ -20,7 +20,7 @@ from z3 import (
 from dataclasses import dataclass
 from collections import defaultdict
 
-from mapper.DFG import DFG
+from mapper.DFG import DFG, instruction_node
 from mapper.errors import ScheduleNotFound
 from .RegisterAllocator import RegisterAllocator
 from .instruction import Instruction
@@ -252,7 +252,10 @@ class Mapper:
 
     @timeit("Addeding forward edges")
     def add_contraints_forward_edge(
-        self, II: int, c_n_it_p_literal: dict, cycle_pe_literals: dict
+        self,
+        II: int,
+        c_n_it_p_literal: dict[int, dict[int, dict[int, dict[int, ExprRef]]]],
+        cycle_pe_literals: dict[int, dict[int, ExprRef]],
     ) -> bool:
         all_dep_encoded = True
         SEL = ["bzfa", "bsfa"]
@@ -260,35 +263,33 @@ class Mapper:
         for e in self.DFG.get_instruction_edges:
             if e.distance > 0:   # backdependencies handled below
                 continue
-            ns = e.source.id
-            nd = e.destination.id
+            ns = e.source
+            nd = e.destination
+            assert isinstance(ns, instruction_node) and isinstance(nd, instruction_node)
             logging.debug(f"nodes = {ns, nd}")
             tmp = []
-            is_dest_sel = (
-                self.DFG.getNode(nd).name in SEL and self.DFG.getNode(nd).predicate.id == ns
-            )
-
+            is_dest_sel = nd.name in SEL and nd.predicate is ns
             for (cs, cd) in itertools.product(c_n_it_p_literal, c_n_it_p_literal):
-                if (ns not in c_n_it_p_literal[cs]) or (nd not in c_n_it_p_literal[cd]):
+                if (ns.id not in c_n_it_p_literal[cs]) or (nd.id not in c_n_it_p_literal[cd]):
                     continue
-                if self.DFG.getNode(nd).name.upper() in BRs and cd != (II - 1):
+                if nd.name.upper() in BRs and cd != (II - 1):
                     continue
                 else:
                     found_br = True
                 for (it1, it2) in itertools.product(
-                    c_n_it_p_literal[cs][ns], c_n_it_p_literal[cd][nd]
+                    c_n_it_p_literal[cs][ns.id], c_n_it_p_literal[cd][nd.id]
                 ):
                     is_same_it = it1 == it2 and cd > cs
                     is_diff_it = abs(it1 - it2) == 1 and it1 < it2 and cd <= cs
                     if not (is_same_it or is_diff_it):
                         continue
                     for (p1, p2) in itertools.product(
-                        c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]
+                        c_n_it_p_literal[cs][ns.id][it1], c_n_it_p_literal[cd][nd.id][it2]
                     ):
                         if not self.isNeighbor(p1, p2):
                             continue
-                        lit1 = c_n_it_p_literal[cs][ns][it1][p1]
-                        lit2 = c_n_it_p_literal[cd][nd][it2][p2]
+                        lit1 = c_n_it_p_literal[cs][ns.id][it1][p1]
+                        lit2 = c_n_it_p_literal[cd][nd.id][it2][p2]
                         distance = self.getCycleDistance(cs, cd, II)
                         if distance == 1 or (distance > 1 and p1 == p2 and not is_dest_sel):
                             tmp.append(And(lit1, lit2))
