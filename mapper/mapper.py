@@ -261,7 +261,7 @@ class Mapper:
         SEL = ["bzfa", "bsfa"]
         found_br = False
         for e in self.DFG.get_instruction_edges:
-            if e.distance > 0:   # backdependencies handled below
+            if e.is_backedge:   # backdependencies handled below
                 continue
             ns = e.source
             nd = e.destination
@@ -330,9 +330,8 @@ class Mapper:
         cycle_pe_literals: dict[int, dict[int, ExprRef]],
     ) -> bool:
         all_dep_encoded = True
-        # handle backdeps
         for e in self.DFG.get_instruction_edges:
-            if e.distance < 1:   # forward dependencies are handled above
+            if not e.is_backedge:   # forward dependencies are handled above
                 continue
             ns = e.source
             nd = e.destination
