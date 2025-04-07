@@ -324,22 +324,25 @@ class Mapper:
 
     @timeit("Addeding backward edges")
     def add_contraints_backward_edge(
-        self, II: int, c_n_it_p_literal: dict, cycle_pe_literals: dict
+        self,
+        II: int,
+        c_n_it_p_literal: dict[int, dict[int, dict[int, dict[int, ExprRef]]]],
+        cycle_pe_literals: dict[int, dict[int, ExprRef]],
     ) -> bool:
         all_dep_encoded = True
         # handle backdeps
         for e in self.DFG.get_instruction_edges:
             if e.distance < 1:   # forward dependencies are handled above
                 continue
-            ns = e.source.id
-            nd = e.destination.id
+            ns = e.source
+            nd = e.destination
             logging.debug(f"nodes = {ns, nd}")
             tmp = []
             for (cs, cd) in itertools.product(c_n_it_p_literal, c_n_it_p_literal):
-                if (ns not in c_n_it_p_literal[cs]) or (nd not in c_n_it_p_literal[cd]):
+                if (ns.id not in c_n_it_p_literal[cs]) or (nd.id not in c_n_it_p_literal[cd]):
                     continue
                 for (it1, it2) in itertools.product(
-                    c_n_it_p_literal[cs][ns], c_n_it_p_literal[cd][nd]
+                    c_n_it_p_literal[cs][ns.id], c_n_it_p_literal[cd][nd.id]
                 ):
                     if abs(it1 - it2) > 1:
                         continue
@@ -350,10 +353,10 @@ class Mapper:
                     if not (same_it_diff_cycle or diff_it or same_it_same_cycle):
                         continue
                     for (p1, p2) in itertools.product(
-                        c_n_it_p_literal[cs][ns][it1], c_n_it_p_literal[cd][nd][it2]
+                        c_n_it_p_literal[cs][ns.id][it1], c_n_it_p_literal[cd][nd.id][it2]
                     ):
-                        lit1 = c_n_it_p_literal[cs][ns][it1][p1]
-                        lit2 = c_n_it_p_literal[cd][nd][it2][p2]
+                        lit1 = c_n_it_p_literal[cs][ns.id][it1][p1]
+                        lit2 = c_n_it_p_literal[cd][nd.id][it2][p2]
                         if not self.isNeighbor(p1, p2):
                             continue
                         if same_it_diff_cycle or diff_it:
