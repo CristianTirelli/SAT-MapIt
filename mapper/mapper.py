@@ -205,6 +205,28 @@ class Mapper:
                 # basically saying lit1 * 1 + lit2 * 1 + lit3 * 1 + ... = 1
                 self.s.add(PbEq([(lit, 1) for lit in literals], 1))
 
+                # PbEq probably makes the formulation become SMT instead of pure SAT.
+                # Below you can find the pure SAT implementation.
+                # Note: the encoding of this constraint takes a while with the pure SAT version
+                # (hence using the PbEq, that get's encoded much faster)
+
+        # for cycle in cycle_pe_literals:
+        #     for pe in cycle_pe_literals[cycle]:
+        #         tmp = []
+        #         for i in range(len(cycle_pe_literals[cycle][pe]) - 1):
+        #             for j in range(i + 1, len(cycle_pe_literals[cycle][pe])):
+        #                 tmp.append(
+        #                     Or(
+        #                         Not(cycle_pe_literals[cycle][pe][i]),
+        #                         Not(cycle_pe_literals[cycle][pe][j]),
+        #                     )
+        #                 )
+        #         if len(tmp) > 1:
+        #             tmp = And(tmp)
+        #         elif len(tmp) == 0:
+        #             continue
+        #         self.s.add(tmp)
+
     # Add constraint2 of the formulation
     # Avoid two nodes on the same PE at the same time
     @timeit("Adding C2...")
@@ -213,6 +235,20 @@ class Mapper:
             for literals in pe_dict.values():
                 if len(literals) > 0:
                     self.s.add(AtMost(*literals, 1))
+                    # AtMost probably makes the formulation become SMT instead of pure SAT.
+                    # Below you can find the pure SAT implementation.
+                    # Note: the encoding of this constraint takes a while with the pure SAT version
+                    # (hence using the AtMost, that get's encoded much faster)
+
+        # for nodeid in node_literals:
+        #     phi = Or(node_literals[nodeid])
+        #     tmp = []
+        #     for i in range(len(node_literals[nodeid]) - 1):
+        #         for j in range(i + 1, len(node_literals[nodeid])):
+        #             tmp.append(Not(And(node_literals[nodeid][i], node_literals[nodeid][j])))
+        #     tmp = And(tmp)
+        #     exactlyone = And(phi, tmp)
+        #     self.s.add(exactlyone)
 
     @timeit("Addeding forward edges")
     def add_contraints_forward_edge(
