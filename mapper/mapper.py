@@ -587,6 +587,10 @@ class Mapper:
     # Return True if pe1 and pe2 are neighbour on a 2D-mesh shaped topology
     # If the topology is different this function must be changed
     def isNeighbor(self, pe1: int, pe2: int) -> bool:
+        # center
+        if pe1 == pe2:
+            return True
+
         i1 = pe1 // self.CGRA_Y
         j1 = pe1 % self.CGRA_Y
 
@@ -606,10 +610,6 @@ class Mapper:
                 return True
             if abs(i1 - i2) == self.CGRA_X - 1:
                 return True
-        # center
-        if pe1 == pe2:
-            return True
-
         return False
 
     def getCycleDistance(self, cs, cd, II):
