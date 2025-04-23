@@ -176,3 +176,27 @@ class Instruction:
 
     def getOpcodeName(self):
         return OPCODE_NAMES.get(self.opcode, "UNDEF")
+
+def generateInstructions(kernel, DFG):
+    instructions = {}
+    inst_id = 0
+    for t in kernel:
+        for p in kernel[t]:
+            node_id = kernel[t][p]
+            inst = Instruction(inst_id, node_id)
+            inst.pe = p
+            inst.time = t
+            n = DFG.getNode(node_id)
+            inst.ROp = n.rOp_id
+            inst.LOp = n.lOp_id
+            inst.name = n.name
+            inst.predicate = n.predicate_id
+            inst.opcode = n.opcode
+            inst_id += 1
+            if DFG.getConstant(n.id) != None:
+                inst.immediate = DFG.getConstant(n.id).immediate
+            if p not in instructions:
+                instructions[p] = []
+            instructions[p].append(inst)
+
+    return instructions
