@@ -1005,7 +1005,7 @@ class Mapper:
 
         # init ra and do register allocation
         ra = RegisterAllocator(
-            self.DFG, self.pke, self.kernel, instructions, self.CGRA_Y, self.CGRA_X, self.CGRA_R
+            self.DFG, self.kernel, instructions, self.CGRA_Y, self.CGRA_X, self.CGRA_R
         )
         graphs = ra.generateInterferenceGraphs(
             self.kernel, self.CGRA_Y * self.CGRA_X, self.DFG, ra.instructions, self.CGRA_R
