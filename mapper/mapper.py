@@ -37,19 +37,24 @@ class NodeLiteral:
     iteration: int
 
 
-# the type aliasing like this requires python >=3.12
-type pe = int
-type cycle = int
-type time_instant = int
-type opcode = int
-type node_id = int
-type iteration = int
-type interval = int
+# Type aliasing to make parameter types clearer
+pe = int
+cycle = int
+time_instant = int
+opcode = int
+node_id = int
+iteration = int
+interval = int
 
-type size = int
+size = int
+
+schedule = dict[time_instant, list[node_id]]
+
 
 class Mapper:
-    def __init__(self, x: size, y: size, r: size, dfg: DFG, benchmark: str, seed: Optional[int] = None):
+    def __init__(
+        self, x: size, y: size, r: size, dfg: DFG, benchmark: str, seed: Optional[int] = None
+    ):
         self.CGRA_X: size = x
         self.CGRA_Y: size = y
         self.CGRA_R: size = r
@@ -63,17 +68,17 @@ class Mapper:
 
         self.DFG: DFG = dfg
         self.II: interval = 0
-        self.ASAP: dict[time_instant, list[node_id]]= {}
-        self.ALAP: dict[time_instant, list[node_id]] = {}
-        self.MS: dict[time_instant, list[node_id]] = defaultdict(list)
+        self.ASAP: schedule = {}
+        self.ALAP: schedule = {}
+        self.MS: schedule = defaultdict(list)
         self.KMS: dict[cycle, list[tuple[iteration, node_id]]] = defaultdict(list)
         self.scheduleLen = 0
 
         # schedule found by solver that can be modulo scheduled
-        self.schedule: dict[time_instant, list[node_id]] = defaultdict(list)
-        self.prolog: dict[time_instant, list[node_id]]  = defaultdict(list)
+        self.schedule: schedule = defaultdict(list)
+        self.prolog: schedule = defaultdict(list)
         self.kernel: dict[cycle, dict[pe, node_id]] = defaultdict(lambda: defaultdict(lambda: -1))
-        self.epilog: dict[time_instant, list[node_id]]  = defaultdict(list)
+        self.epilog: schedule = defaultdict(list)
 
         self.init = {}
         self.pke = {}
@@ -1013,7 +1018,7 @@ class Mapper:
             logging.debug("#Nodes: " + str(len(graphs[p].intervals)))
         ra.assignRegisters(self.CGRA_Y, self.CGRA_X)
         logging.debug("\n\n**************\n\n")
-        
+
         self.generatePKE()
         logging.debug("PKE")
         for i in range(len(self.pke)):
@@ -1021,7 +1026,6 @@ class Mapper:
             for p in self.pke[i]:
                 s += str(self.pke[i][p]) + " "
             logging.debug(s)
-
 
         self.generateInit(instructions, ra)
         self.generateFini(instructions)
