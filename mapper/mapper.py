@@ -865,15 +865,15 @@ class Mapper:
                     free_time_slot = t
                     break
             for i in range(len(p_const[pe])):
-                if t + i not in occupied_spot:
-                    occupied_spot[t + i] = {}
-                if pe not in occupied_spot[t + i]:
-                    occupied_spot[t + i][pe] = True
+                if free_time_slot + i not in occupied_spot:
+                    occupied_spot[free_time_slot + i] = {}
+                if pe not in occupied_spot[free_time_slot + i]:
+                    occupied_spot[free_time_slot + i][pe] = True
 
                 tmp = Instruction(tmp_id, p_const[pe][i].id)
                 tmp_id += 1
                 tmp.pe = pe
-                tmp.time = t + i
+                tmp.time = free_time_slot + i
                 tmp.LOp = -1
                 tmp.ROp = -1
                 tmp.opA = CONST
@@ -912,7 +912,7 @@ class Mapper:
                                 tmp.opA = CONST
                                 tmp.opB = ZERO
 
-                self.init[i + t][pe] = tmp
+                self.init[i + free_time_slot][pe] = tmp
 
         # set to NOP instruction all the other PEs
         for t in range(len(self.init)):
@@ -956,7 +956,7 @@ class Mapper:
                 self.fini[i] = {}
             for j in range(self.CGRA_X * self.CGRA_Y):
                 if j not in self.fini[i]:
-                    self.fini[i][p] = None
+                    self.fini[i][j] = None
 
         # create store instructions for the liveout var
         tmp_id = 0
