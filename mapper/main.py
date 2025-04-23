@@ -1,23 +1,12 @@
 import logging
-from .mapper import Mapper
-from .parser import Parser
-from .instruction import Instruction, generateInstructions
-
 import argparse
 
-
-
-
-
-CGRA_X = 4
-CGRA_Y = 4
-CGRA_R = 100
+from .mapper import Mapper
+from .parser import Parser
+from .instruction import generateInstructions
 
 
 def main():
-
-    global CGRA_X, CGRA_Y, CGRA_R
-
     parser = argparse.ArgumentParser(description='SAT-MapIt mapper usage')
     parser.add_argument('-path', type=str, help='Path of the folder containing the extracted DFG')
     parser.add_argument(
