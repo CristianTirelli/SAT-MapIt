@@ -1,6 +1,7 @@
+from typing import Optional
 from .interference import *
-# from .instruction import instruciton
 from .ISA import *
+from .DFG import DFG
 
 import logging
 
@@ -9,10 +10,9 @@ class RegisterAllocator:
 
     interference_graphs = {}
 
-    def __init__(self, dfg, pke, kernel, instructions, x, y, z):
+    def __init__(self, dfg: DFG, kernel, instructions, x, y, z):
         self.rf = {}
-        self.DFG = dfg
-        self.pke = pke
+        self.DFG: Optional[DFG] = dfg
         self.kernel = kernel
         self.instructions = instructions
         #init the rf to 0 => all the register of that pe are free to use
@@ -27,7 +27,6 @@ class RegisterAllocator:
     def __del__(self):
         self.DFG = None
         self.rf.clear()
-        self.pke.clear()
         self.kernel.clear()
         self.instructions.clear()
         self.interference_graphs.clear()
@@ -126,6 +125,7 @@ class RegisterAllocator:
         #assign registers to operands
         #Only handle the RCL,RCR,RCT,RCB and ROUT cases
         #To use the internal registers the interference graph must be colored
+        assert self.DFG is not None, "Can't assign registers if the DFG is None"
         for e in self.DFG.get_instruction_edges:
             #print(e.source.id, "--->" ,e.destination.id)
             source = self.getInstruction(e.source.id)
