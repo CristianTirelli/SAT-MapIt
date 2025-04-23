@@ -1,7 +1,7 @@
 import math
 import itertools
 import logging
-from typing import Callable, Dict, Optional
+from typing import Callable, Optional
 from z3 import (
     AtMost,
     ExprRef,
@@ -37,38 +37,49 @@ class NodeLiteral:
     iteration: int
 
 
+# the type aliasing like this requires python >=3.12
+type pe = int
+type cycle = int
+type time_instant = int
+type opcode = int
+type node_id = int
+type iteration = int
+type interval = int
+
+type size = int
+
 class Mapper:
-    def __init__(self, x, y, r, dfg: DFG, benchmark, seed: Optional[int] = None):
-        self.CGRA_X = x
-        self.CGRA_Y = y
-        self.CGRA_R = r
+    def __init__(self, x: size, y: size, r: size, dfg: DFG, benchmark: str, seed: Optional[int] = None):
+        self.CGRA_X: size = x
+        self.CGRA_Y: size = y
+        self.CGRA_R: size = r
         self.ctx = Context()
         self.s = Solver(ctx=self.ctx)
         if seed is not None:
             self.s.set('random_seed', seed)
 
         # self.s = Solver()
-        self.benchmark = benchmark
+        self.benchmark: str = benchmark
 
         self.DFG: DFG = dfg
-        self.II = 0
-        self.ASAP = {}
-        self.ALAP = {}
-        self.MS: dict[int, list[int]] = defaultdict(list)
-        self.KMS: dict[int, list[tuple[int, int]]] = defaultdict(list)
+        self.II: interval = 0
+        self.ASAP: dict[time_instant, list[node_id]]= {}
+        self.ALAP: dict[time_instant, list[node_id]] = {}
+        self.MS: dict[time_instant, list[node_id]] = defaultdict(list)
+        self.KMS: dict[cycle, list[tuple[iteration, node_id]]] = defaultdict(list)
         self.scheduleLen = 0
 
         # schedule found by solver that can be modulo scheduled
-        self.schedule = defaultdict(list)
-        self.prolog = {}
-        self.kernel = defaultdict(lambda: defaultdict(lambda: -1))
-        self.epilog = {}
+        self.schedule: dict[time_instant, list[node_id]] = defaultdict(list)
+        self.prolog: dict[time_instant, list[node_id]]  = defaultdict(list)
+        self.kernel: dict[cycle, dict[pe, node_id]] = defaultdict(lambda: defaultdict(lambda: -1))
+        self.epilog: dict[time_instant, list[node_id]]  = defaultdict(list)
 
         self.init = {}
         self.pke = {}
         self.fini = {}
         # init + pke + fini = mapping
-        self.mapping: Dict[int, Dict[int, Instruction]] = {}
+        self.mapping: dict[cycle, dict[pe, Instruction]] = {}
 
     # Get Resource Iteration Interval
     def computeResII(self):
@@ -634,8 +645,6 @@ class Mapper:
             if contained:
                 for i in range(t - 1, -1, -1):
                     for n in self.schedule[i]:
-                        if (i + shift) not in self.prolog:
-                            self.prolog[i + shift] = []
                         self.prolog[i + shift].append(n)
                 shift += self.II
 
@@ -656,8 +665,6 @@ class Mapper:
             if contained:
                 for i in range(t + 1, len(self.schedule)):
                     for n in self.schedule[i]:
-                        if (i - t - 1) not in self.epilog:
-                            self.epilog[i - t - 1] = []
                         self.epilog[i - t - 1].append(n)
 
     # Generate Prolog+Kernel+Epilog
