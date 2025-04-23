@@ -2,6 +2,11 @@ from .DFG import *
 
 #parser for all the input file that generates the DFG
 
+# TODO: add simpler format parser
+# content:
+# Source Destination 0/1
+# biscally only edge file without final column of 1
+
 class Parser:
     def __init__(self):
         self.dfg = DFG()
