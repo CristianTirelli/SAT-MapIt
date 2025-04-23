@@ -83,7 +83,7 @@ class Mapper:
 
     # Get Resource Iteration Interval
     def computeResII(self):
-        return math.ceil(len(self.DFG.get_instruction_nodes) / (self.CGRA_X * self.CGRA_Y))
+        return math.ceil(len(self.DFG.instruction_nodes) / (self.CGRA_X * self.CGRA_Y))
 
     # Get Recurrence Iteration Interval
     def computeRecII(self):
@@ -115,7 +115,7 @@ class Mapper:
             to_explore = tmp[:]
             tmp.clear()
 
-        for n in self.DFG.get_instruction_nodes:
+        for n in self.DFG.instruction_nodes:
             if n.time not in self.ASAP:
                 self.ASAP[n.time] = []
             self.ASAP[n.time].append(n.id)
@@ -142,7 +142,7 @@ class Mapper:
             to_explore = tmp[:]
             tmp.clear()
 
-        for n in self.DFG.get_instruction_nodes:
+        for n in self.DFG.instruction_nodes:
             if (self.scheduleLen - n.time) not in self.ALAP:
                 self.ALAP[self.scheduleLen - n.time] = []
             self.ALAP[self.scheduleLen - n.time].append(n.id)
@@ -174,7 +174,7 @@ class Mapper:
         self.generateASAP()
         self.generateALAP()
 
-        for n in self.DFG.get_instruction_nodes:
+        for n in self.DFG.instruction_nodes:
 
             t_asap = self.getASAPTime(n.id)
             t_alap = self.getALAPTime(n.id)
@@ -271,7 +271,7 @@ class Mapper:
         all_dep_encoded = True
         SEL = ["bzfa", "bsfa"]
         found_br = False
-        for e in self.DFG.get_instruction_edges:
+        for e in self.DFG.instruction_edges:
             if e.is_backedge:   # backdependencies handled below
                 continue
             ns = e.source
@@ -341,7 +341,7 @@ class Mapper:
         cycle_pe_literals: dict[int, dict[int, ExprRef]],
     ) -> bool:
         all_dep_encoded = True
-        for e in self.DFG.get_instruction_edges:
+        for e in self.DFG.instruction_edges:
             if not e.is_backedge:   # forward dependencies are handled above
                 continue
             ns = e.source
@@ -551,7 +551,7 @@ class Mapper:
         model_number: int = 0,
     ):
         self.II = self.getStartingII()
-        maxII = len(self.DFG.get_instruction_nodes)
+        maxII = len(self.DFG.instruction_nodes)
         self.generateMS()
 
         if timeout_ms is not None:
@@ -838,7 +838,7 @@ class Mapper:
                     )
 
                 # search the instruction and update it's left or right operand with the register that stores the livein
-                for e in self.DFG.get_livein_edges:
+                for e in self.DFG.livein_edges:
                     if e.source.id == p_live[p][i].id:
                         for inst in instructions[p]:
                             if inst.nodeid == e.destination.id:
@@ -963,7 +963,7 @@ class Mapper:
                 tmp.time = i
                 # TODO: check if value to save is in lop or rop
                 # get the register that store the value to save in memory
-                for e in self.DFG.get_liveout_edges:
+                for e in self.DFG.liveout_edges:
                     if e.destination.id == p_live[p][i].id:
                         for inst in instructions[p]:
                             if inst.nodeid == e.source.id:

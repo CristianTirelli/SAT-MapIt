@@ -59,7 +59,7 @@ class TestSchedule(unittest.TestCase):
         return ret
 
     def assertCorrectDependencies(self, schedule: dict[int, list[int]], dfg: DFG):
-        for edge in dfg.get_instruction_edges:
+        for edge in dfg.instruction_edges:
             if edge.is_backedge:
                 continue
 

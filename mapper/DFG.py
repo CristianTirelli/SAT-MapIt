@@ -127,7 +127,7 @@ class DFG:
     def __str__(self):
         return f"""DFG(
 nodes: [{'\n\t'.join(sorted(str(node) for node in self.nodes))}],
-edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + self.get_livein_edges + self.get_liveout_edges))}],
+edges: [{'\n\t'.join(sorted(str(edge) for edge in self.instruction_edges + self.livein_edges + self.liveout_edges))}],
 )"""
 
     def addNode(self, n: node):
@@ -143,15 +143,15 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
         return None
 
     @cached_property
-    def get_instruction_nodes(self) -> list[instruction_node]:
+    def instruction_nodes(self) -> list[instruction_node]:
         return [node for node in self.nodes if isinstance(node, instruction_node)]
 
     @cached_property
-    def get_constant_nodes(self) -> list[constant_node]:
+    def constant_nodes(self) -> list[constant_node]:
         return [node for node in self.nodes if isinstance(node, constant_node)]
 
     @cached_property
-    def get_instruction_edges(self) -> list[edge]:
+    def instruction_edges(self) -> list[edge]:
         return [
             edge
             for edge in self.edges
@@ -160,19 +160,19 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
         ]
 
     @cached_property
-    def get_livein_edges(self) -> list[edge]:
+    def livein_edges(self) -> list[edge]:
         return [edge for edge in self.edges if isinstance(edge.source, livein_node)]
 
     @cached_property
-    def get_liveout_edges(self) -> list[edge]:
+    def liveout_edges(self) -> list[edge]:
         return [edge for edge in self.edges if isinstance(edge.destination, liveout_node)]
 
     def resetTime(self):
-        for n in self.get_instruction_nodes:
+        for n in self.instruction_nodes:
             n.time = 0
 
     def resetLatency(self):
-        for n in self.get_instruction_nodes:
+        for n in self.instruction_nodes:
             n.latency = 1
 
     def get_constant_target(self, node: constant_node) -> list[instruction_node]:
@@ -180,14 +180,14 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
 
     def getSuccessors(self, n: instruction_node) -> list[instruction_node]:
         succ = []
-        for e in self.get_instruction_edges:
+        for e in self.instruction_edges:
             if e.source.id == n.id:
                 succ.append(e.destination)
         return succ
 
     def getPredecessors(self, n: instruction_node) -> list[instruction_node]:
         preds = []
-        for e in self.get_instruction_edges:
+        for e in self.instruction_edges:
             if e.destination.id == n.id:
                 preds.append(e.source)
         return preds
@@ -195,7 +195,7 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
     # return nodes that have no predecessor (phi nodes usually)
     def getStartingNodes(self) -> set[instruction_node]:
         starting_nodes = set()
-        for n in self.get_instruction_nodes:
+        for n in self.instruction_nodes:
             if len(self.getPredecessors(n)) == 0 or n.name == "phi":
                 starting_nodes.add(n)
 
@@ -205,7 +205,7 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
     def getEndingNodes(self) -> set[instruction_node]:
         ending_nodes = set()
 
-        for n in self.get_instruction_nodes:
+        for n in self.instruction_nodes:
             if len(self.getSuccessors(n)) == 0:
                 ending_nodes.add(n)
 
@@ -223,7 +223,7 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
     @cached_property
     def getSCCs(self) -> list[instruction_node]:
         sccs = []
-        for n in self.get_instruction_nodes:
+        for n in self.instruction_nodes:
             if n.index == -1:
                 self.strongConnect(n, sccs)
         return sccs
@@ -316,7 +316,7 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
         # raise ValueError(f"Live Out Node with id '{id}' is not in the DFG")
 
     def resetNodeTime(self, t):
-        for n in self.get_instruction_nodes:
+        for n in self.instruction_nodes:
             n.time = t
 
     def getConstant(self, dest_id):
@@ -338,7 +338,7 @@ edges: [{'\n\t'.join(sorted(str(edge) for edge in self.get_instruction_edges + s
         # raise ValueError(f"There was no live out node associated to node with id '{id}'")
 
     def fix_references(self):
-        for n in self.get_instruction_nodes:
+        for n in self.instruction_nodes:
             if n.lOp_id != -1:
                 n.set_lOp(self.getNode(n.lOp_id))
             if n.rOp_id != -1:

@@ -12,7 +12,7 @@ class RegisterAllocator:
 
     def __init__(self, dfg: DFG, kernel, instructions, x, y, z):
         self.rf = {}
-        self.DFG: Optional[DFG] = dfg
+        self.dfg: Optional[DFG] = dfg
         self.kernel = kernel
         self.instructions = instructions
         # init the rf to 0 => all the register of that pe are free to use
@@ -25,7 +25,7 @@ class RegisterAllocator:
                     self.rf[i][j] = 0
 
     def __del__(self):
-        self.DFG = None
+        self.dfg = None
         self.rf.clear()
         self.kernel.clear()
         self.instructions.clear()
@@ -124,8 +124,8 @@ class RegisterAllocator:
         # assign registers to operands
         # Only handle the RCL,RCR,RCT,RCB and ROUT cases
         # To use the internal registers the interference graph must be colored
-        assert self.DFG is not None, "Can't assign registers if the DFG is None"
-        for e in self.DFG.get_instruction_edges:
+        assert self.dfg is not None, "Can't assign registers if the DFG is None"
+        for e in self.dfg.instruction_edges:
             # print(e.source.id, "--->" ,e.destination.id)
             source = self.getInstruction(e.source.id)
             destination = self.getInstruction(e.destination.id)
@@ -318,8 +318,8 @@ class RegisterAllocator:
                 destination.opB = destination.opA
 
         # Assign immediate values
-        for c in self.DFG.get_constant_nodes:
-            destination = self.DFG.get_constant_target(c)
+        for c in self.dfg.constant_nodes:
+            destination = self.dfg.get_constant_target(c)
             assert len(destination) == 1, "Constant node has more than one successor"
             inst = self.getInstruction(destination[0].id)
             if inst == None:
@@ -391,7 +391,7 @@ class RegisterAllocator:
         return available_registers
 
     # Generates all the interference graphs needed (one for each PE)
-    def generateInterferenceGraphs(self, kernel, grid_size, DFG, instructions, n_colors):
+    def generateInterferenceGraphs(self, kernel, grid_size, dfg, instructions, n_colors):
 
         graphs = {}
         for i in range(0, grid_size):
@@ -400,7 +400,7 @@ class RegisterAllocator:
                     graphs[i] = None
                 g = interference(i)
                 g.rf_size = n_colors
-                addNodes(instructions[i], g, kernel, DFG, i)
+                addNodes(instructions[i], g, kernel, dfg, i)
                 # g.removeOverlappingIntervals()
                 self.generateOverlaps(g)
                 graphs[i] = g
@@ -478,13 +478,13 @@ class RegisterAllocator:
 
 # Generate nodes for the interference graphs
 # Each node is an interval that rapresents the liveness of a node
-def addNodes(instructions, g, kernel, DFG, p):
+def addNodes(instructions, g, kernel, dfg: DFG, p):
 
     kernel_length = len(kernel) - 1
     # print(kernel)
     # print("Kernel length: " + str(kernel_length))
     interval_id = 0
-    for e in DFG.get_instruction_edges:
+    for e in dfg.instruction_edges:
         for s in instructions:
             if s.nodeid == e.source.id:
                 for d in instructions:
