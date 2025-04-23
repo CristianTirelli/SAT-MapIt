@@ -995,14 +995,6 @@ class Mapper:
     def generateMapping(self, instructions):
 
         self.mapping = {}
-        self.generatePKE()
-        logging.debug("PKE")
-        for i in range(len(self.pke)):
-            s = "t: " + str(i) + "     "
-            for p in self.pke[i]:
-                s += str(self.pke[i][p]) + " "
-            logging.debug(s)
-
         # init ra and do register allocation
         ra = RegisterAllocator(
             self.DFG, self.kernel, instructions, self.CGRA_Y, self.CGRA_X, self.CGRA_R
@@ -1021,6 +1013,15 @@ class Mapper:
             logging.debug("#Nodes: " + str(len(graphs[p].intervals)))
         ra.assignRegisters(self.CGRA_Y, self.CGRA_X)
         logging.debug("\n\n**************\n\n")
+        
+        self.generatePKE()
+        logging.debug("PKE")
+        for i in range(len(self.pke)):
+            s = "t: " + str(i) + "     "
+            for p in self.pke[i]:
+                s += str(self.pke[i][p]) + " "
+            logging.debug(s)
+
 
         self.generateInit(instructions, ra)
         self.generateFini(instructions)
