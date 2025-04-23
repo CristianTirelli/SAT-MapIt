@@ -5,7 +5,6 @@ from .mapper import Mapper
 from .parser import Parser
 from .instruction import generateInstructions
 
-
 def main():
     parser = argparse.ArgumentParser(description='SAT-MapIt mapper usage')
     parser.add_argument('-path', type=str, help='Path of the folder containing the extracted DFG')
