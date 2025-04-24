@@ -25,7 +25,16 @@ from mapper.errors import ScheduleNotFound
 from .RegisterAllocator import RegisterAllocator
 from .instruction import Instruction
 from .ISA import *
-from .utils import timeit
+from .utils import (
+    timeit,
+    pe,
+    cycle,
+    node_id,
+    iteration,
+    interval,
+    size,
+    schedule,
+)
 
 
 @dataclass
@@ -35,20 +44,6 @@ class NodeLiteral:
     pe: int
     cycle: int
     iteration: int
-
-
-# Type aliasing to make parameter types clearer
-pe = int
-cycle = int
-time_instant = int
-opcode = int
-node_id = int
-iteration = int
-interval = int
-
-size = int
-
-schedule = dict[time_instant, list[node_id]]
 
 
 class Mapper:

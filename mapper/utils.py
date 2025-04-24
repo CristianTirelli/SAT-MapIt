@@ -3,6 +3,19 @@ import logging
 import threading
 from functools import wraps
 
+# Type aliasing to make parameter types clearer
+pe = int
+cycle = int
+time_instant = int
+opcode = int
+node_id = int
+iteration = int
+interval = int
+
+size = int
+
+schedule = dict[time_instant, list[node_id]]
+
 # Thread-local storage for safe parallelism
 _thread_local = threading.local()
 _thread_local.tab_level = 0

@@ -1,4 +1,10 @@
+from mapper.DFG import DFG
 from .ISA import *
+from .utils import (
+    pe,
+    cycle,
+    node_id,
+)
 
 # this is a class similar to node, but with more information
 class Instruction:
@@ -177,7 +183,8 @@ class Instruction:
     def getOpcodeName(self):
         return OPCODE_NAMES.get(self.opcode, "UNDEF")
 
-def generateInstructions(kernel, DFG):
+
+def generateInstructions(kernel: dict[cycle, dict[pe, node_id]], dfg: DFG) -> dict[pe, Instruction]:
     instructions = {}
     inst_id = 0
     for t in kernel:
@@ -186,15 +193,15 @@ def generateInstructions(kernel, DFG):
             inst = Instruction(inst_id, node_id)
             inst.pe = p
             inst.time = t
-            n = DFG.getNode(node_id)
+            n = dfg.getNode(node_id)
             inst.ROp = n.rOp_id
             inst.LOp = n.lOp_id
             inst.name = n.name
             inst.predicate = n.predicate_id
             inst.opcode = n.opcode
             inst_id += 1
-            if DFG.getConstant(n.id) != None:
-                inst.immediate = DFG.getConstant(n.id).immediate
+            if dfg.getConstant(n.id) != None:
+                inst.immediate = dfg.getConstant(n.id).immediate
             if p not in instructions:
                 instructions[p] = []
             instructions[p].append(inst)
