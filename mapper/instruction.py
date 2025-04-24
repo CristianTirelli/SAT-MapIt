@@ -1,4 +1,4 @@
-from mapper.DFG import DFG
+from mapper.DFG import DFG, instruction_node
 from .ISA import *
 from .utils import (
     pe,
@@ -194,6 +194,9 @@ def generateInstructions(kernel: dict[cycle, dict[pe, node_id]], dfg: DFG) -> di
             inst.pe = p
             inst.time = t
             n = dfg.getNode(node_id)
+            assert isinstance(
+                n, instruction_node
+            ), f"Trying to generate an instruction out of a node that is not an instruction node (it is a {type(n)})"
             inst.ROp = n.rOp_id
             inst.LOp = n.lOp_id
             inst.name = n.name
@@ -201,7 +204,9 @@ def generateInstructions(kernel: dict[cycle, dict[pe, node_id]], dfg: DFG) -> di
             inst.opcode = n.opcode
             inst_id += 1
             if dfg.getConstant(n.id) != None:
-                inst.immediate = dfg.getConstant(n.id).immediate
+                const = dfg.getConstant(n.id)
+                assert const is not None, f"Constant of node {n.id} is None"
+                inst.immediate = const.immediate
             if p not in instructions:
                 instructions[p] = []
             instructions[p].append(inst)
