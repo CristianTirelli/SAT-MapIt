@@ -79,7 +79,7 @@ class Mapper:
         self.pke = {}
         self.fini = {}
         # init + pke + fini = mapping
-        self.mapping: dict[cycle, dict[pe, Instruction]] = {}
+        self.mapping: dict[cycle, dict[pe, Instruction]] = defaultdict(dict)
 
     # Get Resource Iteration Interval
     def computeResII(self):
@@ -241,7 +241,7 @@ class Mapper:
     # Add constraint2 of the formulation
     # Avoid two nodes on the same PE at the same time
     @timeit("Adding C2...")
-    def addConstraint2(self, cycle_pe_literals):
+    def addConstraint2(self, cycle_pe_literals: dict[cycle, dict[pe, list[ExprRef]]]):
         for pe_dict in cycle_pe_literals.values():
             for literals in pe_dict.values():
                 if len(literals) > 0:
@@ -264,9 +264,9 @@ class Mapper:
     @timeit("Addeding forward edges")
     def add_contraints_forward_edge(
         self,
-        II: int,
-        c_n_it_p_literal: dict[int, dict[int, dict[int, dict[int, ExprRef]]]],
-        cycle_pe_literals: dict[int, dict[int, ExprRef]],
+        II: interval,
+        c_n_it_p_literal: dict[cycle, dict[node_id, dict[iteration, dict[pe, ExprRef]]]],
+        cycle_pe_literals: dict[cycle, dict[pe, list[ExprRef]]],
     ) -> bool:
         all_dep_encoded = True
         SEL = ["bzfa", "bsfa"]
@@ -336,9 +336,9 @@ class Mapper:
     @timeit("Addeding backward edges")
     def add_contraints_backward_edge(
         self,
-        II: int,
-        c_n_it_p_literal: dict[int, dict[int, dict[int, dict[int, ExprRef]]]],
-        cycle_pe_literals: dict[int, dict[int, ExprRef]],
+        II: interval,
+        c_n_it_p_literal: dict[cycle, dict[node_id, dict[iteration, dict[pe, ExprRef]]]],
+        cycle_pe_literals: dict[cycle, dict[pe, list[ExprRef]]],
     ) -> bool:
         all_dep_encoded = True
         for e in self.DFG.instruction_edges:
@@ -400,7 +400,12 @@ class Mapper:
     # Map dependent nodes on neibours PEs
     # TODO: (High priority) avoid useing regfile from S to D when S is the predicate of D
     @timeit("Adding C3...")
-    def addConstraint3(self, II, c_n_it_p_literal, cycle_pe_literals):
+    def addConstraint3(
+        self,
+        II: interval,
+        c_n_it_p_literal: dict[cycle, dict[node_id, dict[iteration, dict[pe, ExprRef]]]],
+        cycle_pe_literals: dict[cycle, dict[pe, list[ExprRef]]],
+    ):
         encoded_forward_dependencies = self.add_contraints_forward_edge(
             II, c_n_it_p_literal, cycle_pe_literals
         )
@@ -429,7 +434,9 @@ class Mapper:
                         iterations[it][t].append(p[1])
         return iterations
 
-    def _build_literals(self, iterations: dict[int, dict[int, list[int]]]) -> list[NodeLiteral]:
+    def _build_literals(
+        self, iterations: dict[iteration, dict[cycle, list[node_id]]]
+    ) -> list[NodeLiteral]:
         literals = []
         for it in iterations:
             for c in iterations[it]:
@@ -444,14 +451,14 @@ class Mapper:
 
     @staticmethod
     @timeit("Grouping literals by node")
-    def _group_by_node(literals: list[NodeLiteral]) -> dict[int, list[ExprRef]]:
+    def _group_by_node(literals: list[NodeLiteral]) -> dict[node_id, list[ExprRef]]:
         node_literals = defaultdict(list)
         for l in literals:
             node_literals[l.nodeid].append(l.literal)
         return node_literals
 
     @staticmethod
-    def _group_by_cycle_and_pe(literals: list[NodeLiteral]) -> dict[int, dict[int, list[ExprRef]]]:
+    def _group_by_cycle_and_pe(literals: list[NodeLiteral]) -> dict[cycle, dict[pe, list[ExprRef]]]:
         cycle_pe_literals: dict[int, dict[int, list[ExprRef]]] = defaultdict(
             lambda: defaultdict(list)
         )
@@ -467,8 +474,12 @@ class Mapper:
                 cycle_pe_literals[ci][pj] = Not(Or(cycle_pe_literals[ci][pj]))
 
     @staticmethod
-    def _group_by_all(literals: list[NodeLiteral]):
-        c_n_it_p_literal = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+    def _group_by_all(
+        literals: list[NodeLiteral],
+    ) -> dict[cycle, dict[node_id, dict[iteration, dict[pe, ExprRef]]]]:
+        c_n_it_p_literal: dict[
+            cycle, dict[node_id, dict[iteration, dict[pe, ExprRef]]]
+        ] = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
         for l in literals:
             c_n_it_p_literal[l.cycle][l.nodeid][l.iteration][l.pe] = l.literal
         return c_n_it_p_literal
@@ -484,7 +495,7 @@ class Mapper:
                 self.schedule[it * II + t].append(n)
 
     @timeit("Adding constraints")
-    def _add_constraints(self, II: int) -> bool:
+    def _add_constraints(self, II: interval) -> bool:
         iterations = self._compute_iterations(II)
         literals = self._build_literals(iterations)
 
@@ -501,7 +512,7 @@ class Mapper:
         return self.addConstraint3(II, c_n_it_p_literal, cycle_pe_literals)
 
     @timeit("Solving the z3 problem")
-    def _z3_solve(self, II, wanted_model: int = 0):
+    def _z3_solve(self, II: interval, wanted_model: int = 0):
         if self.s.check() != sat:
             return False
 
@@ -597,7 +608,7 @@ class Mapper:
 
     # Return True if pe1 and pe2 are neighbour on a 2D-mesh shaped topology
     # If the topology is different this function must be changed
-    def isNeighbor(self, pe1: int, pe2: int) -> bool:
+    def isNeighbor(self, pe1: pe, pe2: pe) -> bool:
         # center
         if pe1 == pe2:
             return True
@@ -623,7 +634,7 @@ class Mapper:
                 return True
         return False
 
-    def getCycleDistance(self, cs, cd, II):
+    def getCycleDistance(self, cs: cycle, cd: cycle, II: interval):
         return (cd - cs + II) % II
 
     def generateProlog(self):
@@ -993,8 +1004,6 @@ class Mapper:
     # TODO: Create other instructions objcts that replace the BR nodes outside the kernel
     #      since those nodes needs a different jumping address (for now done manually)
     def generateMapping(self, instructions):
-
-        self.mapping = {}
         # init ra and do register allocation
         ra = RegisterAllocator(
             self.DFG, self.kernel, instructions, self.CGRA_Y, self.CGRA_X, self.CGRA_R
@@ -1026,7 +1035,8 @@ class Mapper:
         self.generateFini(instructions)
         t = 0
         # append init to mapping
-        self.mapping = self.init
+        for k, v in self.init.items():
+            self.mapping[k] = v
         t = len(self.mapping)
         init_len = len(self.init)
         prolog_len = len(self.prolog)
@@ -1063,36 +1073,26 @@ class Mapper:
             if (tk + t) not in self.mapping:
                 self.mapping[tk + t] = {}
             for pk in range(self.CGRA_Y * self.CGRA_X):
+                # pre-fill the slot with NOP
                 if pk not in self.mapping[tk + t]:
-                    self.mapping[tk + t][pk] = None
-                # get instruction
+                    tmp = Instruction(-pk - 1, -2)
+                    tmp.opcode = NOP
+                    self.mapping[tk + t][pk] = tmp
+                # If there is an instruction replace NOP with that
                 if pk in instructions:
                     for inst in instructions[pk]:
                         if pk in self.pke[tk]:
                             if inst.nodeid == self.pke[tk][pk]:
                                 self.mapping[tk + t][pk] = inst
-                # if the pe is empty put a nop instruction on it
-                tmp_id = 0
-                if self.mapping[tk + t][pk] == None:
-                    tmp = Instruction(-pk - 1, -2)
-                    tmp.opcode = NOP
-                    self.mapping[tk + t][pk] = tmp
 
         t = len(self.mapping)
         # append fini to mapping
         for tk in range(len(self.fini)):
-            if (tk + t) not in self.mapping:
-                self.mapping[tk + t] = {}
             for pk in range(self.CGRA_Y * self.CGRA_X):
-                if pk not in self.mapping[tk + t]:
-                    self.mapping[tk + t][pk] = None
-                # fini is already populated, just copy it into mapping
                 self.mapping[tk + t][pk] = self.fini[tk][pk]
 
         # Add last time slot with EXIT instruction
         t = len(self.mapping)
-        if t not in self.mapping:
-            self.mapping[t] = {}
         # Fill time slot with NOPs
         for pk in range(self.CGRA_Y * self.CGRA_X):
             if pk not in self.mapping[t]:
