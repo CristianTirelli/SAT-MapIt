@@ -29,6 +29,7 @@ class TestEndToEnd(unittest.TestCase):
         m.findMapping()
         kernel = m.getKernel()
         instructions = generateInstructions(kernel, dfg)
+        m.generate_init_prolog_epilog_fini(instructions)
         m.allocateRegisters(instructions)
         m.getAssembly()
 
