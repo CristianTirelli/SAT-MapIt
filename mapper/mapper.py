@@ -1168,40 +1168,39 @@ class Mapper:
                     if self.mapping[t][p].opcode in BR_OPPOSITES:
                         self.mapping[t][p].opcode = BR_OPPOSITES[self.mapping[t][p].opcode]
 
-    def _chip_str(
-        self,
-        what_to_extract: Callable[[Instruction], str],
-        border='|',
-        v_sep='||',
-        cell_size=9,
-    ) -> str:
-        h_sep = (
-            border
-            + " -" * ((cell_size * self.CGRA_X + len(v_sep) * (self.CGRA_X - 1)) // 2)
-            + " "
-            + border
-        )
-        lines = []
-        for t in range(len(self.mapping)):
-            lines.append(f"T = {t}")
-            lines.append(h_sep)
-            for y in range(self.CGRA_Y):
-                line = border
-                line += '||'.join(
-                    [
-                        f"{what_to_extract(self.mapping[t][x + y * self.CGRA_X]):^{cell_size}}"
-                        for x in range(self.CGRA_X)
-                    ]
-                )
-                line += " " + border
-                lines.append(line)
-                lines.append(h_sep)
-            lines.append("")
-        return '\n'.join(lines)
-
     def getAssembly(self) -> str:
         if len(self.mapping) == 0:
             raise Exception("No mapping in memory")
+
+        def _chip_str(
+            what_to_extract: Callable[[Instruction], str],
+            border='|',
+            v_sep='||',
+            cell_size=9,
+        ) -> str:
+            h_sep = (
+                border
+                + " -" * ((cell_size * self.CGRA_X + len(v_sep) * (self.CGRA_X - 1)) // 2)
+                + " "
+                + border
+            )
+            lines = []
+            for t in range(len(self.mapping)):
+                lines.append(f"T = {t}")
+                lines.append(h_sep)
+                for y in range(self.CGRA_Y):
+                    line = border
+                    line += '||'.join(
+                        [
+                            f"{what_to_extract(self.mapping[t][x + y * self.CGRA_X]):^{cell_size}}"
+                            for x in range(self.CGRA_X)
+                        ]
+                    )
+                    line += " " + border
+                    lines.append(line)
+                    lines.append(h_sep)
+                lines.append("")
+            return '\n'.join(lines)
 
         lines = []
         for t in range(len(self.mapping)):
@@ -1209,8 +1208,8 @@ class Mapper:
             for p in range(self.CGRA_X * self.CGRA_Y):
                 lines.append(self.mapping[t][p].getAssemblyStr())
 
-        lines.append(self._chip_str(lambda i: i.getOpcodeName()))
-        lines.append(self._chip_str(lambda i: i.nodeid, cell_size=6))
+        lines.append(_chip_str(lambda i: i.getOpcodeName()))
+        lines.append(_chip_str(lambda i: i.nodeid, cell_size=6))
         return '\n'.join(lines)
 
     def generateBinary(self):
