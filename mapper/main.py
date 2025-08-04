@@ -5,6 +5,7 @@ from .mapper import Mapper
 from .parser import Parser
 from .instruction import generateInstructions
 
+
 def main():
     parser = argparse.ArgumentParser(description='SAT-MapIt mapper usage')
     parser.add_argument('-path', type=str, help='Path of the folder containing the extracted DFG')
@@ -99,6 +100,7 @@ def main():
         model_number=args.model,
     )
     kernel = m.getKernel()
+    assert kernel is not None, "Kernel wasn't generated"
 
     # Generate instructions for the kernel, final mapping and than assembly
     # A node in the DFG does not contain all the information needed to
