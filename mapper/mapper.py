@@ -995,15 +995,10 @@ class Mapper:
                     tmp.opcode = NOP
                     self.fini[t][p] = tmp
 
-    # Generate the mapping after a solution to the SAT problem is found
-    # This function also does:
+    # This function does:
     # 1) Register Allocation and Assignment
     # 2) Creates: Init+Prolog+Kernel+Epilog+Fini
-    # 3) Set br address for the node in the kernel
-    # TODO: Can be written in a better way and findmapping could be called here
-    # TODO: Create other instructions objcts that replace the BR nodes outside the kernel
-    #      since those nodes needs a different jumping address (for now done manually)
-    def generateMapping(self, instructions):
+    def generate_init_prolog_epilog_fini(self, instructions):
         # init ra and do register allocation
         ra = RegisterAllocator(
             self.DFG, self.kernel, instructions, self.CGRA_Y, self.CGRA_X, self.CGRA_R
@@ -1033,11 +1028,6 @@ class Mapper:
 
         self.generateInit(instructions, ra)
         self.generateFini(instructions)
-        t = 0
-        # append init to mapping
-        for k, v in self.init.items():
-            self.mapping[k] = v
-        t = len(self.mapping)
         init_len = len(self.init)
         prolog_len = len(self.prolog)
         kernel_len = len(self.kernel)
@@ -1068,6 +1058,18 @@ class Mapper:
                 f"Fini: {len(self.init) + len(self.pke)} - {len(self.init) + len(self.pke) + len(self.fini) - 1}"
             )
         logging.debug("\n\n**************\n\n")
+
+    # Generate the mapping after a solution to the SAT problem is found
+    # Sets br address for the node in the kernel
+    # TODO: Can be written in a better way and findmapping could be called here
+    # TODO: Create other instructions objcts that replace the BR nodes outside the kernel
+    #      since those nodes needs a different jumping address (for now done manually)
+    def generateMapping(self, instructions):
+        # append init to mapping
+        for k, v in self.init.items():
+            self.mapping[k] = v
+
+        t = len(self.mapping)
         # append pke to mapping
         for tk in range(len(self.pke)):
             if (tk + t) not in self.mapping:
@@ -1137,7 +1139,9 @@ class Mapper:
         logging.info("BR location in the prologue must be set manually")
 
         # Update brs before kernel
-        for t in range(init_len + prolog_len):  # , init_len + prolog_len + kernel_len):
+        for t in range(
+            len(self.init) + len(self.prolog)
+        ):  # , len(self.init) + len(self.prolog) + len(self.kernel)):
             for p in self.mapping[t]:
                 if self.mapping[t][p].getOpcodeName() in BRs:
                     tmp = Instruction.copy(self.mapping[t][p])
@@ -1149,7 +1153,7 @@ class Mapper:
                     self.mapping[t][p] = tmp
 
         # Update brs after kernel
-        for t in range(init_len + prolog_len + kernel_len, len(self.mapping) - 1):
+        for t in range(len(self.init) + len(self.prolog) + len(self.kernel), len(self.mapping) - 1):
             for p in self.mapping[t]:
                 if self.mapping[t][p].getOpcodeName() in BRs:
                     tmp = Instruction.copy(self.mapping[t][p])
@@ -1160,10 +1164,12 @@ class Mapper:
                     self.mapping[t][p] = tmp
 
         # Invert jmp condition for  br in the kernel
-        for t in range(init_len + prolog_len, init_len + prolog_len + kernel_len):
+        for t in range(
+            len(self.init) + len(self.prolog), len(self.init) + len(self.prolog) + len(self.kernel)
+        ):
             for p in self.mapping[t]:
                 if self.mapping[t][p].getOpcodeName() in BRs:
-                    self.mapping[t][p].cycle_destination = init_len + prolog_len
+                    self.mapping[t][p].cycle_destination = len(self.init) + len(self.prolog)
                     # invert jump condition
                     if self.mapping[t][p].opcode in BR_OPPOSITES:
                         self.mapping[t][p].opcode = BR_OPPOSITES[self.mapping[t][p].opcode]
