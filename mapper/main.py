@@ -109,7 +109,7 @@ def main():
     # Initialization (e.g., live in loading) + Prologue + Kernel + Epilogue + Finalization (e.g., store of liveout)
     instructions = generateInstructions(kernel, DFG)
     m.generate_init_prolog_epilog_fini(instructions)
-    m.generateMapping(instructions)
+    m.allocateRegisters(instructions)
     assembly = m.getAssembly()
     with open("assembly", "w") as f:
         f.write(assembly)

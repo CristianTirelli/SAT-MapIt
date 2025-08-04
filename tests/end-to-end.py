@@ -29,7 +29,7 @@ class TestEndToEnd(unittest.TestCase):
         m.findMapping()
         kernel = m.getKernel()
         instructions = generateInstructions(kernel, dfg)
-        m.generateMapping(instructions)
+        m.allocateRegisters(instructions)
         m.getAssembly()
 
     def get_DFGs(self, path):

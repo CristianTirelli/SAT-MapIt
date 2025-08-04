@@ -1064,7 +1064,7 @@ class Mapper:
     # TODO: Can be written in a better way and findmapping could be called here
     # TODO: Create other instructions objcts that replace the BR nodes outside the kernel
     #      since those nodes needs a different jumping address (for now done manually)
-    def generateMapping(self, instructions):
+    def allocateRegisters(self, instructions):
         # append init to mapping
         for k, v in self.init.items():
             self.mapping[k] = v
