@@ -74,9 +74,9 @@ class RegisterAllocator:
             for v in peo:
                 colors_needed = max(colors_needed, len(v.neighbors) + 1)
 
-            print("Colors needed: " + str(colors_needed))
+            #print("Colors needed: " + str(colors_needed))
             if colors_needed > g.rf_size:
-                print("Number of registers needed: " + str(colors_needed + 1) + "\nAvailable: " + str(g.rf_size))
+                #print("Number of registers needed: " + str(colors_needed + 1) + "\nAvailable: " + str(g.rf_size))
                 exit(0)
 
             for v in peo:

@@ -76,8 +76,8 @@ class Mapper:
         self.computeRecII()
         self.computeResII()
         self.II = max(self.RecII, self.ResII)
-        print("REC " + str(self.RecII))
-        print("RES " + str(self.ResII))
+        #print("REC " + str(self.RecII))
+        #print("RES " + str(self.ResII))
         return self.II
 
     #Generate As-Soon-As-Possible schedule
@@ -102,13 +102,13 @@ class Mapper:
             self.ASAP[n.time].append(n.id)
 
         #print(self.ASAP)
-        print("\nASAP Schedule")
+        #print("\nASAP Schedule")
         for t in range(0, len(self.ASAP)):
             tmp = ""
             for e in self.ASAP[t]:
                 tmp+= str(e) + " "
-            print(tmp)
-        print()
+        #    print(tmp)
+        #print()
     
     #Generate As-Late-As-Possible schedule
     def generateALAP(self):
@@ -135,13 +135,13 @@ class Mapper:
             self.ALAP[self.scheduleLen - n.time].append(n.id)
         
         #print(self.ALAP)
-        print("\nALAP Schedule")
+        #print("\nALAP Schedule")
         for t in range(0, len(self.ALAP)):
             tmp = ""
             for e in self.ALAP[t]:
                 tmp+= str(e) + " "
-            print(tmp)
-        print()
+        #    print(tmp)
+        #print()
 
     def getASAPTime(self, id):
         for t in self.ASAP:
@@ -174,13 +174,13 @@ class Mapper:
                     self.MS[t] = []
                 self.MS[t].append(n.id)
         
-        print("\nMobility Schedule")
+        #print("\nMobility Schedule")
         for t in range(0, len(self.MS)):
             tmp = ""
             for e in self.MS[t]:
                 tmp+= str(e) + " "
-            print(tmp)
-        print()
+        #    print(tmp)
+        #print()
     
     #Generate Kernel Mobility Schedule
     def generateKMS(self, II):
@@ -227,7 +227,7 @@ class Mapper:
     #Add constraint1 of the formulation
     #Only one literal for each node must be set to True
     def addConstraint1(self, node_literals):
-        print("Adding C1...")
+        #print("Adding C1...")
         start = time.time()
         for nodeid in node_literals:
             phi = Or(node_literals[nodeid])
@@ -239,12 +239,12 @@ class Mapper:
             exactlyone = And(phi,tmp)
             self.s.add(exactlyone)
         end = time.time()
-        print("Time: " + str(end - start))
+        #print("Time: " + str(end - start))
 
     #Add constraint2 of the formulation
     #Avoid two nodes on the same PE at the same time
     def addConstraint2(self, cycle_pe_literals):
-        print("Adding C2...")
+        #print("Adding C2...")
         start = time.time()
         for cycle in cycle_pe_literals:
             for pe in cycle_pe_literals[cycle]:
@@ -259,13 +259,13 @@ class Mapper:
                 #tmp = And(tmp)
                 self.s.add(tmp)
         end = time.time()
-        print("Time: " + str(end - start))
+        #print("Time: " + str(end - start))
 
     #Add constraint3 of the formulation
     #Map dependent nodes on neibours PEs
     #TODO: (High priority) avoid useing regfile from S to D when S is the predicate of D
     def addConstraint3(self, II, c_n_it_p_literal, cycle_pe_literals):
-        print("Adding C3...")
+        #print("Adding C3...")
         BRs = ["beq","bne","blt","bge","ble","bgt"]
         SEL = ["bzfa", "bsfa"]
         start = time.time()
@@ -276,7 +276,7 @@ class Mapper:
                 #backdependencies handled in a different way
                 continue
             nodes = [e.source.id, e.destination.id]
-            print(nodes)
+            #print(nodes)
             tmp = []
             
             for (cs,cd) in itertools.product(c_n_it_p_literal, c_n_it_p_literal):
@@ -347,12 +347,13 @@ class Mapper:
                                             tmp.append(tmp2[0])
                                     else:
                                         print("Should not be here 2")
+                                        exit(0)
                         
                     if len(tmp) == 0:
                         continue
-                        print("No constraint for this dep. Need to check")
+                        #print("No constraint for this dep. Need to check")
                         all_dep_encoded = False
-                        print(nodes[0], nodes[1])
+                        #print(nodes[0], nodes[1])
                         # break
                     # self.s.add(Or(tmp))
                     continue
@@ -413,26 +414,26 @@ class Mapper:
                                     print("Should not be here 2")
                     
             if len(tmp) == 0:
-                print("No constraint for this dep. Need to check")
+                #print("No constraint for this dep. Need to check")
                 all_dep_encoded = False
-                print(nodes[0], nodes[1])
+                #print(nodes[0], nodes[1])
                 break
             self.s.add(Or(tmp))
-        if not found_br:
-            print("Cannot find BR node in last cycle of the kernel.\n Comment this if you don't care or check DFG/MS")
+        #if not found_br:
+        #    print("Cannot find BR node in last cycle of the kernel.\n Comment this if you don't care or check DFG/MS")
 
         if not all_dep_encoded:
             self.s.reset()
             return all_dep_encoded
         all_dep_encoded = True
         #handle backdeps
-        print("Adding back...")	
+        #print("Adding back...")	
         for e in self.DFG.edges:
             if e.distance < 1:
                 #backdependencies handled in a different way
                 continue 
             nodes = [e.source.id, e.destination.id]
-            print(nodes)
+            #print(nodes)
             tmp = []
             for (cs,cd) in itertools.product(c_n_it_p_literal, c_n_it_p_literal):
                 if (nodes[0] not in c_n_it_p_literal[cs]) or (nodes[1] not in c_n_it_p_literal[cd]):
@@ -504,8 +505,8 @@ class Mapper:
                                         
                     
             if len(tmp) == 0:
-                print("No constraint for this backdep. Need to check")
-                print(nodes[0], nodes[1])
+                #print("No constraint for this backdep. Need to check")
+                #print(nodes[0], nodes[1])
                 all_dep_encoded = False
                 break
             self.s.add(Or(tmp))
@@ -520,7 +521,7 @@ class Mapper:
         #with open(self.benchmark + "_" + str(II) + ".cnf", "w") as f:
         #    f.write(self.s.dimacs())
         end = time.time()
-        print("Time: " + str(end - start))
+        #print("Time: " + str(end - start))
         return all_dep_encoded
 
     #Find mapping of the DFG starting from the MII
@@ -533,15 +534,15 @@ class Mapper:
 
         solution = False
         while not solution:
-            print("II: " + str(II))
+            #print("II: " + str(II))
             self.generateKMS(II)
             nit = math.ceil((self.scheduleLen + 1) / II)
-            print("nit " + str(self.scheduleLen + 1)+"/"+str(II) +"= "+str((self.scheduleLen + 1) / II) +"= "+str(nit))
+            #print("nit " + str(self.scheduleLen + 1)+"/"+str(II) +"= "+str((self.scheduleLen + 1) / II) +"= "+str(nit))
             
             iterations = {}
-            print("KMS")
-            for i in range(0,II):
-                print(self.KMS[i])
+            #print("KMS")
+            #for i in range(0,II):
+            #    print(self.KMS[i])
 
             for it in range(0, nit):
                 if it not in iterations:
@@ -636,10 +637,10 @@ class Mapper:
             #3)
             #encode all dependencies
             if not self.addConstraint3(II, c_n_it_p_literal, cycle_pe_literals):
-                print("Can't encode all the dependency - II too small\nManually add routing nodes to solve this dep or let the code run.")
-                print("NOTE: we force the br instruction to be in the last time step of the kernel.")
-                print("This leads to suboptimal results, but makes easier the assembly generation. ")
-                print("To obtain optimal results set the BRs = [] and SEL = [] at the start of addConstraint3")
+                #print("Can't encode all the dependency - II too small\nManually add routing nodes to solve this dep or let the code run.")
+                #print("NOTE: we force the br instruction to be in the last time step of the kernel.")
+                #print("This leads to suboptimal results, but makes easier the assembly generation. ")
+                #print("To obtain optimal results set the BRs = [] and SEL = [] at the start of addConstraint3")
                 II += 1
                 continue
 
@@ -666,7 +667,7 @@ class Mapper:
                 #    if model_number == 120:
                 #        break
                 solution = True
-                print("SAT")
+                #print("SAT")
                 m = self.s.model()
                 #parse z3 output
                 for t in m.decls():
@@ -676,7 +677,7 @@ class Mapper:
                         n = int(tmp[0])
                         t = int(tmp[2])
                         it = int(tmp[3])
-                        print("Node " + str(n) + " on PE " + str(p) + " at time " + str(t) + " of it " + str(it))
+                        #print("Node " + str(n) + " on PE " + str(p) + " at time " + str(t) + " of it " + str(it))
                         if t not in self.kernel:
                             self.kernel[t] = {}
                         if p not in self.kernel[t]:
@@ -688,26 +689,26 @@ class Mapper:
 
                         self.schedule[it*II + t].append(n)
 
-                print("Kernel")
+                #print("Kernel")
                 for i in range(0, len(self.kernel)):
                     tmps = "[ "
                     for p in self.kernel[i]:
                         tmps += str(self.kernel[i][p]) + " "
-                    print(tmps + "]")
+                    #print(tmps + "]")
 
-                print("Schedule")
-                for i in range(0, len(self.schedule)):
-                    print(self.schedule[i])
+                #print("Schedule")
+                #for i in range(0, len(self.schedule)):
+                #    print(self.schedule[i])
                 
             else:
                 self.s.reset()
                 II += 1
 
             end = time.time()
-            print("Time: " + str(end - start))
+            #print("Time: " + str(end - start))
 
         if solution == False:
-            print("Mapping not found...\nLast II: " + str(II))
+            #print("Mapping not found...\nLast II: " + str(II))
             exit(0)
 
         self.II = II
@@ -994,6 +995,7 @@ class Mapper:
                 tmp_id +=1
                 tmp.pe = p
                 tmp.time = i    
+                #print("livein ", p_live[p][i].id, " on pe ", p, " at time ", i)
                 tmp.opcode = LWD
                 #get where the instruction must save the loaded value
                 space_full = True
@@ -1030,16 +1032,19 @@ class Mapper:
                 if pe not in occupied_spot[t]:
                     free_time_slot = t
                     break
+                else:
+                    free_time_slot = t + 1
+
             for i in range(len(p_const[pe])):
-                if t + i not in occupied_spot:
-                    occupied_spot[t + i] = {}
-                if pe not in occupied_spot[t + i]:
-                    occupied_spot[t + i][pe] = True
+                if free_time_slot + i not in occupied_spot:
+                    occupied_spot[free_time_slot + i] = {}
+                if pe not in occupied_spot[free_time_slot + i]:
+                    occupied_spot[free_time_slot + i][pe] = True
                 
                 tmp = instruction(tmp_id, p_const[pe][i].id)
                 tmp_id += 1
                 tmp.pe = pe
-                tmp.time = t + i
+                tmp.time = free_time_slot + i
                 tmp.LOp = -1
                 tmp.ROp = -1
                 tmp.opA = CONST
@@ -1071,6 +1076,7 @@ class Mapper:
                 else:
                     print("should not happen (Create inst for constant)")
 
+
                 for p1 in instructions:
                     for inst in instructions[p1]:
                         init_const = self.DFG.getConstant(inst.nodeid)
@@ -1078,8 +1084,8 @@ class Mapper:
                             if inst.LOp == p_const[pe][i].id:
                                 tmp.opA = CONST
                                 tmp.opB = ZERO
-
-                self.init[i + t][pe] = tmp
+                
+                self.init[i + free_time_slot][pe] = tmp
 
 
         #set to NOP instruction all the other PEs
@@ -1182,28 +1188,28 @@ class Mapper:
 
         self.mapping = {}
         self.generatePKE()
-        print("\n\n")
-        print("PKE")
+        #print("\n\n")
+        #print("PKE")
         for i in range(0, len(self.pke)):
             s = "t: " + str(i) + "     "
             for p in self.pke[i]:
                 s += str(self.pke[i][p]) + " "
-            print(s)
+            #print(s)
 
         #init ra and do register allocation
         self.ra = RegisterAllocator(self.DFG, self.pke, self.kernel, instructions, self.CGRA_Y, self.CGRA_x, self.CGRA_R)
         graphs = self.ra.generateInterferenceGraphs(self.kernel, self.CGRA_Y * self.CGRA_x, self.DFG, self.ra.instructions, self.CGRA_R)
 
         self.ra.addInterferenceGraphs(graphs)
-        print("\n\n**************\n\n")
-        print("Interference graphs : " + str(len(graphs)))
+        #print("\n\n**************\n\n")
+        #print("Interference graphs : " + str(len(graphs)))
         self.ra.allocateRegisters()
-        for p in graphs:
+        #for p in graphs:
             #Uncomment following line to print the interference graphs for each PE
             #graphs[p].printDot(str(p))
-            print("#Nodes: " + str(len(graphs[p].intervals)))
+            #print("#Nodes: " + str(len(graphs[p].intervals)))
         self.ra.assignRegisters(self.CGRA_Y, self.CGRA_x)
-        print("\n\n**************\n\n")
+        #print("\n\n**************\n\n")
         
         self.generateInit(instructions)
         self.generateFini(instructions)
@@ -1216,27 +1222,27 @@ class Mapper:
         kernel_len = len(self.kernel)
         epilog_len = len(self.epilog)
         fini_len = len(self.fini)
-        print("\n\n**************\n\n")
-        print("init_len: ", init_len)
-        print("prolog_len: ", prolog_len)
-        print("kernel_len: ", kernel_len)
-        print("epilog_len: ", epilog_len)
-        print("fini_len: ", fini_len)
-        print("\n\n**************\n\n")
+        #print("\n\n**************\n\n")
+        #print("init_len: ", init_len)
+        #print("prolog_len: ", prolog_len)
+        #print("kernel_len: ", kernel_len)
+        #print("epilog_len: ", epilog_len)
+        #print("fini_len: ", fini_len)
+        #print("\n\n**************\n\n")
 
 
 
-        print("\n\n**************\n\n")
-        if len(self.init) > 0:
-            print("Init: 0 - " + str(len(self.init) - 1))
-        if len(self.prolog) > 0:
-            print("Prolog: " + str(len(self.init)) + " - " + str(len(self.init) + len(self.prolog) - 1))
-        print("Kernel: " + str(len(self.prolog) + len(self.init)) + " - " + str(len(self.init) + len(self.prolog) + len(self.kernel) - 1))
-        if len(self.epilog) > 0:
-            print("Epilog: " + str(len(self.init) + len(self.pke) - len(self.epilog)) + " - " + str(len(self.init) + len(self.pke) - 1))
-        if len(self.fini) > 0:
-            print("Fini: " + str(len(self.init) + len(self.pke)) + " - " + str(len(self.init) + len(self.pke) + len(self.fini) - 1))
-        print("\n\n**************\n\n")
+        #print("\n\n**************\n\n")
+        #if len(self.init) > 0:
+        #    print("Init: 0 - " + str(len(self.init) - 1))
+        #if len(self.prolog) > 0:
+        #    print("Prolog: " + str(len(self.init)) + " - " + str(len(self.init) + len(self.prolog) - 1))
+        #print("Kernel: " + str(len(self.prolog) + len(self.init)) + " - " + str(len(self.init) + len(self.prolog) + len(self.kernel) - 1))
+        #if len(self.epilog) > 0:
+        #    print("Epilog: " + str(len(self.init) + len(self.pke) - len(self.epilog)) + " - " + str(len(self.init) + len(self.pke) - 1))
+        #if len(self.fini) > 0:
+        #    print("Fini: " + str(len(self.init) + len(self.pke)) + " - " + str(len(self.init) + len(self.pke) + len(self.fini) - 1))
+        #print("\n\n**************\n\n")
         #append pke to mapping
         for tk in range(0, len(self.pke)):
             if (tk + t) not in self.mapping:
@@ -1301,16 +1307,16 @@ class Mapper:
                     br_location.append(t)
                     br_to_copy = self.mapping[t][p]
 
-        print("Number of br instructions ", br_count)
+        #print("Number of br instructions ", br_count)
         #print(br_location)
-        print("Loop length should be = Loop lengh - ", br_count)
-        print("")
-        print("If loop length is not know at runtime")
-        print("running the code could produce wrong results")
-        print("if a br in the prologue gets hit")
+        #print("Loop length should be = Loop lengh - ", br_count)
+        #print("")
+        #print("If loop length is not know at runtime")
+        #print("running the code could produce wrong results")
+        #print("if a br in the prologue gets hit")
         # This can be solved by increasing the code length or decreasing the performances
         # Currently we do not deploy any fix, since its outside the scope of our research
-        print("")
+        #print("")
 
         # Create a different instruction for each br and change the jmp location
         # WARNING: Currently we only support DFGs with 1 br instruction
@@ -1319,9 +1325,9 @@ class Mapper:
             print("No br instruction in the kernel")
             exit(0)
         
-        print("\n\n******************************************************\n")
-        print("   BR location in the prologue must be set manually  ")
-        print("\n******************************************************\n")
+        #print("\n\n******************************************************\n")
+        #print("   BR location in the prologue must be set manually  ")
+        #print("\n******************************************************\n")
 
         # Update brs before kernel
         for t in range(0, init_len + prolog_len):#, init_len + prolog_len + kernel_len):
@@ -1396,6 +1402,16 @@ class Mapper:
         #    print(tmp)
 
     def printAssembly(self):
+
+
+        for lin in self.DFG.livein_nodes:
+            for t in range(0, len(self.mapping)):
+                for p in range(0, self.CGRA_x * self.CGRA_Y):    
+                    if lin.id == self.mapping[t][p].nodeid:
+                        print("LiveIn",lin.id, p)
+                
+
+
         if len(self.mapping) == 0:
             print("No mapping in memory")
             exit(0)
@@ -1411,36 +1427,36 @@ class Mapper:
         #        inst = self.mapping[t][p]
         #        print(t, p, "---",inst.nodeid, inst.pe)
                 
-        for t in range(0, len(self.mapping)):
-            print("T = " + str(t))
-            tmp = " _" * self.CGRA_Y*5 + " _ \n"
-            for p in range(0, self.CGRA_x * self.CGRA_Y):
-                #tmp0 += "|   " + "_"*len(str(self.mapping[t][p].getOpcodeName())) + "  |"
-                tmp += "|  |" + str(self.mapping[t][p].getOpcodeName()) + "|  |"
-                #tmp2 += "|   " + "-"*len(str(self.mapping[t][p].getOpcodeName())) + "  |"
+        #for t in range(0, len(self.mapping)):
+        #    print("T = " + str(t))
+        #    tmp = " _" * self.CGRA_Y*5 + " _ \n"
+        #    for p in range(0, self.CGRA_x * self.CGRA_Y):
+        #        #tmp0 += "|   " + "_"*len(str(self.mapping[t][p].getOpcodeName())) + "  |"
+        #        tmp += "|  |" + str(self.mapping[t][p].getOpcodeName()) + "|  |"
+        #        #tmp2 += "|   " + "-"*len(str(self.mapping[t][p].getOpcodeName())) + "  |"
+#
+        #        if (p+1) % self.CGRA_Y == 0:
+        #            tmp += "\n"
+        #            if (p+1) != (self.CGRA_Y * self.CGRA_x):
+        #                tmp += "|" + "- "*5*self.CGRA_Y + "- \n"
+        #    tmp += " -" * self.CGRA_Y*5 + "- -\n"
+        #    print(tmp)
 
-                if (p+1) % self.CGRA_Y == 0:
-                    tmp += "\n"
-                    if (p+1) != (self.CGRA_Y * self.CGRA_x):
-                        tmp += "|" + "- "*5*self.CGRA_Y + "- \n"
-            tmp += " -" * self.CGRA_Y*5 + "- -\n"
-            print(tmp)
-
-        print("Output of the mapping with node id")
-        for t in range(0, len(self.mapping)):
-            print("T = " + str(t))
-            tmp = " _" * self.CGRA_Y*5 + " _ \n"
-            for p in range(0, self.CGRA_x * self.CGRA_Y):
-                if self.mapping[t][p].nodeid > -1:
-                    tmp += "|  | " + str(self.mapping[t][p].nodeid) + " |  |"
-                else:
-                    tmp += "|  | " + "-1" + " |  |"
-                if (p+1) % self.CGRA_Y == 0:
-                    tmp += "\n"
-                    if (p+1) != (self.CGRA_Y * self.CGRA_x):
-                        tmp += "|" + "- "*5*self.CGRA_Y + "- \n"
-            tmp += " -" * self.CGRA_Y*5 + "- -\n"
-            print(tmp)
+        #print("Output of the mapping with node id")
+        #for t in range(0, len(self.mapping)):
+        #    print("T = " + str(t))
+        #    tmp = " _" * self.CGRA_Y*5 + " _ \n"
+        #    for p in range(0, self.CGRA_x * self.CGRA_Y):
+        #        if self.mapping[t][p].nodeid > -1:
+        #            tmp += "|  | " + str(self.mapping[t][p].nodeid) + " |  |"
+        #        else:
+        #            tmp += "|  | " + "-1" + " |  |"
+        #        if (p+1) % self.CGRA_Y == 0:
+        #            tmp += "\n"
+        #            if (p+1) != (self.CGRA_Y * self.CGRA_x):
+        #                tmp += "|" + "- "*5*self.CGRA_Y + "- \n"
+        #    tmp += " -" * self.CGRA_Y*5 + "- -\n"
+        #    print(tmp)
                 
     def generateBinary(self):
         #TODO: Convert in binary code the assembly generated
