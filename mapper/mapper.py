@@ -1408,8 +1408,19 @@ class Mapper:
             for t in range(0, len(self.mapping)):
                 for p in range(0, self.CGRA_x * self.CGRA_Y):    
                     if lin.id == self.mapping[t][p].nodeid:
-                        print("LiveIn",lin.id, p)
-                
+                        print("LiveIn",lin.id, p, self.mapping[t][p].getOutputOperandAssignedRegister())
+
+        register_usage = {}
+        for p in range(0, self.CGRA_x * self.CGRA_Y): 
+            register_usage[p] = 0 
+
+        for t in range(0, len(self.mapping)):
+            for p in range(0, self.CGRA_x * self.CGRA_Y): 
+                register_usage[p] = max(register_usage[p], self.mapping[t][p].outreg + 1)
+
+        for p in range(0, self.CGRA_x * self.CGRA_Y): 
+            print("Register usage PE " , p, ": ", register_usage[p])
+
 
 
         if len(self.mapping) == 0:
