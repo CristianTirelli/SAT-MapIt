@@ -69,3 +69,24 @@ In the next update, we plan to include:
 
 ## SAT-MapIt LITE
 A Lite version of the tool is available at: https://github.com/CristianTirelli/SAT-MapIt-Lite
+
+
+
+
+## Citation
+
+If you use this work, please cite:
+
+```bibtex
+@inproceedings{tirelli2023sat,
+  title={SAT-MapIt: A SAT-based modulo scheduling mapper for coarse grain reconfigurable architectures},
+  author={Tirelli, Cristian and Ferretti, Lorenzo and Pozzi, Laura},
+  booktitle={2023 Design, Automation \& Test in Europe Conference \& Exhibition (DATE)},
+  pages={1--6},
+  year={2023},
+  organization={IEEE}
+}
+
+```
+
+
